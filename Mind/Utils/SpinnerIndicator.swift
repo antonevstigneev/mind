@@ -19,7 +19,7 @@ extension UIViewController {
         
         impactFeedbackgenerator.prepare()
         let activityIndicator = UIActivityIndicatorView(style: .medium)
-        activityIndicator.center = CGPoint(x: 45, y: 25)
+        activityIndicator.center = aView!.center
         activityIndicator.startAnimating()
         aView?.addSubview(activityIndicator)
         self.view.addSubview(aView!)

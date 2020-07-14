@@ -51,8 +51,7 @@ class similarItemsViewController: UIViewController, UITextViewDelegate, UITableV
         ]
         
         cell.itemKeywordsCollectionView.tag = indexPath.row
- 
-        
+    
         return cell
     }
     

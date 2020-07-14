@@ -100,19 +100,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }()
     
     
+    var refreshControl: UIRefreshControl!
+    
+    
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
         
         timer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(self.getTimeOfDate), userInfo: nil, repeats: true)
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(fetchData),
-            name: NSNotification.Name(
-                rawValue: "NSPersistentStoreRemoteChangeNotification"),
-                object: persistentContainer.persistentStoreCoordinator
-        )
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(handle(keyboardShowNotification:)),
@@ -139,6 +134,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshTableView), for: .valueChanged)
+        tableView.addSubview(refreshControl)
         
         // plusButton initial setup
         plusButton.layer.masksToBounds = true
@@ -167,6 +165,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         timer?.invalidate()
+    }
+    
+    @objc func refreshTableView(_ sender: Any) {
+        fetchData()
+        refreshControl.endRefreshing()
     }
 
     
@@ -390,15 +393,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         for item in items {
             let distance = SimilarityDistance(A: selectedItemEmbedding, B: item.embedding!)
-            if (distance < Float(0.99)) {
-                similarItems.append(item)
-                scores.append(distance)
-            }
+            similarItems.append(item)
+            scores.append(distance)
         }
         
         let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
+        
         var topSimilarItems: [Item] = []
-        for i in 0...6 {
+        for i in 1...6 {
             topSimilarItems.append(sortedSimilarItems[i])
         }
 
@@ -415,10 +417,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     // MARK: - Search
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText != "" {
-
+            fetchData()
+            defaultKeywordsCollectionView()
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(itemsViewController.reloadSearch), object: nil)
             self.perform(#selector(itemsViewController.reloadSearch), with: nil, afterDelay: 1.0)
-            
         } else {
             fetchData()
             defaultKeywordsCollectionView()
