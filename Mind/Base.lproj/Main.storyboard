@@ -262,7 +262,7 @@
         <!--Similar Items View Controller-->
         <scene sceneID="z4a-3n-d6f">
             <objects>
-                <viewController id="Rcj-8U-PbQ" customClass="similarItemsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController modalPresentationStyle="pageSheet" id="Rcj-8U-PbQ" customClass="similarItemsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8Yb-CK-uaN">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

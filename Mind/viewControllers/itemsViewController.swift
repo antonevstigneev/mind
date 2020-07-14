@@ -125,6 +125,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 userInfo: nil, repeats: true)
         
         NotificationCenter.default.addObserver(self,
+        selector: #selector(defaultKeywordsCollectionView),
+        name: NSNotification.Name(rawValue: "allItemsLoaded"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
         selector: #selector(fetchData),
         name: NSNotification.Name(rawValue: "newItemCreated"),
         object: nil)
@@ -149,6 +154,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // keywords collection initial setup
         keywordsCollectionView.delegate = self
         keywordsCollectionView.dataSource = self
+        defaultKeywordsCollectionView()
         
         // tableView initial setup
         tableView.delegate = self
@@ -176,10 +182,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-        if items.count > 0 {
-            mostFrequentKeywords = getMostFrequentKeywords()
-            defaultKeywordsCollectionView()
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -351,8 +353,15 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
        request.sortDescriptors = [sortDescriptor]
         do {
             items = try context.fetch(request)
-            DispatchQueue.main.async {
+            let itemsLoading = DispatchGroup()
+            DispatchQueue.main.async(group: itemsLoading) {
                 self.tableView.reloadData()
+                self.keywordsCollectionView.reloadData()
+            }
+            itemsLoading.notify(queue: .main) {
+                NotificationCenter.default.post(name:
+                NSNotification.Name(rawValue: "allItemsLoaded"),
+                object: nil)
             }
         } catch {
             print("Fetching failed")
@@ -406,8 +415,16 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
         
         var topSimilarItems: [Item] = []
-        for i in 1...6 {
-            topSimilarItems.append(sortedSimilarItems[i])
+        if sortedSimilarItems.count > 5 {
+            for i in 1...6 {
+                topSimilarItems.append(sortedSimilarItems[i])
+            }
+        } else if sortedSimilarItems.count < 5 {
+            for i in 1...sortedSimilarItems.count-1 {
+                topSimilarItems.append(sortedSimilarItems[i])
+            }
+        } else {
+            topSimilarItems = []
         }
 
         return topSimilarItems
@@ -568,8 +585,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 // MARK: - Keywords
 extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    func defaultKeywordsCollectionView() {
+    @objc func defaultKeywordsCollectionView() {
         keywordsCollection = [selectedAllKeyword.title]
+        mostFrequentKeywords = getMostFrequentKeywords()
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
