@@ -423,6 +423,7 @@
                                     <action selector="sendButtonTouchDown:" destination="NfF-hC-bU7" eventType="touchDown" id="bNd-6A-Lvv"/>
                                     <action selector="sendButtonTouchDownInside:" destination="NfF-hC-bU7" eventType="touchUpInside" id="X0W-3Y-uPb"/>
                                     <action selector="sendButtonTouchUpOutside:" destination="NfF-hC-bU7" eventType="touchUpOutside" id="LQ5-Xx-t5E"/>
+                                    <segue destination="1at-Xk-qg4" kind="unwind" identifier="unwindToHome" unwindAction="unwindToHomeWithSegue:" id="0UR-OK-KrW"/>
                                 </connections>
                             </button>
                         </subviews>

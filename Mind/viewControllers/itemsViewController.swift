@@ -76,9 +76,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             keywordsCollectionView.reloadData()
             fetchDataForSelectedKeyword()
         } else if pressedKeyword.title == "all" {
-            searchBar.text = ""
-            fetchData()
-            defaultKeywordsCollectionView()
+//            searchBar.text = ""
+//            fetchData()
+//            keywordsCollection = [selectedAllKeyword.title]
+            selectedKeyword = selectedAllKeyword
         } else {
             sender.isSelected = false
             keywordsCollectionView.reloadData()
@@ -87,7 +88,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.animateTableView()
     }
     
-    @IBAction func unwindToHome(segue: UIStoryboardSegue){}
+    @IBAction func unwindToHome(segue: UIStoryboardSegue) {
+        fetchData()
+        tableView.reloadData()
+    }
     
     
     // Timer
@@ -107,7 +111,15 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        timer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(self.getTimeOfDate), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 30,
+                target: self,
+                selector: #selector(self.getTimeOfDate),
+                userInfo: nil, repeats: true)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(fetchData),
+        name: NSNotification.Name(rawValue: "newItemCreated"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(handle(keyboardShowNotification:)),
@@ -220,7 +232,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let item = self.items[indexPath.row]
             self.context.delete(item)
             self.items.remove(at: indexPath.row)
-            self.tableView.deleteRows(at: [indexPath], with: .none)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
             
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }
@@ -231,56 +243,42 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func preprocess(_ text: String) -> [String] {
-        return text.lowercased()
-            .components(separatedBy: CharacterSet.letters.inverted)
-    }
-
-    func removeShortWords(_ word: String) -> Bool {
-        return word.count > 2
-    }
-
-    func removeStopWords(_ word: String) -> Bool {
-        return !stopwords.contains(word)
-    }
-    
-    
-    func getKeywordsSimilarityScores(keywords: [String]) { //
-        var keywordPairs: [[String]] = []
-        var keywordPairsScores: [Float] = []
-        var keywordsTotalScores: [(keyword: String, score: Float)] = []
-        
-        let keywordsEmbeddings = getKeywordsEmbeddings(keywords: keywords)
-        
-        for keyword in keywords {
-            let keywordIndex = keywords.firstIndex(of: keyword)
-            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
-            var keywordTotalScore: Float = 0
-            for index in 0..<keywords.count {
-                let otherKeywordEmbedding = keywordsEmbeddings[index]
-                if keyword != keywords[index] {
-                    keywordPairs.append([keyword, keywords[index]])
-                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                    keywordTotalScore += score
-                    keywordPairsScores.append(score)
-                }
-            }
-            keywordsTotalScores.append((keyword, keywordTotalScore))
-        }
-        keywordsTotalScores = keywordsTotalScores.sorted { $0.1 > $1.1 }
-        let filteredKeywords = keywordsTotalScores.map { $0.0 }
-        print(keywordsTotalScores)
-        print(filteredKeywords.prefix(5))
-    }
-
-    func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
-        var keywordsEmbeddings: [[Float]] = []
-        for keyword in keywords {
-            let keywordEmbedding = self.bert.getTextEmbedding(text: keyword)
-            keywordsEmbeddings.append(keywordEmbedding)
-        }
-        return keywordsEmbeddings
-    }
+//    func getKeywordsSimilarityScores(keywords: [String]) { //
+//        var keywordPairs: [[String]] = []
+//        var keywordPairsScores: [Float] = []
+//        var keywordsTotalScores: [(keyword: String, score: Float)] = []
+//
+//        let keywordsEmbeddings = getKeywordsEmbeddings(keywords: keywords)
+//
+//        for keyword in keywords {
+//            let keywordIndex = keywords.firstIndex(of: keyword)
+//            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
+//            var keywordTotalScore: Float = 0
+//            for index in 0..<keywords.count {
+//                let otherKeywordEmbedding = keywordsEmbeddings[index]
+//                if keyword != keywords[index] {
+//                    keywordPairs.append([keyword, keywords[index]])
+//                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+//                    keywordTotalScore += score
+//                    keywordPairsScores.append(score)
+//                }
+//            }
+//            keywordsTotalScores.append((keyword, keywordTotalScore))
+//        }
+//        keywordsTotalScores = keywordsTotalScores.sorted { $0.1 > $1.1 }
+//        let filteredKeywords = keywordsTotalScores.map { $0.0 }
+//        print(keywordsTotalScores)
+//        print(filteredKeywords.prefix(5))
+//    }
+//
+//    func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
+//        var keywordsEmbeddings: [[Float]] = []
+//        for keyword in keywords {
+//            let keywordEmbedding = self.bert.getTextEmbedding(text: keyword)
+//            keywordsEmbeddings.append(keywordEmbedding)
+//        }
+//        return keywordsEmbeddings
+//    }
     
 
     

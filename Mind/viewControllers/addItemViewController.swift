@@ -29,9 +29,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
     // Actions
     @IBAction func sendButtonTouchDownInside(_ sender: Any) {
         saveNewItem()
-        UserDefaults.standard.set("", forKey: "Draft")
-        UserDefaults.standard.synchronize()
-        performSegue(withIdentifier: "unwindToHome", sender: self)
+        emptyDraftData()
     }
     @IBAction func sendButtonTouchDown(_ sender: UIButton) {
         sender.animateButtonDown()
@@ -63,9 +61,11 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         // sendButton initial setup
         sendButton.layer.cornerRadius = sendButton.frame.size.height / 2.0
         sendButton.clipsToBounds = true
-        sendButton.isEnabled = false
-        sendButton.isHidden = true
-        sendButton.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
+        if isTextInputNotEmpty(textView: textInputView) {
+            sendButton.show()
+        } else {
+            sendButton.hide()
+        }
     }
     
     
@@ -83,8 +83,10 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
+        let itemCreation = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
+            
+            print("generating embedding for item...")
         
             var keywords = getKeywords(from: entryText, count: 6)
             keywords = Normalize.getNouns(keywords)
@@ -100,59 +102,70 @@ class addItemViewController: UIViewController, UITextViewDelegate {
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
             }
         }
+        itemCreation.notify(queue: .main) {
+            print("item created!")
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "newItemCreated"),
+            object: nil)
+        }
     }
     
-        // Handle keyboard appearence
-        @objc private func handle(keyboardShowNotification notification: Notification) {
-            if let userInfo = notification.userInfo,
-                let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                textInputViewBC.constant = keyboardFrame.height + 60
-                sendButtonBC.constant = keyboardFrame.height + 18
-            }
+    // Handle keyboard appearence
+    @objc private func handle(keyboardShowNotification notification: Notification) {
+        if let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+            textInputViewBC.constant = keyboardFrame.height + 60
+            sendButtonBC.constant = keyboardFrame.height + 18
         }
-    
-        @objc private func handle(keyboardHideNotification notification: Notification) {
-            if let userInfo = notification.userInfo,
-                let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                sendButtonBC.constant = -keyboardFrame.height - 18
-            }
-        }
-    
-        // Check for text limit
-        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-            let newText = (textInputView!.text as NSString).replacingCharacters(in: range, with: text)
-            let numberOfChars = newText.count
-            if numberOfChars > 1499 {
-                let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 character length.", preferredStyle: .alert)
+    }
 
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+    @objc private func handle(keyboardHideNotification notification: Notification) {
+        if let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+            sendButtonBC.constant = -keyboardFrame.height - 18
+        }
+    }
 
-                self.present(alert, animated: true)
-            }
-            return numberOfChars < 1500
+    // Check for text limit
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        let newText = (textInputView!.text as NSString).replacingCharacters(in: range, with: text)
+        let numberOfChars = newText.count
+        if numberOfChars > 1499 {
+            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+
+            self.present(alert, animated: true)
         }
+        return numberOfChars < 1500
+    }
+
+
+    func textViewDidChange(_ textView: UITextView) {
+        if isTextInputNotEmpty(textView: textInputView) {
+            UserDefaults.standard.set(textInputView!.text, forKey: "Draft")
+            UserDefaults.standard.synchronize()
+            sendButton.show()
+        } else {
+            UserDefaults.standard.set("", forKey: "Draft")
+            UserDefaults.standard.synchronize()
+            sendButton.hide()
+        }
+    }
     
     
-        func textViewDidChange(_ textView: UITextView) {
-            if isTextInputNotEmpty(textView: textInputView) {
-                UserDefaults.standard.set(textInputView!.text, forKey: "Draft")
-                UserDefaults.standard.synchronize()
-                sendButton.show()
-            } else {
-                UserDefaults.standard.set("", forKey: "Draft")
-                UserDefaults.standard.synchronize()
-                sendButton.hide()
-            }
+    func isTextInputNotEmpty(textView: UITextView) -> Bool {
+        guard let text = textView.text,
+            !text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty else {
+            return false
         }
-        
-        
-        func isTextInputNotEmpty(textView: UITextView) -> Bool {
-            guard let text = textView.text,
-                !text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty else {
-                return false
-            }
-            return true
-        }
+        return true
+    }
+    
+    func emptyDraftData() {
+        UserDefaults.standard.set("", forKey: "Draft")
+        UserDefaults.standard.synchronize()
+    }
 
     
 }
