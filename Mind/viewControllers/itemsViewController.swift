@@ -73,13 +73,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if pressedKeyword.title != "all" {
             sender.isSelected = true
             selectedKeyword = (title: keywordTitle, path: keywordPath)
-            keywordsCollectionView.reloadData()
             fetchDataForSelectedKeyword()
+            keywordsCollectionView.reloadData()
         } else if pressedKeyword.title == "all" {
-//            searchBar.text = ""
-//            fetchData()
-//            keywordsCollection = [selectedAllKeyword.title]
+            sender.isSelected = true
             selectedKeyword = selectedAllKeyword
+            keywordsCollectionView.reloadData()
+            
+            if !searchBar.text!.isEmpty {
+                fetchData()
+                items = self.getSimilarItems(text: searchBar.text!)
+                tableView.reloadData()
+            } else {
+                fetchData()
+            }
+        
         } else {
             sender.isSelected = false
             keywordsCollectionView.reloadData()
@@ -378,8 +386,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     // MARK: - Get similar items
     func getSimilarItems(item: Item? = nil, text: String = "") -> [Item] {
-        var selectedItemEmbedding: [Float] = []
         
+        var selectedItemEmbedding: [Float] = []
         var similarItems: [Item] = []
         var scores: [Float] = []
         
