@@ -29,6 +29,8 @@ class addItemViewController: UIViewController, UITextViewDelegate {
     // Actions
     @IBAction func sendButtonTouchDownInside(_ sender: Any) {
         saveNewItem()
+        UserDefaults.standard.set("", forKey: "Draft")
+        UserDefaults.standard.synchronize()
         performSegue(withIdentifier: "unwindToHome", sender: self)
     }
     @IBAction func sendButtonTouchDown(_ sender: UIButton) {
@@ -54,6 +56,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         object: nil)
     
         // textInput initial setup
+        textInputView.text = UserDefaults.standard.value(forKey:"Draft") as? String
         textInputView.delegate = self
         textInputView.tintColor = UIColor(named: "content")
         
@@ -114,13 +117,30 @@ class addItemViewController: UIViewController, UITextViewDelegate {
                 sendButtonBC.constant = -keyboardFrame.height - 18
             }
         }
-  
     
-        // Check if textInput is empty
+        // Check for text limit
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+            let newText = (textInputView!.text as NSString).replacingCharacters(in: range, with: text)
+            let numberOfChars = newText.count
+            if numberOfChars > 1499 {
+                let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 character length.", preferredStyle: .alert)
+
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+
+                self.present(alert, animated: true)
+            }
+            return numberOfChars < 1500
+        }
+    
+    
         func textViewDidChange(_ textView: UITextView) {
             if isTextInputNotEmpty(textView: textInputView) {
+                UserDefaults.standard.set(textInputView!.text, forKey: "Draft")
+                UserDefaults.standard.synchronize()
                 sendButton.show()
             } else {
+                UserDefaults.standard.set("", forKey: "Draft")
+                UserDefaults.standard.synchronize()
                 sendButton.hide()
             }
         }
