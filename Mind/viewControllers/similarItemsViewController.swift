@@ -16,14 +16,21 @@ class similarItemsViewController: UIViewController, UITextViewDelegate, UITableV
     
     // Outlets
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var itemTextLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        itemTextLabel.text = item.content
+        itemTextLabel.textColor = UIColor(named: "content2")
 
-        // tableView initial setup
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        
+        if similarItems == [] {
+            addPlaceholderLabel()
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -99,6 +106,23 @@ extension similarItemsViewController: UICollectionViewDelegate, UICollectionView
         cell.keywordButton.setTitle(text, for: .normal)
         
         return cell
+    }
+    
+    func addPlaceholderLabel() {
+        let placeholderLabel = UILabel()
+        placeholderLabel.textAlignment = .center
+        
+        placeholderLabel.text = "Similar not found"
+        placeholderLabel.textColor = UIColor(named: "content2")
+        placeholderLabel.numberOfLines = 0
+        placeholderLabel.sizeToFit()
+        placeholderLabel.lineBreakMode = .byWordWrapping
+        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(placeholderLabel)
+        
+        placeholderLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        placeholderLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
     }
     
 }
