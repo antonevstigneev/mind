@@ -182,6 +182,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
+        if items.count == 0 {
+            keywordsCollectionView.isHidden = true
+            addPlaceholderLabel()
+        } else {
+            keywordsCollectionView.isHidden = false
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -251,46 +257,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         alertController.addAction(deleteAction)
         self.present(alertController, animated: true, completion: nil)
     }
-    
-    
-//    func getKeywordsSimilarityScores(keywords: [String]) { //
-//        var keywordPairs: [[String]] = []
-//        var keywordPairsScores: [Float] = []
-//        var keywordsTotalScores: [(keyword: String, score: Float)] = []
-//
-//        let keywordsEmbeddings = getKeywordsEmbeddings(keywords: keywords)
-//
-//        for keyword in keywords {
-//            let keywordIndex = keywords.firstIndex(of: keyword)
-//            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
-//            var keywordTotalScore: Float = 0
-//            for index in 0..<keywords.count {
-//                let otherKeywordEmbedding = keywordsEmbeddings[index]
-//                if keyword != keywords[index] {
-//                    keywordPairs.append([keyword, keywords[index]])
-//                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-//                    keywordTotalScore += score
-//                    keywordPairsScores.append(score)
-//                }
-//            }
-//            keywordsTotalScores.append((keyword, keywordTotalScore))
-//        }
-//        keywordsTotalScores = keywordsTotalScores.sorted { $0.1 > $1.1 }
-//        let filteredKeywords = keywordsTotalScores.map { $0.0 }
-//        print(keywordsTotalScores)
-//        print(filteredKeywords.prefix(5))
-//    }
-//
-//    func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
-//        var keywordsEmbeddings: [[Float]] = []
-//        for keyword in keywords {
-//            let keywordEmbedding = self.bert.getTextEmbedding(text: keyword)
-//            keywordsEmbeddings.append(keywordEmbedding)
-//        }
-//        return keywordsEmbeddings
-//    }
-    
-
     
     
     // MARK: - Items Table View
@@ -440,8 +406,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     // MARK: - Search
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText != "" {
-            fetchData()
-            defaultKeywordsCollectionView()
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(itemsViewController.reloadSearch), object: nil)
             self.perform(#selector(itemsViewController.reloadSearch), with: nil, afterDelay: 1.0)
         } else {
@@ -457,7 +421,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             performSimilaritySearch(searchText)
         } else {
             fetchData()
-            defaultKeywordsCollectionView()
         }
     }
 
@@ -539,6 +502,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let topKeywords = sortedCounts.prefix(10).map { $0.key }
 
         return topKeywords
+    }
+    
+    func addPlaceholderLabel() {
+        let placeholderLabel = UILabel()
+        placeholderLabel.textAlignment = .center
+        
+        placeholderLabel.text = "What is on your mind?"
+        placeholderLabel.textColor = UIColor(named: "content2")
+        placeholderLabel.numberOfLines = 0
+        placeholderLabel.sizeToFit()
+        placeholderLabel.lineBreakMode = .byWordWrapping
+        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(placeholderLabel)
+        
+        placeholderLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        placeholderLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
     }
     
     

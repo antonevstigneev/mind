@@ -279,7 +279,7 @@
                                 </connections>
                             </button>
                             <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A5K-qL-s42">
-                                <rect key="frame" x="0.0" y="101.5" width="414" height="740.5"/>
+                                <rect key="frame" x="0.0" y="101" width="414" height="741"/>
                                 <color key="backgroundColor" name="background"/>
                                 <color key="separatorColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 <inset key="separatorInset" minX="12" minY="0.0" maxX="12" maxY="0.0"/>
@@ -364,7 +364,7 @@
                                 </prototypes>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fC6-H5-dEX">
-                                <rect key="frame" x="20" y="61" width="374" height="24.5"/>
+                                <rect key="frame" x="20" y="61" width="374" height="24"/>
                                 <attributedString key="attributedText">
                                     <fragment content="Item">
                                         <attributes>
