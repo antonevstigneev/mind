@@ -101,7 +101,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.reloadData()
     }
     
-    
     // Timer
     var timer: Timer?
 
@@ -197,6 +196,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func refreshTableView(_ sender: Any) {
         fetchData()
+        searchBar.text = ""
         refreshControl.endRefreshing()
     }
 
@@ -300,8 +300,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let destinationVC = segue.destination as? editItemViewController
-        destinationVC!.item = self.item
+        if let destinationVC = segue.destination as? editItemViewController {
+            destinationVC.item = self.item
+        }
     }
     
     
