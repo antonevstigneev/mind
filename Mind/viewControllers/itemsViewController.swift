@@ -32,7 +32,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var mostFrequentKeywords: [String] = []
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
-    
+    var isShuffleEnabled: Bool = false
     
     // MARK: - Outlets
     @IBOutlet weak var timeLabel: UILabel!
@@ -54,6 +54,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     @IBAction func plusButtonTouchUpOutside(_ sender: UIButton) {
         plusButton.animateButtonUp()
+    }
+    
+    @IBAction func shuffleButtonTouchUpInside(_ sender: UIButton) {
+        if isShuffleEnabled == false {
+            items.shuffle()
+            tableView.reloadData()
+            tableView.show()
+            sender.tintColor = UIColor(named: "content")
+            isShuffleEnabled = true
+        } else {
+            fetchData()
+            tableView.show()
+            sender.tintColor = UIColor(named: "content2")
+            isShuffleEnabled = false
+        }
     }
     
     @IBAction func keywordButtonTouchUpInside(_ sender: UIButton) {
