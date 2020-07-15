@@ -211,12 +211,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
        let similar = UIAction(title: "Similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
-            self.performSegue(withIdentifier: "toSimilarItemsViewController", sender: (Any).self)
+            self.findSimilarItems(for: self.item)
        }
        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
-            print(self.item.keywords)
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
@@ -245,7 +244,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
 
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { (action:UIAlertAction) in
-
             let item = self.items[indexPath.row]
             self.context.delete(item)
             self.items.remove(at: indexPath.row)
@@ -302,13 +300,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destinationVC = segue.destination as? editItemViewController {
-            destinationVC.item = self.item
-        }
-        if let destinationVC = segue.destination as? similarItemsViewController {
-            destinationVC.item = self.item
-            destinationVC.similarItems = self.getSimilarItems(item: self.item)
-        }
+        let destinationVC = segue.destination as? editItemViewController
+        destinationVC!.item = self.item
     }
     
     
@@ -447,14 +440,18 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    
+    func findSimilarItems(for item: Item!) {
+        searchBar.text = item.content!
+        reloadSearch()
+    }
+    
+    
     func animateTableView() {
-        
         if self.items.isEmpty == false {
             self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
-        
         self.tableView.alpha = 0
-
         UIView.animate(withDuration: 0.35, delay: 0.05, options: [.curveEaseInOut], animations: {
             self.tableView.alpha = 1
         }, completion: nil)
