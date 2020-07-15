@@ -260,6 +260,7 @@
                         <outlet property="keywordsCollectionView" destination="rF0-BS-cuF" id="u1z-z1-j2q"/>
                         <outlet property="plusButton" destination="H1s-10-s5C" id="Egw-i5-9xV"/>
                         <outlet property="searchBar" destination="ZgX-5S-WBX" id="7kV-tK-0Yx"/>
+                        <outlet property="shuffleButton" destination="qv9-Lq-1Ll" id="RJW-JD-Cas"/>
                         <outlet property="tableView" destination="kZQ-Zu-1em" id="YMd-D0-7by"/>
                         <outlet property="tableViewBC" destination="vtV-rb-gnd" id="Q0O-gp-z6l"/>
                         <outlet property="timeLabel" destination="kAK-6l-cBJ" id="Hbt-qa-VF5"/>

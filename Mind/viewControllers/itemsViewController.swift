@@ -39,6 +39,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
+    @IBOutlet weak var shuffleButton: UIButton!
     @IBOutlet weak var keywordsCollectionView: UICollectionView!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
@@ -111,6 +112,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             reloadSearch()
         }
         self.tableView.show()
+        shuffleButton.tintColor = UIColor(named: "content2")
+        isShuffleEnabled = false
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
