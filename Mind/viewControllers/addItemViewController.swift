@@ -169,28 +169,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
 }
 
 
-// MARK: - UIButton Show/Hide
-public extension UIButton {
 
-    func show() {
-        self.isHidden = false
-        self.isEnabled = true
-        UIView.animate(withDuration: 0.1, delay: 0, usingSpringWithDamping: 1.5, initialSpringVelocity: 2, options: [.allowUserInteraction, .curveEaseInOut], animations: {
-            self.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
-        }, completion: nil)
-        UIView.animate(withDuration: 0.2, delay: 0, usingSpringWithDamping: 1.5, initialSpringVelocity: 2, options: [.allowUserInteraction, .curveEaseInOut], animations: {
-            self.alpha = 1
-        }, completion: nil)
-    }
-    
-    func hide() {
-        self.isHidden = false
-        self.isEnabled = false
-        UIView.animate(withDuration: 0.2, delay: 0, usingSpringWithDamping: 1.5, initialSpringVelocity: 2, options: [.allowUserInteraction, .curveEaseInOut], animations: {
-            self.alpha = 0.0
-        }, completion: nil)
-    }
-}
 
 
 

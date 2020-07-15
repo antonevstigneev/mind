@@ -93,7 +93,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             keywordsCollectionView.reloadData()
             reloadSearch()
         }
-        self.animateTableView()
+        self.tableView.show()
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
@@ -209,7 +209,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
-       let similar = UIAction(title: "Similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
+       let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
             self.findSimilarItems(for: self.item)
        }
@@ -334,6 +334,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
          do {
+            self.tableView.hide()
             self.showSpinner()
             var itemsWithSelectedKeyword: [Item] = []
              items = try context.fetch(request)
@@ -344,8 +345,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
              }
              DispatchQueue.main.async {
                 self.items = itemsWithSelectedKeyword
-                self.animateTableView()
                 self.tableView.reloadData()
+                self.tableView.show()
                 self.removeSpinner()
              }
          } catch {
@@ -360,6 +361,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         var selectedItemEmbedding: [Float] = []
         var similarItems: [Item] = []
         var scores: [Float] = []
+        var topSimilarItems: [Item] = []
         
         if text != "" {
             selectedItemEmbedding = self.bert.getTextEmbedding(text: text)
@@ -375,7 +377,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
         
-        var topSimilarItems: [Item] = []
         if sortedSimilarItems.count > 5 {
             for i in 1...6 {
                 topSimilarItems.append(sortedSimilarItems[i])
@@ -387,7 +388,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } else {
             topSimilarItems = []
         }
-
+        
         return topSimilarItems
     }
     
@@ -411,7 +412,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func reloadSearch() {
         guard let searchText = searchBar.text else { return }
-        
         if !searchText.isEmpty {
             performSimilaritySearch(searchText)
         } else {
@@ -424,6 +424,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
         
+        self.tableView.hide()
+        self.keywordsCollectionView.hide()
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
@@ -431,11 +433,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             suggestedKeywords = self.getSuggestedKeywords(similarItems)
             
             DispatchQueue.main.async {
-
                 self.showSuggestedKeywords(suggestedKeywords)
                 self.items = similarItems
                 self.tableView.reloadData()
-                self.animateTableView()
+                self.tableView.show()
+                self.keywordsCollectionView.show()
                 self.removeSpinner()
             }
         }
@@ -444,18 +446,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func findSimilarItems(for item: Item!) {
         searchBar.text = item.content!
-        reloadSearch()
-    }
-    
-    
-    func animateTableView() {
+        fetchData()
+        performSimilaritySearch(searchBar.text!)
         if self.items.isEmpty == false {
             self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
-        self.tableView.alpha = 0
-        UIView.animate(withDuration: 0.35, delay: 0.05, options: [.curveEaseInOut], animations: {
-            self.tableView.alpha = 1
-        }, completion: nil)
     }
     
     func getSuggestedKeywords(_ similarItems: [Item]) -> [String] {
