@@ -111,7 +111,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             keywordsCollectionView.reloadData()
             reloadSearch()
         }
-        self.tableView.show()
+        tableView.show()
         shuffleButton.tintColor = UIColor(named: "content2")
         isShuffleEnabled = false
     }
@@ -445,9 +445,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
-        
-        self.tableView.hide()
-        self.keywordsCollectionView.hide()
+    
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
@@ -468,6 +466,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func findSimilarItems(for item: Item!) {
         searchBar.text = item.content!
+        tableView.hide()
+        keywordsCollectionView.hide()
         fetchData()
         performSimilaritySearch(searchBar.text!)
         scrollToTopTableView()
