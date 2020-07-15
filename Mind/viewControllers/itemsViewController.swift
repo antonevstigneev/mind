@@ -60,15 +60,17 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if isShuffleEnabled == false {
             items.shuffle()
             tableView.reloadData()
-            tableView.show()
-            sender.tintColor = UIColor(named: "content")
+            sender.tintColor = UIColor(named: "buttonBackground")
             isShuffleEnabled = true
         } else {
             fetchData()
-            tableView.show()
             sender.tintColor = UIColor(named: "content2")
             isShuffleEnabled = false
         }
+        tableView.show()
+        keywordsCollectionView.show()
+        defaultKeywordsCollectionView()
+        scrollToTopTableView()
     }
     
     @IBAction func keywordButtonTouchUpInside(_ sender: UIButton) {
@@ -197,9 +199,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         if items.count == 0 {
-            keywordsCollectionView.isHidden = true
             addPlaceholderLabel()
+            searchBar.isHidden = true
+            keywordsCollectionView.isHidden = true
         } else {
+            searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
         }
     }
@@ -463,9 +467,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         searchBar.text = item.content!
         fetchData()
         performSimilaritySearch(searchBar.text!)
-        if self.items.isEmpty == false {
-            self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
-        }
+        scrollToTopTableView()
     }
     
     func getSuggestedKeywords(_ similarItems: [Item]) -> [String] {
@@ -513,6 +515,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return topKeywords
     }
     
+    func getRandomKeywords() -> [String] {
+        var allKeywords: [String] = []
+        
+        for item in items {
+            if item.keywords != nil {
+                for keyword in item.keywords! {
+                    allKeywords.append(keyword)
+                }
+            }
+        }
+        
+        let shuffledKeywords = allKeywords.shuffled()
+        let topShuffledKeywords = shuffledKeywords.prefix(10).map { $0 }
+        
+        return topShuffledKeywords
+    }
+    
     func addPlaceholderLabel() {
         let placeholderLabel = UILabel()
         placeholderLabel.textAlignment = .center
@@ -528,6 +547,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         placeholderLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         placeholderLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+    }
+    
+    func scrollToTopTableView() {
+        if self.items.isEmpty == false {
+            self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+        }
     }
     
     
@@ -576,7 +601,11 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
     
     @objc func defaultKeywordsCollectionView() {
         keywordsCollection = [selectedAllKeyword.title]
-        mostFrequentKeywords = getMostFrequentKeywords()
+        if isShuffleEnabled {
+            mostFrequentKeywords = getRandomKeywords()
+        } else {
+            mostFrequentKeywords = getMostFrequentKeywords()
+        }
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
