@@ -44,13 +44,12 @@ extension Keyword {
         return text.lowercased()
             .components(separatedBy: CharacterSet.letters.inverted)
     }
+}
 
-    func removeShortWords(_ word: String) -> Bool {
-        return word.count > 2
-    }
+public func removeShortWords(_ word: String) -> Bool {
+    return word.count > 2
+}
 
-    func removeStopWords(_ word: String) -> Bool {
-        return !stopwords.contains(word)
-    }
-    
+public func removeStopWords(_ word: String) -> Bool {
+    return !stopwords.contains(word)
 }

@@ -69,17 +69,21 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
-        DispatchQueue.global(qos: .userInitiated).async {
-            var keywords = getKeywords(from: entryText, count: 6)
-            keywords = Normalize.getNouns(keywords)
+        let itemEditing = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
             
             self.item.content = entryText
-            self.item.keywords = keywords
+            self.item.keywords = getKeywords(from: entryText, count: 8)
             self.item.embedding = self.bert.getTextEmbedding(text: entryText)
         
             DispatchQueue.main.async {
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
             }
+        }
+        itemEditing.notify(queue: .main) {
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "newItemCreated"),
+            object: nil)
         }
     }
     

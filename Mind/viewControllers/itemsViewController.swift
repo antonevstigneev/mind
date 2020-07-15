@@ -216,6 +216,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
+            print(self.item.keywords)
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
@@ -604,7 +605,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             let text = item.keywords![indexPath.row]
             let cellWidth = text.size(withAttributes:[.font: UIFont.FiraMono(.regular, size: 16)]).width + 20
             let cellHeight = CGFloat(26.0)
-        
+
             return CGSize(width: cellWidth, height: cellHeight)
         }
     }

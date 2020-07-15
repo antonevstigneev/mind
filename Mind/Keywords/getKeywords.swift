@@ -5,7 +5,15 @@ import NaturalLanguage
 fileprivate let bert = BERT()
 
 public func getKeywords(from text: String, count: Int) -> [String] {
-    return text.keywords.slice(length: count)
+    var keywords = text.keywords.slice(length: count)
+    keywords = Normalize.getNouns(keywords)
+    
+    if keywords == [] {
+        keywords = Keyword.preprocess(text)
+                  .filter(removeShortWords)
+    }
+    
+    return keywords
 }
 
 public extension String {

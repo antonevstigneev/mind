@@ -85,17 +85,12 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         }
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
-            
-            print("generating embedding for item...")
-        
-            var keywords = getKeywords(from: entryText, count: 6)
-            keywords = Normalize.getNouns(keywords)
 
             let newEntry = Item(context: self.context)
             newEntry.id = UUID()
             newEntry.content = entryText
             newEntry.timestamp = Date().current
-            newEntry.keywords = keywords
+            newEntry.keywords = getKeywords(from: entryText, count: 8)
             newEntry.embedding = self.bert.getTextEmbedding(text: entryText)
             
             DispatchQueue.main.async {
@@ -103,7 +98,6 @@ class addItemViewController: UIViewController, UITextViewDelegate {
             }
         }
         itemCreation.notify(queue: .main) {
-            print("item created!")
             NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "newItemCreated"),
             object: nil)
@@ -162,11 +156,15 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         return true
     }
     
+    
     func emptyDraftData() {
         UserDefaults.standard.set("", forKey: "Draft")
         UserDefaults.standard.synchronize()
     }
-
+    
+    func removeShortWords(_ word: String) -> Bool {
+        return word.count > 2
+    }
     
 }
 
