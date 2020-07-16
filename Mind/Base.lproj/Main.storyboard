@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SGi-zd-M47">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SGi-zd-M47">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -235,6 +235,12 @@
                                 <color key="textColor" name="content2"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="What’s on your mind?" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tW3-Az-XE2">
+                                <rect key="frame" x="124" y="437.5" width="166" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" name="content2"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" name="background"/>
                         <constraints>
@@ -244,8 +250,10 @@
                             <constraint firstItem="kZQ-Zu-1em" firstAttribute="leading" secondItem="SHC-ME-RJP" secondAttribute="leading" id="H7s-WI-UhY"/>
                             <constraint firstItem="ImK-aC-Hhf" firstAttribute="top" secondItem="Xvu-An-mu8" secondAttribute="top" constant="16" id="JQZ-NP-iMI"/>
                             <constraint firstAttribute="bottom" secondItem="H1s-10-s5C" secondAttribute="bottom" constant="24" id="Miq-a4-QJc"/>
+                            <constraint firstItem="tW3-Az-XE2" firstAttribute="centerY" secondItem="Xvu-An-mu8" secondAttribute="centerY" id="bF8-me-9F0"/>
                             <constraint firstItem="kAK-6l-cBJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ImK-aC-Hhf" secondAttribute="trailing" constant="8" symbolic="YES" id="bm6-C0-Uph"/>
                             <constraint firstItem="ImK-aC-Hhf" firstAttribute="leading" secondItem="Xvu-An-mu8" secondAttribute="leading" constant="26" id="f1q-xU-tPS"/>
+                            <constraint firstItem="tW3-Az-XE2" firstAttribute="centerX" secondItem="Xvu-An-mu8" secondAttribute="centerX" id="isO-EV-9NG"/>
                             <constraint firstItem="kAK-6l-cBJ" firstAttribute="top" secondItem="Xvu-An-mu8" secondAttribute="top" constant="16" id="kio-cI-GUo"/>
                             <constraint firstAttribute="trailing" secondItem="kAK-6l-cBJ" secondAttribute="trailing" constant="26" id="mYq-NQ-RYF"/>
                             <constraint firstAttribute="trailing" secondItem="H1s-10-s5C" secondAttribute="trailing" constant="24" id="tKL-so-i5V"/>
@@ -257,6 +265,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="WLs-fa-dBc"/>
                     <connections>
+                        <outlet property="emptyPlaceholderLabel" destination="tW3-Az-XE2" id="TwT-07-coe"/>
                         <outlet property="headerView" destination="SHC-ME-RJP" id="16Y-Dn-3eN"/>
                         <outlet property="keywordsCollectionView" destination="rF0-BS-cuF" id="u1z-z1-j2q"/>
                         <outlet property="mindLabel" destination="ImK-aC-Hhf" id="u6g-Xg-wLY"/>

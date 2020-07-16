@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>Production</string>
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>
@@ -15,6 +15,11 @@
 	<key>com.apple.developer.icloud-services</key>
 	<array>
 		<string>CloudKit</string>
+	</array>
+	<key>com.apple.developer.user-fonts</key>
+	<array>
+		<string>app-usage</string>
+		<string>system-installation</string>
 	</array>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>

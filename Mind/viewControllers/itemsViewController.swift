@@ -33,6 +33,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
     var isShuffleEnabled: Bool = false
+    var refreshControl: UIRefreshControl!
     
     
     // MARK: - Outlets
@@ -45,7 +46,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var keywordsCollectionView: UICollectionView!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
-    
+    @IBOutlet weak var emptyPlaceholderLabel: UILabel!
     
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
@@ -71,7 +72,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             isShuffleEnabled = false
         }
         tableView.show()
-        keywordsCollectionView.show()
         defaultKeywordsCollectionView()
         scrollToTopTableView()
     }
@@ -133,53 +133,25 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tmpFormatter.dateFormat = "HH:mm"
         return tmpFormatter
     }()
-    
-    
-    var refreshControl: UIRefreshControl!
-    
+
     
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         #if targetEnvironment(macCatalyst)
         timeLabel.isHidden = true
         mindLabel.isHidden = true
         #endif
         
         timer = Timer.scheduledTimer(timeInterval: 30,
-                target: self,
-                selector: #selector(self.getTimeOfDate),
-                userInfo: nil, repeats: true)
-        
-        setupNotifications()
-        
-        // time initial setup
+        target: self,
+        selector: #selector(self.getTimeOfDate),
+        userInfo: nil, repeats: true)
         timeLabel.text = formatter.string(from: Date())
         
-        // searchBar initial setup
-        searchBar.delegate = self
-        UISearchBar.appearance().setSearchFieldBackgroundImage(UIImage(), for: .normal)
-        
-        // keywords collection initial setup
-        keywordsCollectionView.delegate = self
-        keywordsCollectionView.dataSource = self
-        defaultKeywordsCollectionView()
-        
-        // tableView initial setup
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.rowHeight = UITableView.automaticDimension
-        refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(refreshTableView), for: .valueChanged)
-        tableView.addSubview(refreshControl)
-        
-        // plusButton initial setup
-        plusButton.layer.masksToBounds = true
-        plusButton.layer.cornerRadius = plusButton.frame.size.height / 2
-        
-        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
-        view.addGestureRecognizer(tapGesture)
+        setupNotifications()
+        setupViews()
     }
 
     override func viewDidLayoutSubviews() {
@@ -192,8 +164,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
+        selector: #selector(updateHeaderView),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
         selector: #selector(defaultKeywordsCollectionView),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
@@ -212,15 +189,35 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         object: nil)
     }
     
+    func setupViews() {
+        // searchBar initial setup
+        searchBar.delegate = self
+        UISearchBar.appearance().setSearchFieldBackgroundImage(UIImage(), for: .normal)
+        
+        // keywords collection initial setup
+        keywordsCollectionView.delegate = self
+        keywordsCollectionView.dataSource = self
+        
+        // tableView initial setup
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshTableView), for: .valueChanged)
+        tableView.addSubview(refreshControl)
+        
+        // plusButton initial setup
+        plusButton.layer.masksToBounds = true
+        plusButton.layer.cornerRadius = plusButton.frame.size.height / 2
+        
+        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-        if items.count == 0 {
-            addPlaceholderLabel()
-            searchBar.isHidden = true
-            keywordsCollectionView.isHidden = true
-        } else {
-            searchBar.isHidden = false
-            keywordsCollectionView.isHidden = false
+        updateHeaderView()
+        if items.count > 0 {
             defaultKeywordsCollectionView()
         }
     }
@@ -234,6 +231,20 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         fetchData()
         searchBar.text = ""
         refreshControl.endRefreshing()
+    }
+    
+    @objc func updateHeaderView() {
+        if items.count > 0 {
+            searchBar.isHidden = false
+            keywordsCollectionView.isHidden = false
+            shuffleButton.isHidden = false
+            emptyPlaceholderLabel.isHidden = true
+        } else {
+            searchBar.isHidden = true
+            keywordsCollectionView.isHidden = true
+            shuffleButton.isHidden = true
+            emptyPlaceholderLabel.isHidden = false
+        }
     }
 
     
@@ -361,7 +372,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
             itemsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "allItemsLoaded"),
+                NSNotification.Name(rawValue: "itemsLoaded"),
                 object: nil)
             }
         } catch {
@@ -386,6 +397,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
              DispatchQueue.main.async {
                 self.items = itemsWithSelectedKeyword
                 self.tableView.reloadData()
+                self.scrollToTopTableView()
                 self.tableView.show()
                 self.removeSpinner()
              }
