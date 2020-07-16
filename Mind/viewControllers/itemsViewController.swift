@@ -83,6 +83,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         keywordsCollection.append(self.selectedKeyword!.title)
         keywordsCollectionView.reloadData()
         fetchDataForSelectedKeyword()
+        shuffleButton.isEnabled = false
     }
     
     @IBAction func keywordsCollectionViewTouchUpInside(_ sender: UIButton) {
@@ -95,6 +96,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             selectedKeyword = (title: keywordTitle, path: keywordPath)
             fetchDataForSelectedKeyword()
             keywordsCollectionView.reloadData()
+            shuffleButton.isEnabled = false
         } else if pressedKeyword.title == "all" {
             sender.isSelected = true
             selectedKeyword = selectedAllKeyword
@@ -107,7 +109,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 fetchData()
                 defaultKeywordsCollectionView()
             }
-        
+            shuffleButton.isEnabled = true
         } else {
             sender.isSelected = false
             keywordsCollectionView.reloadData()
@@ -150,25 +152,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 selector: #selector(self.getTimeOfDate),
                 userInfo: nil, repeats: true)
         
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(defaultKeywordsCollectionView),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
+        setupNotifications()
         
         // time initial setup
         timeLabel.text = formatter.string(from: Date())
@@ -206,6 +190,28 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         searchBar.setPlaceholderTextColorTo(color: UIColor(named: "content2")!)
     }
     
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(defaultKeywordsCollectionView),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(fetchData),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         if items.count == 0 {
@@ -216,7 +222,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
             defaultKeywordsCollectionView()
-            getItemsSimilarityScores()             // just for testing, remove later //
         }
     }
     
