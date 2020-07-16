@@ -98,7 +98,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } else if pressedKeyword.title == "all" {
             sender.isSelected = true
             selectedKeyword = selectedAllKeyword
-            keywordsCollectionView.reloadData()
             
             if !searchBar.text!.isEmpty {
                 fetchData()
@@ -106,6 +105,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 tableView.reloadData()
             } else {
                 fetchData()
+                defaultKeywordsCollectionView()
             }
         
         } else {
@@ -677,6 +677,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
+        keywordsCollectionView.show()
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
