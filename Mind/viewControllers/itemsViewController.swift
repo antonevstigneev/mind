@@ -35,6 +35,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isShuffleEnabled: Bool = false
     
     // MARK: - Outlets
+    @IBOutlet weak var mindLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
@@ -137,6 +138,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        #if targetEnvironment(macCatalyst)
+        timeLabel.isHidden = true
+        mindLabel.isHidden = true
+        #endif
         
         timer = Timer.scheduledTimer(timeInterval: 30,
                 target: self,
@@ -804,6 +810,15 @@ extension UIImage {
 
         return img
     }
+}
+
+extension UIView {
+    #if targetEnvironment(macCatalyst)
+    @objc(_focusRingType)
+    var focusRingType: UInt {
+        return 1
+    }
+    #endif
 }
 
 
