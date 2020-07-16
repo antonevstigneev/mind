@@ -82,7 +82,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         }
         itemEditing.notify(queue: .main) {
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "newItemCreated"),
+            NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
     }

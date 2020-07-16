@@ -34,6 +34,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedKeyword: (title: String, path: Int)? = nil
     var isShuffleEnabled: Bool = false
     
+    
     // MARK: - Outlets
     @IBOutlet weak var mindLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
@@ -151,12 +152,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(defaultKeywordsCollectionView),
-        name: NSNotification.Name(rawValue: "allItemsLoaded"),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "newItemCreated"),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
@@ -214,6 +215,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } else {
             searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
+            defaultKeywordsCollectionView()
+            getItemsSimilarityScores()             // just for testing, remove later //
         }
     }
     
@@ -276,6 +279,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.context.delete(item)
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
+            
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"),
+            object: nil)
             
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }
@@ -505,6 +512,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.keywordsCollectionView.reloadData()
     }
     
+    func getMostRelevantKeywords() -> [String] {
+        
+        
+        return []
+    }
+    
     func getMostFrequentKeywords() -> [String] {
         var allKeywords: [String] = []
         
@@ -540,6 +553,52 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         return topShuffledKeywords
     }
+    
+    
+    
+    
+    func getItemsSimilarityScores() {
+        var itemsPairs: [[Item]] = []
+        var itemsPairsScores: [Float] = []
+        var itemsTotalScores: [(itemContent: String, score: Float)] = []
+        
+        let itemsEmbeddings = getItemsEmbeddings()
+
+        for item in items {
+            let currentItemEmbedding = item.embedding!
+            var itemTotalScore: Float = 0
+            for index in 0..<items.count {
+                let otherItemEmbedding = itemsEmbeddings[index]
+                if item != items[index] {
+                    itemsPairs.append([item, items[index]])
+                    let score = SimilarityDistance(A: currentItemEmbedding, B: otherItemEmbedding)
+                    itemTotalScore += score
+                    itemsPairsScores.append(score)
+                }
+            }
+            itemsTotalScores.append((item.content!, itemTotalScore))
+        }
+        itemsTotalScores = itemsTotalScores.sorted { $0.1 > $1.1 }
+        print("Items similarity matrix:")
+        print("\n")
+        for i in itemsTotalScores {
+            print(i.itemContent)
+            print(i.score)
+            print("\n")
+        }
+    }
+
+    func getItemsEmbeddings() -> [[Float]] {
+        var itemsEmbeddings: [[Float]] = []
+        for item in items {
+            itemsEmbeddings.append(item.embedding!)
+        }
+        return itemsEmbeddings
+    }
+    
+    
+    
+    
     
     func addPlaceholderLabel() {
         let placeholderLabel = UILabel()

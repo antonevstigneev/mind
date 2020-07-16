@@ -99,7 +99,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         }
         itemCreation.notify(queue: .main) {
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "newItemCreated"),
+            NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
     }
