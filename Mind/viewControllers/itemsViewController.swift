@@ -164,6 +164,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
+        selector: #selector(checkCloud),
+        name: NSNotification.Name(
+        rawValue: "NSPersistentStoreRemoteChangeNotification"),
+        object: persistentContainer.persistentStoreCoordinator
+        )
+        
+        NotificationCenter.default.addObserver(self,
         selector: #selector(updateHeaderView),
         name: NSNotification.Name(rawValue: "itemsLoaded"),
         object: nil)
@@ -246,6 +253,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             emptyPlaceholderLabel.isHidden = false
         }
     }
+    
+    @objc func checkCloud() {
+        if context.hasChanges &&
+           selectedKeyword?.title == "all" &&
+           searchBar.text == ""
+        
+        { fetchData() }
+    }
 
     
     // MARK: - Context menu
@@ -325,6 +340,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         paragraphStyle.lineSpacing = 1.5
         let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.FiraMono(.regular, size: 16), .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
         let mutableString = NSMutableAttributedString(string: content, attributes: regularAttributes)
+        cell.itemContentText.isSelectable = false
         
         cell.itemContentText.attributedText = mutableString
     
@@ -545,6 +561,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
             }
         }
+//        print(allKeywords)
         
         let mappedKeywords = allKeywords.map { ($0, 1) }
         let counts = Dictionary(mappedKeywords, uniquingKeysWith: +)
