@@ -37,8 +37,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Outlets
-    @IBOutlet weak var mindLabel: UILabel!
-    @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
@@ -124,32 +122,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         fetchData()
         tableView.reloadData()
     }
-    
-    // Timer
-    var timer: Timer?
-
-    let formatter: DateFormatter = {
-        let tmpFormatter = DateFormatter()
-        tmpFormatter.dateFormat = "HH:mm"
-        return tmpFormatter
-    }()
 
     
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        #if targetEnvironment(macCatalyst)
-        timeLabel.isHidden = true
-        mindLabel.isHidden = true
-        #endif
-        
-        timer = Timer.scheduledTimer(timeInterval: 30,
-        target: self,
-        selector: #selector(self.getTimeOfDate),
-        userInfo: nil, repeats: true)
-        timeLabel.text = formatter.string(from: Date())
-        
         setupNotifications()
         setupViews()
     }
@@ -231,7 +208,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        timer?.invalidate()
     }
     
     @objc func refreshTableView(_ sender: Any) {
@@ -337,8 +313,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let content = item.value(forKey: "content") as! String
         
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 1.5
-        let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.FiraMono(.regular, size: 16), .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
+        paragraphStyle.lineSpacing = 3.0
+        let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.systemFont(ofSize: 17, weight: .regular), .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
         let mutableString = NSMutableAttributedString(string: content, attributes: regularAttributes)
         cell.itemContentText.isSelectable = false
         
@@ -491,7 +467,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
-    
+        
+        tableView.hide()
+        keywordsCollectionView.hide()
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
@@ -512,8 +490,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func findSimilarItems(for item: Item!) {
         searchBar.text = item.content!
-        tableView.hide()
-        keywordsCollectionView.hide()
         fetchData()
         performSimilaritySearch(searchBar.text!)
         scrollToTopTableView()
@@ -670,10 +646,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableViewBC.constant = 0
     }
     
-    @objc func getTimeOfDate() {
-        let ticks = Date().ticks
-        timeLabel?.text = convertTime(time: ticks)
-    }
     
     func convertTimestamp(timestamp: Double) -> String {
         let x = timestamp / 1000
@@ -711,7 +683,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
-        keywordsCollectionView.show()
+//        keywordsCollectionView.show()
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -734,7 +706,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         
         if collectionView == keywordsCollectionView {
             let text = keywordsCollection[indexPath.item]
-            let cellWidth = text.size(withAttributes:[.font: UIFont.FiraMono(.regular, size: 16)]).width + 20
+            let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
             let cellHeight = CGFloat(26.0)
         
             return CGSize(width: cellWidth, height: cellHeight)
@@ -743,7 +715,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         else {
             let item = items[collectionView.tag]
             let text = item.keywords![indexPath.row]
-            let cellWidth = text.size(withAttributes:[.font: UIFont.FiraMono(.regular, size: 16)]).width + 20
+            let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
             let cellHeight = CGFloat(26.0)
 
             return CGSize(width: cellWidth, height: cellHeight)
