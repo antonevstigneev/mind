@@ -144,8 +144,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         selector: #selector(checkCloud),
         name: NSNotification.Name(
         rawValue: "NSPersistentStoreRemoteChangeNotification"),
-        object: persistentContainer.persistentStoreCoordinator
-        )
+        object: persistentContainer.persistentStoreCoordinator)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(updateHeaderView),
@@ -470,6 +469,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         tableView.hide()
         keywordsCollectionView.hide()
+        items = []
+        tableView.reloadData()
+        fetchData()
+        
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
@@ -482,6 +485,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.tableView.reloadData()
                 self.tableView.show()
                 self.keywordsCollectionView.show()
+                self.scrollToTopTableView()
                 self.removeSpinner()
             }
         }
@@ -490,9 +494,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func findSimilarItems(for item: Item!) {
         searchBar.text = item.content!
-        fetchData()
         performSimilaritySearch(searchBar.text!)
-        scrollToTopTableView()
     }
     
     func getSuggestedKeywords(_ similarItems: [Item]) -> [String] {
@@ -537,8 +539,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
             }
         }
-//        print(allKeywords)
-        
+
         let mappedKeywords = allKeywords.map { ($0, 1) }
         let counts = Dictionary(mappedKeywords, uniquingKeysWith: +)
         let sortedCounts = counts.sorted { $0.1 > $1.1 }
@@ -563,9 +564,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         return topShuffledKeywords
     }
-    
-    
-    
     
     func getItemsSimilarityScores() {
         var itemsPairs: [[Item]] = []
@@ -606,10 +604,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return itemsEmbeddings
     }
     
-    
-    
-    
-    
+
     func addPlaceholderLabel() {
         let placeholderLabel = UILabel()
         placeholderLabel.textAlignment = .center
@@ -683,7 +678,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
-//        keywordsCollectionView.show()
+        keywordsCollectionView.show()
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

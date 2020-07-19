@@ -7,11 +7,6 @@
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
-    <customFonts key="customFonts">
-        <array key="FiraMono-Regular.ttf">
-            <string>FiraMono-Regular</string>
-        </array>
-    </customFonts>
     <scenes>
         <!--Items View Controller-->
         <scene sceneID="fvA-3S-4DC">
@@ -114,21 +109,21 @@
                                     <constraint firstItem="qv9-Lq-1Ll" firstAttribute="top" secondItem="SHC-ME-RJP" secondAttribute="top" constant="-5" id="ycz-Xc-tD4"/>
                                 </constraints>
                             </view>
-                            <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kZQ-Zu-1em">
+                            <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kZQ-Zu-1em">
                                 <rect key="frame" x="0.0" y="148" width="414" height="748"/>
                                 <color key="backgroundColor" name="background"/>
                                 <gestureRecognizers/>
                                 <color key="separatorColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 <inset key="separatorInset" minX="12" minY="0.0" maxX="12" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="eh3-OJ-aoT" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="414" height="90.5"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" translatesAutoresizingMaskIntoConstraints="NO" id="eh3-OJ-aoT" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="28" width="414" height="92.5"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="eh3-OJ-aoT" id="VLQ-gI-o7I">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="90.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="92.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" text="Content" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" text="Content" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943">
                                                     <rect key="frame" x="8" y="8" width="398" height="36.5"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <color key="textColor" name="content"/>
@@ -137,7 +132,7 @@
                                                     <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                                 </textView>
                                                 <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="NxU-Ds-cex">
-                                                    <rect key="frame" x="18" y="41.5" width="378" height="28"/>
+                                                    <rect key="frame" x="18" y="43.5" width="378" height="28"/>
                                                     <color key="backgroundColor" name="background"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="28" id="hNQ-f9-mTM"/>
@@ -186,7 +181,7 @@
                                                 </collectionView>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="NxU-Ds-cex" firstAttribute="top" secondItem="rF4-xP-943" secondAttribute="bottom" constant="-3" id="Ix0-pk-2zb"/>
+                                                <constraint firstItem="NxU-Ds-cex" firstAttribute="top" secondItem="rF4-xP-943" secondAttribute="bottom" constant="-1" id="Ix0-pk-2zb"/>
                                                 <constraint firstItem="rF4-xP-943" firstAttribute="leading" secondItem="VLQ-gI-o7I" secondAttribute="leading" constant="8" id="KHZ-n8-go8"/>
                                                 <constraint firstAttribute="trailing" secondItem="rF4-xP-943" secondAttribute="trailing" constant="8" id="Lk4-bi-Ws1"/>
                                                 <constraint firstItem="NxU-Ds-cex" firstAttribute="leading" secondItem="VLQ-gI-o7I" secondAttribute="leading" constant="18" id="glp-eb-z7Q"/>
@@ -287,7 +282,7 @@
                                 <rect key="frame" x="16" y="66" width="382" height="776"/>
                                 <color key="tintColor" name="buttonBackground"/>
                                 <color key="textColor" name="content"/>
-                                <fontDescription key="fontDescription" name="FiraMono-Regular" family="Fira Mono" pointSize="22"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k5n-TB-LHv">
@@ -358,7 +353,7 @@
                                 <rect key="frame" x="16" y="66" width="382" height="776"/>
                                 <color key="tintColor" name="buttonBackground"/>
                                 <color key="textColor" name="content"/>
-                                <fontDescription key="fontDescription" name="FiraMono-Regular" family="Fira Mono" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CkJ-Ba-lDM">
