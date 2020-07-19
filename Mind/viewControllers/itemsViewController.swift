@@ -359,7 +359,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let itemsLoading = DispatchGroup()
             DispatchQueue.main.async(group: itemsLoading) {
                 self.tableView.reloadData()
-                self.keywordsCollectionView.reloadData()
+//                self.keywordsCollectionView.reloadData()
             }
             itemsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
@@ -678,7 +678,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
-        keywordsCollectionView.show()
+//        keywordsCollectionView.show()
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
