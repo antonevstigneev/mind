@@ -717,6 +717,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         }
     }
 
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 8
     }
@@ -895,4 +896,14 @@ extension Array where Element:Equatable {
 
         return result
     }
+}
+
+
+extension itemsViewController {
+  func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+    return 300
+  }
+  func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    return UITableView.automaticDimension
+  }
 }
