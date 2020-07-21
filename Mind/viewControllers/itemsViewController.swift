@@ -73,16 +73,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         defaultKeywordsCollectionView()
         scrollToTopTableView()
     }
-    
-    @IBAction func keywordButtonTouchUpInside(_ sender: UIButton) {
-        let keywordTitle = sender.titleLabel!.text!
-        selectedKeyword = (title: keywordTitle, path: 1)
-        keywordsCollection = [self.selectedAllKeyword.title]
-        keywordsCollection.append(self.selectedKeyword!.title)
-        keywordsCollectionView.reloadData()
-        fetchDataForSelectedKeyword()
-        shuffleButton.isEnabled = false
-    }
+
     
     @IBAction func keywordsCollectionViewTouchUpInside(_ sender: UIButton) {
         let keywordTitle = sender.titleLabel!.text!
@@ -140,12 +131,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(checkCloud),
-        name: NSNotification.Name(
-        rawValue: "NSPersistentStoreRemoteChangeNotification"),
-        object: persistentContainer.persistentStoreCoordinator)
-        
         NotificationCenter.default.addObserver(self,
         selector: #selector(updateHeaderView),
         name: NSNotification.Name(rawValue: "itemsLoaded"),
@@ -227,14 +212,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             shuffleButton.isHidden = true
             emptyPlaceholderLabel.isHidden = false
         }
-    }
-    
-    @objc func checkCloud() {
-        if context.hasChanges &&
-           selectedKeyword?.title == "all" &&
-           searchBar.text == ""
-        
-        { fetchData() }
     }
 
     
@@ -333,12 +310,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-
         guard let tableViewCell = cell as? ItemsCell else { return }
-
         tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
     }
-    
+
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -400,7 +375,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     // MARK: - Get similar items
     func getSimilarItems(item: Item? = nil, text: String = "") -> [Item] {
-        
+
         var selectedItemEmbedding: [Float] = []
         var similarItems: [Item] = []
         var scores: [Float] = []
@@ -475,9 +450,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
-            
+            // MARK: TODO
             similarItems = self.getSimilarItems(text: searchText)
-            suggestedKeywords = self.getSuggestedKeywords(similarItems)
+            suggestedKeywords = self.getSuggestedKeywords(similarItems) // try to suggest keywords not from similar items, but through all keywords (comparing keywords pairs similarity scores)
             
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
@@ -496,6 +471,86 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         searchBar.text = item.content!
         performSimilaritySearch(searchBar.text!)
     }
+    
+    
+    
+    
+    
+    
+    func getKeywordSuggestions(for keyword: String) -> [String] {
+        var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
+        let keywordsEmbeddings = getAllKeywordsEmbeddings()
+        let forKeywordEmbedding = keywordsEmbeddings.filter{( $0.keyword == keyword )}[0]
+        
+        for keywordEmbedding in keywordsEmbeddings {
+            let score = SimilarityDistance(A: forKeywordEmbedding.value, B: keywordEmbedding.value)
+            keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
+        }
+        keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
+        var suggestedKeywords = keywordsSimilarityScores.prefix(10)
+        suggestedKeywords.removeFirst()
+        print(suggestedKeywords)
+        
+        return suggestedKeywords.map { $0.keyword }
+    }
+    
+    func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Float])] {
+        var keywordsEmbeddings: [(keyword: String, value: [Float])] = []
+        for item in items {
+            for keyword in item.keywords! {
+                if !keywordsEmbeddings.map({$0.0}).contains(keyword) {
+                    let keywordIndex = item.keywords!.firstIndex(of: keyword)!
+                    let keywordEmbedding = item.keywordsEmbeddings![keywordIndex]
+                    keywordsEmbeddings.append((keyword: keyword, value: keywordEmbedding))
+                }
+            }
+        }
+        return keywordsEmbeddings
+    }
+
+    
+    func getKeywordsSimilarityScores(keywords: [String]) {
+        var keywordPairs: [[String]] = []
+        var keywordPairsScores: [Float] = []
+        var keywordsTotalScores: [(keyword: String, score: Float)] = []
+
+        let keywordsEmbeddings = getKeywordsEmbeddings(keywords: keywords)
+
+        for keyword in keywords {
+            let keywordIndex = keywords.firstIndex(of: keyword)
+            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
+            var keywordTotalScore: Float = 0
+            for index in 0..<keywords.count {
+                let otherKeywordEmbedding = keywordsEmbeddings[index]
+                if keyword != keywords[index] {
+                    keywordPairs.append([keyword, keywords[index]])
+                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                    keywordTotalScore += score
+                    keywordPairsScores.append(score)
+                }
+            }
+            keywordsTotalScores.append((keyword, keywordTotalScore))
+        }
+        keywordsTotalScores = keywordsTotalScores.sorted { $0.1 > $1.1 }
+        let filteredKeywords = keywordsTotalScores.map { $0.0 }
+        print(keywordsTotalScores)
+        print(filteredKeywords.prefix(5))
+    }
+
+    func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
+        var keywordsEmbeddings: [[Float]] = []
+        for keyword in keywords {
+            let keywordEmbedding = self.bert.getTextEmbedding(text: keyword)
+            keywordsEmbeddings.append(keywordEmbedding)
+        }
+        return keywordsEmbeddings
+    }
+    
+    
+    
+    
+    
+    
     
     func getSuggestedKeywords(_ similarItems: [Item]) -> [String] {
         var suggestedKeywords: [String] = []
@@ -523,12 +578,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.keywordsCollectionView.reloadData()
     }
     
-    func getMostRelevantKeywords() -> [String] {
-        
-        
-        return []
-    }
-    
     func getMostFrequentKeywords() -> [String] {
         var allKeywords: [String] = []
         
@@ -539,7 +588,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
             }
         }
-
         let mappedKeywords = allKeywords.map { ($0, 1) }
         let counts = Dictionary(mappedKeywords, uniquingKeysWith: +)
         let sortedCounts = counts.sorted { $0.1 > $1.1 }
@@ -751,10 +799,44 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             let item = items[collectionView.tag]
             let itemKeywordTitle = item.keywords![indexPath.row]
             cell.keywordButton.setTitle(itemKeywordTitle, for: .normal)
+            // detect pressed keyword item
+            cell.keywordButton.tag = collectionView.tag
+            cell.keywordButton.addTarget(self, action: #selector(itemKeywordSelected(_:)), for: .touchUpInside)
             
             return cell
         }
     }
+    
+    @objc func itemKeywordSelected(_ sender: UIButton) {
+        let keywordTitle = sender.titleLabel!.text!
+        
+        tableView.hide()
+        keywordsCollectionView.hide()
+        fetchData()
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            
+            let suggestedKeywords = self.getKeywordSuggestions(for: keywordTitle)
+            
+            DispatchQueue.main.async {
+                self.selectedKeyword = (title: keywordTitle, path: 1)
+                self.keywordsCollection = [self.selectedAllKeyword.title]
+                self.keywordsCollection.append(self.selectedKeyword!.title)
+                self.keywordsCollection.append(contentsOf: suggestedKeywords)
+                self.keywordsCollectionView.reloadData()
+                self.fetchDataForSelectedKeyword()
+                self.keywordsCollectionView?.scrollToItem(at: IndexPath(row: 0, section: 0),
+                      at: .left,
+                animated: false)
+                self.tableView.show()
+                self.keywordsCollectionView.show()
+                self.shuffleButton.isEnabled = false
+            }
+        }
+    }
+    
+    
+     
     
 }
 
@@ -907,3 +989,4 @@ extension itemsViewController {
     return UITableView.automaticDimension
   }
 }
+

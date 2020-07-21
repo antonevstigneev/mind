@@ -159,9 +159,6 @@
                                                                         <state key="highlighted">
                                                                             <color key="titleColor" name="background"/>
                                                                         </state>
-                                                                        <connections>
-                                                                            <action selector="keywordButtonTouchUpInside:" destination="SGi-zd-M47" eventType="touchUpInside" id="j9A-Xi-4Wa"/>
-                                                                        </connections>
                                                                     </button>
                                                                 </subviews>
                                                             </view>

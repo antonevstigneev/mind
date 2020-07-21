@@ -85,12 +85,15 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         }
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
+            
+            let keywords = getKeywords(from: entryText, count: 8)
 
             let newEntry = Item(context: self.context)
             newEntry.id = UUID()
             newEntry.content = entryText
             newEntry.timestamp = Date().current
-            newEntry.keywords = getKeywords(from: entryText, count: 8)
+            newEntry.keywords = keywords
+            newEntry.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             newEntry.embedding = self.bert.getTextEmbedding(text: entryText)
             
             DispatchQueue.main.async {

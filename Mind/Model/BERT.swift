@@ -8,8 +8,10 @@ Wrapper class for the BERT model that handles its input and output.
 import CoreML
 
 class BERT {
+    
     /// The underlying Core ML Model.
     let model = distilbert_base_nli()
+    
     ///
     /// - parameters:
     ///     - document: The document text that will be procecced.
@@ -18,13 +20,6 @@ class BERT {
     public func getTextEmbedding(text: String) -> [Float] {
         // Prepare the input for the BERT model.
         let bertInput = BERTInput(documentString: text)
-        
-//        guard bertInput.totalTokenSize <= BERTInput.maxTokens else {
-//            var message = "Text is too long"
-//            message += " (\(bertInput.totalTokenSize) tokens)"
-//            message += " for the BERT model's \(BERTInput.maxTokens) token limit."
-//            return print(message)
-//        }
         
         // The MLFeatureProvider that supplies the BERT model with its input MLMultiArrays.
         let modelInput = bertInput.modelInput!
@@ -44,5 +39,17 @@ class BERT {
         return cls_embeddings_arr
     }
     
+    public func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
+        var keywordsEmbeddings: [[Float]] = []
+        
+        for keyword in keywords {
+            let keywordEmbedding = self.getTextEmbedding(text: keyword)
+            keywordsEmbeddings.append(keywordEmbedding)
+        }
+        print(keywordsEmbeddings)
+        return keywordsEmbeddings
+    }
+    
 }
+
 

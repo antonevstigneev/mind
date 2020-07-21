@@ -14,7 +14,6 @@ import CloudKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        setupGlobalFontAppearance()
         return true
     }
     
@@ -32,16 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     
-//    func setupGlobalFontAppearance(){
-//
-//      //global Appearance settings
-//       let customFont = UIFont.FiraMono(.regular, size: 16)
-//       UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.font: customFont], for: .normal)
-//       UITextField.appearance().font = customFont
-//       UILabel.appearance().font = customFont
-//       UITextView.appearance().font = customFont
-//
-//    }
 
     // MARK: - Core Data stack
 
@@ -87,19 +76,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
-
-//extension UIFont {
-//
-//    public enum FiraMonoType: String {
-//        case regular = "-Regular"
-//    }
-//
-//    static func FiraMono(_ type: FiraMonoType = .regular, size: CGFloat = UIFont.systemFontSize) -> UIFont {
-//        return UIFont(name: "FiraMono\(type.rawValue)", size: size)!
-//    }
-//
-//    var isBold: Bool {
-//        return fontDescriptor.symbolicTraits.contains(.traitBold)
-//    }
-//
-//}

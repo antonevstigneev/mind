@@ -53,3 +53,4 @@ public func removeShortWords(_ word: String) -> Bool {
 public func removeStopWords(_ word: String) -> Bool {
     return !stopwords.contains(word)
 }
+

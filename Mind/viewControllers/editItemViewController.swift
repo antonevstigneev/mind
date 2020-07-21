@@ -72,8 +72,11 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
             
+            let keywords = getKeywords(from: entryText, count: 8)
+            
             self.item.content = entryText
-            self.item.keywords = getKeywords(from: entryText, count: 8)
+            self.item.keywords = keywords
+            self.item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             self.item.embedding = self.bert.getTextEmbedding(text: entryText)
         
             DispatchQueue.main.async {
