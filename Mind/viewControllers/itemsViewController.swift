@@ -450,9 +450,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
-            // MARK: TODO
+
             similarItems = self.getSimilarItems(text: searchText)
-            suggestedKeywords = self.getSuggestedKeywords(similarItems) // try to suggest keywords not from similar items, but through all keywords (comparing keywords pairs similarity scores)
+            suggestedKeywords = self.getKeywordSuggestions(for: searchText)
             
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
@@ -477,22 +477,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     
-    func getKeywordSuggestions(for keyword: String) -> [String] {
+    func getKeywordSuggestions(for text: String) -> [String] {
         var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
         let keywordsEmbeddings = getAllKeywordsEmbeddings()
-        let forKeywordEmbedding = keywordsEmbeddings.filter{( $0.keyword == keyword )}[0]
+        let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         
         for keywordEmbedding in keywordsEmbeddings {
-            let score = SimilarityDistance(A: forKeywordEmbedding.value, B: keywordEmbedding.value)
+            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
+        
         keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
         var suggestedKeywords = keywordsSimilarityScores.prefix(10)
         suggestedKeywords.removeFirst()
-        print(suggestedKeywords)
         
         return suggestedKeywords.map { $0.keyword }
     }
+    
     
     func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Float])] {
         var keywordsEmbeddings: [(keyword: String, value: [Float])] = []
@@ -509,61 +510,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
 
     
-    func getKeywordsSimilarityScores(keywords: [String]) {
-        var keywordPairs: [[String]] = []
-        var keywordPairsScores: [Float] = []
-        var keywordsTotalScores: [(keyword: String, score: Float)] = []
-
-        let keywordsEmbeddings = getKeywordsEmbeddings(keywords: keywords)
-
-        for keyword in keywords {
-            let keywordIndex = keywords.firstIndex(of: keyword)
-            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
-            var keywordTotalScore: Float = 0
-            for index in 0..<keywords.count {
-                let otherKeywordEmbedding = keywordsEmbeddings[index]
-                if keyword != keywords[index] {
-                    keywordPairs.append([keyword, keywords[index]])
-                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                    keywordTotalScore += score
-                    keywordPairsScores.append(score)
-                }
-            }
-            keywordsTotalScores.append((keyword, keywordTotalScore))
-        }
-        keywordsTotalScores = keywordsTotalScores.sorted { $0.1 > $1.1 }
-        let filteredKeywords = keywordsTotalScores.map { $0.0 }
-        print(keywordsTotalScores)
-        print(filteredKeywords.prefix(5))
-    }
-
-    func getKeywordsEmbeddings(keywords: [String]) -> [[Float]] {
-        var keywordsEmbeddings: [[Float]] = []
-        for keyword in keywords {
-            let keywordEmbedding = self.bert.getTextEmbedding(text: keyword)
-            keywordsEmbeddings.append(keywordEmbedding)
-        }
-        return keywordsEmbeddings
-    }
-    
-    
-    
-    
-    
-    
-    
-    func getSuggestedKeywords(_ similarItems: [Item]) -> [String] {
-        var suggestedKeywords: [String] = []
-        
-        if similarItems != [] {
-            for item in similarItems {
-                suggestedKeywords.append(contentsOf: item.keywords!)
-            }
-            return suggestedKeywords
-            
-        } else { return [] }
-    }
-    
     func showSuggestedKeywords(_ suggestedKeywords: [String]) {
         keywordsCollection = [self.selectedAllKeyword.title]
         keywordsCollection.append(self.selectedKeyword!.title)
@@ -577,6 +523,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         self.keywordsCollectionView.reloadData()
     }
+    
     
     func getMostFrequentKeywords() -> [String] {
         var allKeywords: [String] = []
@@ -595,6 +542,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
         return topKeywords
     }
+    
     
     func getRandomKeywords() -> [String] {
         var allKeywords: [String] = []
