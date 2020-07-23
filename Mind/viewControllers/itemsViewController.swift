@@ -12,7 +12,7 @@ import CloudKit
 import CoreML
 import Foundation
 import NaturalLanguage
-
+import Firebase
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
@@ -50,6 +50,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
         performSegue(withIdentifier: "toAddItemViewController", sender: sender)
+        Analytics.logEvent("plusButton_pressed", parameters: nil)
     }
     @IBAction func plusButtonTouchDown(_ sender: UIButton) {
         plusButton.animateButtonDown()
@@ -72,6 +73,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.show()
         defaultKeywordsCollectionView()
         scrollToTopTableView()
+        Analytics.logEvent("shuffleButton_pressed", parameters: nil)
     }
 
     
@@ -107,6 +109,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.show()
         shuffleButton.tintColor = UIColor(named: "content2")
         isShuffleEnabled = false
+        Analytics.logEvent("keywordCollection_pressed", parameters: nil)
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
@@ -197,6 +200,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc func refreshTableView(_ sender: Any) {
         fetchData()
         searchBar.text = ""
+        shuffleButton.isEnabled = true
         refreshControl.endRefreshing()
     }
     
@@ -462,6 +466,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.keywordsCollectionView.show()
                 self.scrollToTopTableView()
                 self.removeSpinner()
+                Analytics.logEvent("search_completed", parameters: nil)
             }
         }
     }
@@ -471,11 +476,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         searchBar.text = item.content!
         performSimilaritySearch(searchBar.text!)
     }
-    
-    
-    
-    
-    
+
     
     func getKeywordSuggestions(for text: String) -> [String] {
         var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
@@ -488,7 +489,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
-        var suggestedKeywords = keywordsSimilarityScores.prefix(10)
+        var suggestedKeywords = keywordsSimilarityScores.prefix(11)
         suggestedKeywords.removeFirst()
         
         return suggestedKeywords.map { $0.keyword }
@@ -555,7 +556,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
         
-        let shuffledKeywords = allKeywords.shuffled()
+        let shuffledKeywords = Array(Set(allKeywords.shuffled()))
         let topShuffledKeywords = shuffledKeywords.prefix(10).map { $0 }
         
         return topShuffledKeywords
@@ -779,6 +780,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
                 self.tableView.show()
                 self.keywordsCollectionView.show()
                 self.shuffleButton.isEnabled = false
+                Analytics.logEvent("keywordItem_pressed", parameters: nil)
             }
         }
     }

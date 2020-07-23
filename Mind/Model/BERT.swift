@@ -46,7 +46,6 @@ class BERT {
             let keywordEmbedding = self.getTextEmbedding(text: keyword)
             keywordsEmbeddings.append(keywordEmbedding)
         }
-        print(keywordsEmbeddings)
         return keywordsEmbeddings
     }
     
