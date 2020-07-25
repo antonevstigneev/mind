@@ -32,7 +32,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var mostFrequentKeywords: [String] = []
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
-    var isShuffleEnabled: Bool = false
     var refreshControl: UIRefreshControl!
     
     
@@ -40,11 +39,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
-    @IBOutlet weak var shuffleButton: UIButton!
     @IBOutlet weak var keywordsCollectionView: UICollectionView!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var emptyPlaceholderLabel: UILabel!
+    
     
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
@@ -59,23 +58,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         plusButton.animateButtonUp()
     }
     
-    @IBAction func shuffleButtonTouchUpInside(_ sender: UIButton) {
-        if isShuffleEnabled == false {
-            items.shuffle()
-            tableView.reloadData()
-            sender.tintColor = UIColor(named: "buttonBackground")
-            isShuffleEnabled = true
-        } else {
-            fetchData()
-            sender.tintColor = UIColor(named: "content2")
-            isShuffleEnabled = false
-        }
-        tableView.show()
-        defaultKeywordsCollectionView()
-        scrollToTopTableView()
-        Analytics.logEvent("shuffleButton_pressed", parameters: nil)
-    }
-
     
     @IBAction func keywordsCollectionViewTouchUpInside(_ sender: UIButton) {
         let keywordTitle = sender.titleLabel!.text!
@@ -87,28 +69,24 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             selectedKeyword = (title: keywordTitle, path: keywordPath)
             fetchDataForSelectedKeyword()
             keywordsCollectionView.reloadData()
-            shuffleButton.isEnabled = false
         } else if pressedKeyword.title == "all" {
             sender.isSelected = true
             selectedKeyword = selectedAllKeyword
             
             if !searchBar.text!.isEmpty {
                 fetchData()
-                items = self.getSimilarItems(text: searchBar.text!)
+                reloadSearch()
                 tableView.reloadData()
             } else {
                 fetchData()
                 defaultKeywordsCollectionView()
             }
-            shuffleButton.isEnabled = true
         } else {
             sender.isSelected = false
             keywordsCollectionView.reloadData()
             reloadSearch()
         }
         tableView.show()
-        shuffleButton.tintColor = UIColor(named: "content2")
-        isShuffleEnabled = false
         Analytics.logEvent("keywordCollection_pressed", parameters: nil)
     }
     
@@ -163,6 +141,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func setupViews() {
         // searchBar initial setup
         searchBar.delegate = self
+        searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
         UISearchBar.appearance().setSearchFieldBackgroundImage(UIImage(), for: .normal)
         
         // keywords collection initial setup
@@ -200,7 +179,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc func refreshTableView(_ sender: Any) {
         fetchData()
         searchBar.text = ""
-        shuffleButton.isEnabled = true
         refreshControl.endRefreshing()
     }
     
@@ -208,12 +186,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if items.count > 0 {
             searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
-            shuffleButton.isHidden = false
             emptyPlaceholderLabel.isHidden = true
         } else {
             searchBar.isHidden = true
             keywordsCollectionView.isHidden = true
-            shuffleButton.isHidden = true
             emptyPlaceholderLabel.isHidden = false
         }
     }
@@ -223,6 +199,25 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
             return self.createContextMenu(indexPath: indexPath)
+        }
+    }
+    
+    public func getSqliteStoreSize(forPersistentContainerUrl storeUrl: URL) -> String {
+        do {
+            let size = try Data(contentsOf: storeUrl)
+            if size.count < 1 {
+                print("Size could not be determined.")
+                return ""
+            }
+            let bcf = ByteCountFormatter()
+            bcf.allowedUnits = [.useMB] // optional: restricts the units to MB only
+            bcf.countStyle = .file
+            let string = bcf.string(fromByteCount: Int64(size.count))
+            print(string)
+            return string
+        } catch {
+            print("Failed to get size of store: \(error)")
+            return ""
         }
     }
     
@@ -421,7 +416,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    // MARK: - Search
+    // MARK: - Semantic search
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText != "" {
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(itemsViewController.reloadSearch), object: nil)
@@ -458,9 +453,55 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             similarItems = self.getSimilarItems(text: searchText)
             suggestedKeywords = self.getKeywordSuggestions(for: searchText)
             
+            /*
+             
+             TODO: get similar items from keywords suggestions
+             1. iterate throught suggested keywords
+             2. get first suggested keyword
+             3. iterate throught items
+             4. get items that containts this keyword
+             5. repeat step.2 with second...n suggested keywords
+             
+             6. sort items that have most matches with suggested keywords
+             7. sort items which matchedKeywords are closer to a top of suggested keywords   <---------------- FINISH
+             
+             */
+            
+            var itemsWithMatchedKeywords: [(item: String, matchedKeywords: [String])] = []
+            for item in self.items {
+                itemsWithMatchedKeywords.append((item: item.content!, matchedKeywords: []))
+            }
+            
+            for keyword in suggestedKeywords {
+                for item in self.items {
+                    if item.keywords!.contains(keyword) {
+                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item == item.content!}) {
+                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
+                        }
+                    }
+                }
+            }
+            
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
+            
+            print(suggestedKeywords)
+            print("\n")
+            for item in itemsWithMatchedKeywords {
+                print(item.item)
+                print(item.matchedKeywords)
+                for keyword in item.matchedKeywords {
+                    let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
+                    print(indexOfKeyword as Any) // the lower the index, the higher the score
+                }
+                print("\n")
+            }
+            
+            
+            
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
-                self.items = similarItems
+                self.items = similarItems.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
                 self.keywordsCollectionView.show()
@@ -478,6 +519,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
 
     
+    // MARK: - Keywords suggestions
     func getKeywordSuggestions(for text: String) -> [String] {
         var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
         let keywordsEmbeddings = getAllKeywordsEmbeddings()
@@ -489,8 +531,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
-        var suggestedKeywords = keywordsSimilarityScores.prefix(11)
-        suggestedKeywords.removeFirst()
+        let suggestedKeywords = keywordsSimilarityScores.prefix(11)
         
         return suggestedKeywords.map { $0.keyword }
     }
@@ -662,16 +703,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
 
 
-// MARK: - Keywords
+// MARK: - Keywords setup
 extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     @objc func defaultKeywordsCollectionView() {
         keywordsCollection = [selectedAllKeyword.title]
-        if isShuffleEnabled {
-            mostFrequentKeywords = getRandomKeywords()
-        } else {
-            mostFrequentKeywords = getMostFrequentKeywords()
-        }
+        mostFrequentKeywords = getMostFrequentKeywords()
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
@@ -768,10 +805,10 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             let suggestedKeywords = self.getKeywordSuggestions(for: keywordTitle)
             
             DispatchQueue.main.async {
-                self.selectedKeyword = (title: keywordTitle, path: 1)
+                self.searchBar.text = ""
                 self.keywordsCollection = [self.selectedAllKeyword.title]
-                self.keywordsCollection.append(self.selectedKeyword!.title)
                 self.keywordsCollection.append(contentsOf: suggestedKeywords)
+                self.selectedKeyword = (title: keywordTitle, path: 1)
                 self.keywordsCollectionView.reloadData()
                 self.fetchDataForSelectedKeyword()
                 self.keywordsCollectionView?.scrollToItem(at: IndexPath(row: 0, section: 0),
@@ -779,7 +816,6 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
                 animated: false)
                 self.tableView.show()
                 self.keywordsCollectionView.show()
-                self.shuffleButton.isEnabled = false
                 Analytics.logEvent("keywordItem_pressed", parameters: nil)
             }
         }
@@ -808,6 +844,15 @@ class itemContentText: UITextView {
     override func becomeFirstResponder() -> Bool {
         // Returning false disables double-tap selection of link text
         return false
+    }
+}
+
+
+extension Array where Element: Hashable {
+    func difference(from other: [Element]) -> [Element] {
+        let thisSet = Set(self)
+        let otherSet = Set(other)
+        return Array(thisSet.symmetricDifference(otherSet))
     }
 }
 
