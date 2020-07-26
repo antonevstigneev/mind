@@ -32,7 +32,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var mostFrequentKeywords: [String] = []
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
-    var refreshControl: UIRefreshControl!
     
     
     // MARK: - Outlets
@@ -152,9 +151,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
-        refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(refreshTableView), for: .valueChanged)
-        tableView.addSubview(refreshControl)
         
         // plusButton initial setup
         plusButton.layer.masksToBounds = true
@@ -169,17 +165,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         updateHeaderView()
         if items.count > 0 {
             defaultKeywordsCollectionView()
+            
+            updateKeywordsEmbeddings() // <------------------------------------------------------------------ remove from next build (0.9)
         }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-    }
-    
-    @objc func refreshTableView(_ sender: Any) {
-        fetchData()
-        searchBar.text = ""
-        refreshControl.endRefreshing()
     }
     
     @objc func updateHeaderView() {
@@ -202,29 +195,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    public func getSqliteStoreSize(forPersistentContainerUrl storeUrl: URL) -> String {
-        do {
-            let size = try Data(contentsOf: storeUrl)
-            if size.count < 1 {
-                print("Size could not be determined.")
-                return ""
-            }
-            let bcf = ByteCountFormatter()
-            bcf.allowedUnits = [.useMB] // optional: restricts the units to MB only
-            bcf.countStyle = .file
-            let string = bcf.string(fromByteCount: Int64(size.count))
-            print(string)
-            return string
-        } catch {
-            print("Failed to get size of store: \(error)")
-            return ""
-        }
-    }
-    
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
        let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
             self.findSimilarItems(for: self.item)
+            Analytics.logEvent("similarItems_search", parameters: nil)
        }
        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
@@ -450,54 +425,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
 
-            similarItems = self.getSimilarItems(text: searchText)
-            suggestedKeywords = self.getKeywordSuggestions(for: searchText)
+            similarItems = self.getSimilarItems(text: searchText) // compare similarity by keywords --------> (item.keywords.joined(separator: " ")
             
-            /*
-             
-             TODO: get similar items from keywords suggestions
-             1. iterate throught suggested keywords
-             2. get first suggested keyword
-             3. iterate throught items
-             4. get items that containts this keyword
-             5. repeat step.2 with second...n suggested keywords
-             
-             6. sort items that have most matches with suggested keywords
-             7. sort items which matchedKeywords are closer to a top of suggested keywords   <---------------- FINISH
-             
-             */
-            
-            var itemsWithMatchedKeywords: [(item: String, matchedKeywords: [String])] = []
-            for item in self.items {
-                itemsWithMatchedKeywords.append((item: item.content!, matchedKeywords: []))
+            let keywordsForSearchText = getKeywords(from: searchText, count: 8)
+            if keywordsForSearchText == [] {
+                suggestedKeywords = self.getKeywordSuggestions(for: searchText)
             }
-            
-            for keyword in suggestedKeywords {
-                for item in self.items {
-                    if item.keywords!.contains(keyword) {
-                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item == item.content!}) {
-                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
-                        }
-                    }
-                }
-            }
-            
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
-            
-            print(suggestedKeywords)
-            print("\n")
-            for item in itemsWithMatchedKeywords {
-                print(item.item)
-                print(item.matchedKeywords)
-                for keyword in item.matchedKeywords {
-                    let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
-                    print(indexOfKeyword as Any) // the lower the index, the higher the score
-                }
-                print("\n")
-            }
-            
-            
+            suggestedKeywords = self.getKeywordSuggestions(for: keywordsForSearchText.joined(separator: " "))
             
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
@@ -516,6 +450,24 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func findSimilarItems(for item: Item!) {
         searchBar.text = item.content!
         performSimilaritySearch(searchBar.text!)
+    }
+    
+    
+    func updateKeywordsEmbeddings() {
+        self.showSpinner()
+        DispatchQueue.global(qos: .userInitiated).async {
+            for item in self.items {
+                if item.keywordsEmbeddings == nil {
+                    item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
+                }
+            }
+            
+            DispatchQueue.main.async {
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                self.tableView.reloadData()
+                self.removeSpinner()
+            }
+        }
     }
 
     
