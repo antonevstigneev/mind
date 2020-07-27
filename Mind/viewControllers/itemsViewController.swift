@@ -308,7 +308,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let itemsLoading = DispatchGroup()
             DispatchQueue.main.async(group: itemsLoading) {
                 self.tableView.reloadData()
-//                self.keywordsCollectionView.reloadData()
             }
             itemsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
@@ -413,7 +412,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     func performSimilaritySearch(_ searchText: String) {
         
-        var similarItems: [Item] = []
+//        var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
         
         tableView.hide()
@@ -425,7 +424,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
 
-            similarItems = self.getSimilarItems(text: searchText) // compare similarity by keywords --------> (item.keywords.joined(separator: " ")
+//            similarItems = self.getSimilarItems(text: searchText)
             
             let keywordsForSearchText = getKeywords(from: searchText, count: 8)
             if keywordsForSearchText == [] {
@@ -433,9 +432,45 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
             suggestedKeywords = self.getKeywordSuggestions(for: keywordsForSearchText.joined(separator: " "))
             
+            
+            var keywordsScores: [(item: Item, score: Int)] = []
+            var itemsWithMatchedKeywords: [(item: Item, matchedKeywords: [String])] = []
+            for item in self.items {
+                itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
+            }
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.item.content != searchText }
+            
+            for keyword in suggestedKeywords {
+                for item in self.items {
+                    if item.keywords!.contains(keyword) {
+                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item.content! == item.content!}) {
+                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
+                        }
+                    }
+                }
+            }
+            
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
+            
+
+            for item in itemsWithMatchedKeywords {
+                var keywordsScore: [Int] = []
+                for keyword in item.matchedKeywords {
+                    let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
+                    keywordsScore.append(indexOfKeyword!)
+                }
+                keywordsScores.append((item: item.item, score: keywordsScore.min()!))
+            }
+
+            keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
+            let similarItemsTest = keywordsScores.map { $0.item }
+
+            
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
-                self.items = similarItems.slice(length: 10)
+//                self.items = similarItems.slice(length: 10)
+                self.items = similarItemsTest
                 self.tableView.reloadData()
                 self.tableView.show()
                 self.keywordsCollectionView.show()
@@ -763,11 +798,11 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
                 self.selectedKeyword = (title: keywordTitle, path: 1)
                 self.keywordsCollectionView.reloadData()
                 self.fetchDataForSelectedKeyword()
+                self.tableView.show()
+                self.keywordsCollectionView.show()
                 self.keywordsCollectionView?.scrollToItem(at: IndexPath(row: 0, section: 0),
                       at: .left,
                 animated: false)
-                self.tableView.show()
-                self.keywordsCollectionView.show()
                 Analytics.logEvent("keywordItem_pressed", parameters: nil)
             }
         }
