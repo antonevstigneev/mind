@@ -14,6 +14,9 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
+import DBSCAN
+import simd
+
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
     // MARK: - Model
@@ -165,10 +168,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         updateHeaderView()
         if items.count > 0 {
             defaultKeywordsCollectionView()
-            
-            updateKeywordsEmbeddings() // <------------------------------------------------------------------ remove from next build (0.9)
         }
-        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -176,7 +176,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func updateHeaderView() {
-        if items.count > 0 {
+        if items.count > 1 {
             searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
             emptyPlaceholderLabel.isHidden = true
@@ -204,6 +204,25 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
+
+            var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
+        
+            for item in self.items {
+                for (index, keyword) in item.keywords!.enumerated() {
+                    if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
+                        let keywordEmbedding = item.keywordsEmbeddings![index].asArrayOfDoubles
+                        keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
+                    }
+                }
+            }
+        
+            let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
+    //        let keywords = keywordsWithEmbeddings.map { $0.keyword }
+
+            HierarchicalClustering(keywordsEmbeddings).hierarchicalClustering() {_,_,clusters in
+                
+            }
+        
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
@@ -412,7 +431,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     func performSimilaritySearch(_ searchText: String) {
         
-//        var similarItems: [Item] = []
+        var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
         
         tableView.hide()
@@ -426,7 +445,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
 //            similarItems = self.getSimilarItems(text: searchText)
             
-            let keywordsForSearchText = getKeywords(from: searchText, count: 8)
+            let keywordsForSearchText = getKeywords(from: searchText, count: 6)
             if keywordsForSearchText == [] {
                 suggestedKeywords = self.getKeywordSuggestions(for: searchText)
             }
@@ -438,7 +457,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             for item in self.items {
                 itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
             }
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.item.content != searchText }
             
             for keyword in suggestedKeywords {
                 for item in self.items {
@@ -464,13 +482,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
 
             keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
-            let similarItemsTest = keywordsScores.map { $0.item }
-
+            similarItems = keywordsScores.map { $0.item }
+            
             
             DispatchQueue.main.async {
                 self.showSuggestedKeywords(suggestedKeywords)
-//                self.items = similarItems.slice(length: 10)
-                self.items = similarItemsTest
+                self.items = similarItems.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
                 self.keywordsCollectionView.show()
@@ -938,6 +955,7 @@ extension UIImage {
     }
 }
 
+
 extension UIView {
     #if targetEnvironment(macCatalyst)
     @objc(_focusRingType)
@@ -945,6 +963,13 @@ extension UIView {
         return 1
     }
     #endif
+}
+
+
+extension Array where Element == Float {
+    public var asArrayOfDoubles: [Double] {
+        return self.map { return Double($0) }
+    }
 }
 
 

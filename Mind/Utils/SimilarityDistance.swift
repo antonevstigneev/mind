@@ -8,9 +8,10 @@
 
 import Foundation
 
-func SimilarityDistance(A: [Float], B: [Float]) -> Float {
 
-    /** Dot Product **/
+public func SimilarityDistance(A: [Float], B: [Float]) -> Float {
+
+    // Dot Product
     func dot(A: [Float], B: [Float]) -> Float {
         var x: Float = 0
         for i in 0...A.count-1 {
@@ -19,7 +20,7 @@ func SimilarityDistance(A: [Float], B: [Float]) -> Float {
         return x
     }
 
-    /** Vector Magnitude **/
+    // Vector Magnitude
     func magnitude(A: [Float]) -> Float {
         var x: Float = 0
         for elt in A {
@@ -28,12 +29,23 @@ func SimilarityDistance(A: [Float], B: [Float]) -> Float {
         return sqrt(x)
     }
 
-    /** Cosine similarity **/
+    // Cosine similarity
     func cosineSimilarity(A: [Float], B: [Float]) -> Float {
         return dot(A: A, B: B) / (magnitude(A: A) * magnitude(A: B))
     }
     
-    
     return cosineSimilarity(A: A, B: B)
 }
+
+
+public func EuclideanDistance(A: [Float], B: [Float]) -> Float {
+    var sum: Float = 0
+    for i in 0...A.count-1 {
+        sum += (A[i] - B[i]) * (A[i] - B[i])
+//        sum += ((A[i] - B[i]) * (A[i] - B[i])) / A.count-1 // normalized
+    }
+    
+    return sqrt(sum)
+}
+
 
