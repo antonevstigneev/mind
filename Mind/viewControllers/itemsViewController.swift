@@ -218,10 +218,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
             let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
     //        let keywords = keywordsWithEmbeddings.map { $0.keyword }
-
-            HierarchicalClustering(keywordsEmbeddings).hierarchicalClustering() {_,_,clusters in
-                
-            }
         
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
