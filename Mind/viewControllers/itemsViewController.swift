@@ -14,8 +14,6 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
-import DBSCAN
-import simd
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
@@ -195,6 +193,66 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    
+    
+    
+    
+    
+    
+    
+    // MARK: - Keywords clustering
+    func getKeywordsSimilarityScores() {
+        var mostSimilarKeywords: [(keyword: String, keywords: [String])] = []
+
+        let keywordsWithEmbeddings = getKeywordsEmbeddings()
+        let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
+        let keywords = keywordsWithEmbeddings.map { $0.keyword }
+        
+        for keyword in keywords {
+            let keywordIndex = keywords.firstIndex(of: keyword)
+            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
+            var keywordsForKeyword: [String] = []
+            for index in 0..<keywords.count {
+                let otherKeywordEmbedding = keywordsEmbeddings[index]
+                if keyword != keywords[index] {
+                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                    if score > 0.85 {
+                        keywordsForKeyword.append(keywords[index])
+                    }
+                }
+            }
+            if keywordsForKeyword != [] {
+                mostSimilarKeywords.append((keyword: keyword, keywords: keywordsForKeyword))
+            }
+        }
+        
+        mostSimilarKeywords = mostSimilarKeywords.sorted { $0.1.count > $1.1.count }
+        for i in mostSimilarKeywords {
+            print(i)
+        }
+    }
+
+    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
+        var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
+        
+        for item in self.items {
+            for (index, keyword) in item.keywords!.enumerated() {
+                if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
+                    let keywordEmbedding = item.keywordsEmbeddings![index]
+                    keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
+                }
+            }
+        }
+        return keywordsWithEmbeddings
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
        let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
@@ -205,20 +263,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
 
-            var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
-        
-            for item in self.items {
-                for (index, keyword) in item.keywords!.enumerated() {
-                    if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
-                        let keywordEmbedding = item.keywordsEmbeddings![index].asArrayOfDoubles
-                        keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
-                    }
-                }
-            }
-        
-            let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
-    //        let keywords = keywordsWithEmbeddings.map { $0.keyword }
-        
+            // TODO: get keywords similarity matrix
+            // keywords which similarity scores are greater than 0.85 -> passed to cluster
+            self.getKeywordsSimilarityScores()
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
@@ -992,4 +1039,5 @@ extension itemsViewController {
     return UITableView.automaticDimension
   }
 }
+
 
