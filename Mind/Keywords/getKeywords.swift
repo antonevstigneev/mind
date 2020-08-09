@@ -11,6 +11,7 @@ public func getKeywords(from text: String, count: Int) -> [String] {
     if keywords == [] {
         keywords = Keyword.preprocess(text)
                   .filter(removeShortWords)
+        keywords = Normalize.getNouns(keywords)
     }
     
     return keywords

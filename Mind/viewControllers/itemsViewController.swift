@@ -113,6 +113,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
+        selector: #selector(hierarchicalClustering),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
         selector: #selector(updateHeaderView),
         name: NSNotification.Name(rawValue: "itemsLoaded"),
         object: nil)
@@ -164,9 +169,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         updateHeaderView()
-        if items.count > 0 {
-            defaultKeywordsCollectionView()
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -174,7 +176,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func updateHeaderView() {
-        if items.count > 1 {
+        if items.count > 0 {
             searchBar.isHidden = false
             keywordsCollectionView.isHidden = false
             emptyPlaceholderLabel.isHidden = true
@@ -200,38 +202,108 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     
-    // MARK: - Keywords clustering
-    func getKeywordsSimilarityScores() {
-        var mostSimilarKeywords: [(keyword: String, keywords: [String])] = []
+    // MARK: - Clustering test
+    
+    /*
+    Hierarchical clustering algorithm (single-linkage):
+    1. Values recalculation.
+       a. Get first value position row.
+       b. Get second value position row.
+       c. Merge this values to array of tuples.
+       d. For each keyword pairs get MAX(1v,2v).
+       e. Put this values to first value position row, column.
+    3. Add keyword from second value position row to
+       second value position row. 
+    4. Remove keyword from second value position row.
+    5. Remove second value position row, column from
+       similarity matrix.
+    6. Repeat steps 1-5, until clusters.count == 1.
+    */
+    
+    
+    // TODO: fix row/column removal function // gives wrong results
+    
+    @objc func hierarchicalClustering() {
+        var (similarityMatrix, keywords) = getSimilarityMatrix()
+        var clusters: [[String]] = []
+        for keyword in keywords {
+            clusters.append([keyword])
+        }
+        
+        while clusters.count > 1 {
+//            similarityMatrix.show()
+//            print("Clusters: \(clusters)")
+            
+            // get most two most similar keywords
+            let maxValue = similarityMatrix.grid.max()
+//            print("Maximum value: \(maxValue!)")
+//            print(similarityMatrix.position(of: maxValue!))
+            let firstValue = similarityMatrix.position(of: maxValue!)[0]
+            let secondValue = similarityMatrix.position(of: maxValue!)[1]
+            
+            // get max values from similar keywords value pairs
+            let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
+            let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
+            var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
+            maxValues[firstValue.row] = 0.0
+            
+            // update matrix with new values
+            for column in 0...similarityMatrix.columns-1 {
+                similarityMatrix[firstValue.row, column] = maxValues[column]
+                similarityMatrix[column, firstValue.row] = maxValues[column]
+            }
+            similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
+            
+            // update keywords cluster labels
+            clusters[firstValue.column].append(contentsOf: clusters[secondValue.column])
+            clusters.remove(at: secondValue.column)
+            
+            // show updated matrix and clusters labels
+//            similarityMatrix.show()
+            print("Number of clusters: \(clusters.count)")
+            for cluster in clusters {
+                print(cluster)
+            }
+        }
+        
 
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    func getSimilarityMatrix() -> (Matrix, [String]) {
         let keywordsWithEmbeddings = getKeywordsEmbeddings()
         let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
         let keywords = keywordsWithEmbeddings.map { $0.keyword }
         
-        for keyword in keywords {
-            let keywordIndex = keywords.firstIndex(of: keyword)
-            let currentKeywordEmbedding = keywordsEmbeddings[keywordIndex!]
-            var keywordsForKeyword: [String] = []
-            for index in 0..<keywords.count {
+        let matrixSize = Int(keywords.count)
+        var matrix = Matrix(rows: matrixSize, columns: matrixSize)
+        
+        for (index, keyword) in keywords.enumerated() {
+            let currentKeywordIndex = keywords.firstIndex(of: keyword)!
+            let currentKeywordEmbedding = keywordsEmbeddings[index]
+            for index in currentKeywordIndex..<keywords.count {
+                var score: Float = 0.0
                 let otherKeywordEmbedding = keywordsEmbeddings[index]
                 if keyword != keywords[index] {
-                    let score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                    if score > 0.85 {
-                        keywordsForKeyword.append(keywords[index])
-                    }
+                    score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                } else {
+                    score = 0.0
                 }
-            }
-            if keywordsForKeyword != [] {
-                mostSimilarKeywords.append((keyword: keyword, keywords: keywordsForKeyword))
+                matrix[index, currentKeywordIndex] = score
+                matrix[currentKeywordIndex, index] = score
             }
         }
-        
-        mostSimilarKeywords = mostSimilarKeywords.sorted { $0.1.count > $1.1.count }
-        for i in mostSimilarKeywords {
-            print(i)
-        }
-    }
 
+        return (matrix, keywords)
+    }
+    
+    
     func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
         var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
         
@@ -247,9 +319,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
+  
+
     
-    
-    
+
     
     
     
@@ -262,10 +335,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
-
-            // TODO: get keywords similarity matrix
-            // keywords which similarity scores are greater than 0.85 -> passed to cluster
-            self.getKeywordsSimilarityScores()
        }
        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
@@ -759,7 +828,6 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         keywordsCollection.append(contentsOf: mostFrequentKeywords)
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
-//        keywordsCollectionView.show()
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
