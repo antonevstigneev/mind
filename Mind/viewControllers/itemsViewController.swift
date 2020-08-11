@@ -196,136 +196,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    
-    
-    
-    
-    
-    
-    // MARK: - Clustering test
-    
-    /*
-    Hierarchical clustering algorithm (single-linkage):
-    1. Values recalculation.
-       a. Get first value position row.
-       b. Get second value position row.
-       c. Merge this values to array of tuples.
-       d. For each keyword pairs get MAX(1v,2v).
-       e. Put this values to first value position row, column.
-    3. Add keyword from second value position row to
-       second value position row. 
-    4. Remove keyword from second value position row.
-    5. Remove second value position row, column from
-       similarity matrix.
-    6. Repeat steps 1-5, until clusters.count == 1.
-    */
-    
-    
-    // TODO: fix row/column removal function // gives wrong results
-    
-    @objc func hierarchicalClustering() {
-        var (similarityMatrix, keywords) = getSimilarityMatrix()
-        var clusters: [[String]] = []
-        for keyword in keywords {
-            clusters.append([keyword])
-        }
-        
-        while clusters.count > 1 {
-//            similarityMatrix.show()
-//            print("Clusters: \(clusters)")
-            
-            // get most two most similar keywords
-            let maxValue = similarityMatrix.grid.max()
-//            print("Maximum value: \(maxValue!)")
-//            print(similarityMatrix.position(of: maxValue!))
-            let firstValue = similarityMatrix.position(of: maxValue!)[0]
-            let secondValue = similarityMatrix.position(of: maxValue!)[1]
-            
-            // get max values from similar keywords value pairs
-            let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
-            let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
-            var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
-            maxValues[firstValue.row] = 0.0
-            
-            // update matrix with new values
-            for column in 0...similarityMatrix.columns-1 {
-                similarityMatrix[firstValue.row, column] = maxValues[column]
-                similarityMatrix[column, firstValue.row] = maxValues[column]
-            }
-            similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
-            
-            // update keywords cluster labels
-            clusters[firstValue.column].append(contentsOf: clusters[secondValue.column])
-            clusters.remove(at: secondValue.column)
-            
-            // show updated matrix and clusters labels
-//            similarityMatrix.show()
-            print("Number of clusters: \(clusters.count)")
-            for cluster in clusters {
-                print(cluster)
-            }
-        }
-        
-
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    func getSimilarityMatrix() -> (Matrix, [String]) {
-        let keywordsWithEmbeddings = getKeywordsEmbeddings()
-        let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
-        let keywords = keywordsWithEmbeddings.map { $0.keyword }
-        
-        let matrixSize = Int(keywords.count)
-        var matrix = Matrix(rows: matrixSize, columns: matrixSize)
-        
-        for (index, keyword) in keywords.enumerated() {
-            let currentKeywordIndex = keywords.firstIndex(of: keyword)!
-            let currentKeywordEmbedding = keywordsEmbeddings[index]
-            for index in currentKeywordIndex..<keywords.count {
-                var score: Float = 0.0
-                let otherKeywordEmbedding = keywordsEmbeddings[index]
-                if keyword != keywords[index] {
-                    score = SimilarityDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                } else {
-                    score = 0.0
-                }
-                matrix[index, currentKeywordIndex] = score
-                matrix[currentKeywordIndex, index] = score
-            }
-        }
-
-        return (matrix, keywords)
-    }
-    
-    
-    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
-        var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
-        
-        for item in self.items {
-            for (index, keyword) in item.keywords!.enumerated() {
-                if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
-                    let keywordEmbedding = item.keywordsEmbeddings![index]
-                    keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
-                }
-            }
-        }
-        return keywordsWithEmbeddings
-    }
-    
-    
-  
-
-    
-
-    
-    
-    
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
        let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
@@ -643,6 +513,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         for keywordEmbedding in keywordsEmbeddings {
             let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+//            let score = EuclideanDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
         
@@ -781,6 +652,108 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
     }
+    
+    // MARK: - Clustering test
+     
+     /*
+     Hierarchical clustering algorithm (single-linkage):
+     1. Values recalculation.
+        a. Get first value position row.
+        b. Get second value position row.
+        c. Merge this values to array of tuples.
+        d. For each keyword pairs get MAX(1v,2v).
+        e. Put this values to first value position row, column.
+     3. Add keyword from second value position row to
+        second value position row.
+     4. Remove keyword from second value position row.
+     5. Remove second value position row, column from
+        similarity matrix.
+     6. Repeat steps 1-5, until clusters.count == 1.
+     */
+     
+     
+     // TODO: fix row/column removal function // gives wrong results
+     
+     @objc func hierarchicalClustering() {
+         var (similarityMatrix, keywords) = getSimilarityMatrix()
+         var clusters: [[String]] = []
+         for keyword in keywords {
+             clusters.append([keyword])
+         }
+         
+         while clusters.count > 1 {
+             
+             // get most two most similar keywords
+             let minValues = similarityMatrix.grid.filter { $0 != 0 }
+             let minValue = minValues.min()
+             let firstValue = similarityMatrix.position(of: minValue!)[0]
+             let secondValue = similarityMatrix.position(of: minValue!)[1]
+             
+             // get max values from similar keywords value pairs
+             let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
+             let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
+             var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
+             maxValues[firstValue.row] = 0.0
+             
+             // update matrix with new values
+             for column in 0...similarityMatrix.columns-1 {
+                 similarityMatrix[firstValue.row, column] = maxValues[column]
+                 similarityMatrix[column, firstValue.row] = maxValues[column]
+             }
+             similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
+             
+             // update keywords cluster labels
+             clusters[firstValue.column].append(contentsOf: clusters[secondValue.column])
+             clusters.remove(at: secondValue.column)
+             
+             print("Number of clusters: \(clusters.count)")
+             for cluster in clusters {
+                 print(cluster)
+             }
+         }
+     }
+
+     func getSimilarityMatrix() -> (Matrix, [String]) {
+         let keywordsWithEmbeddings = getKeywordsEmbeddings()
+         let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
+         let keywords = keywordsWithEmbeddings.map { $0.keyword }
+         
+         let matrixSize = Int(keywords.count)
+         var matrix = Matrix(rows: matrixSize, columns: matrixSize)
+         
+         for (index, keyword) in keywords.enumerated() {
+             let currentKeywordIndex = keywords.firstIndex(of: keyword)!
+             let currentKeywordEmbedding = keywordsEmbeddings[index]
+             for index in currentKeywordIndex..<keywords.count {
+                 var score: Float = 0.0
+                 let otherKeywordEmbedding = keywordsEmbeddings[index]
+                 if keyword != keywords[index] {
+                     score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                     print("Score \(score) between \(keyword) and \(keywords[index])")
+                 } else {
+                     score = 0.0
+                 }
+                 matrix[index, currentKeywordIndex] = score
+                 matrix[currentKeywordIndex, index] = score
+             }
+         }
+
+         return (matrix, keywords)
+     }
+     
+     func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
+         var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
+         
+         for item in self.items {
+             for (index, keyword) in item.keywords!.enumerated() {
+                 if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
+                     let keywordEmbedding = item.keywordsEmbeddings![index]
+                     keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
+                 }
+             }
+         }
+         return keywordsWithEmbeddings
+     }
     
     
     // Handle keyboard appearence

@@ -40,12 +40,30 @@ public func SimilarityDistance(A: [Float], B: [Float]) -> Float {
 
 public func EuclideanDistance(A: [Float], B: [Float]) -> Float {
     var sum: Float = 0
+    let sA = A.std()
+    let sB = B.std()
+    
     for i in 0...A.count-1 {
-        sum += (A[i] - B[i]) * (A[i] - B[i])
-//        sum += ((A[i] - B[i]) * (A[i] - B[i])) / A.count-1 // normalized
+        sum += (A[i]/sA - B[i]/sB) * (A[i]/sA - B[i]/sB)
     }
     
     return sqrt(sum)
 }
 
 
+extension Array where Element: FloatingPoint {
+    
+    func sum() -> Element {
+        return self.reduce(0, +)
+    }
+    
+    func avg() -> Element {
+        return self.sum() / Element(self.count)
+    }
+    
+    func std() -> Element {
+        let mean = self.avg()
+        let v = self.reduce(0, { $0 + ($1-mean)*($1-mean) })
+        return sqrt(v / (Element(self.count) - 1))
+    }
+}
