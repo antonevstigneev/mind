@@ -169,6 +169,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         updateHeaderView()
+//        updateAllEmbeddings() // ! remove in final build
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -381,12 +382,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             topSimilarItems = []
         }
         
-        return topSimilarItems
+        return sortedSimilarItems
     }
     
     
     func sortSimilarItemsByScore(_ items: [Item], _ scores: [Float]) -> [Item] {
         let sortedResults = zip(items, scores).sorted {$0.1 > $1.1}
+        print(sortedResults.map {$0.0.content!}, sortedResults.map {$0.1})
         return sortedResults.map {$0.0}
     }
     
@@ -439,7 +441,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             for item in self.items {
                 itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
             }
-            
+
             for keyword in suggestedKeywords {
                 for item in self.items {
                     if item.keywords!.contains(keyword) {
@@ -449,10 +451,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                 }
             }
-            
+
             itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
             itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
-            
+
 
             for item in itemsWithMatchedKeywords {
                 var keywordsScore: [Int] = []
@@ -487,13 +489,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func updateKeywordsEmbeddings() {
+    func updateAllEmbeddings() {
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             for item in self.items {
-                if item.keywordsEmbeddings == nil {
-                    item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
-                }
+                item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
+                item.embedding = self.bert.getTextEmbedding(text: item.content!)
             }
             
             DispatchQueue.main.async {
@@ -512,12 +513,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         
         for keywordEmbedding in keywordsEmbeddings {
-            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
-//            let score = EuclideanDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+//            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+            let score = EuclideanDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
         
-        keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
+        keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 < $1.1 }
         let suggestedKeywords = keywordsSimilarityScores.prefix(11)
         
         return suggestedKeywords.map { $0.keyword }
@@ -653,38 +654,27 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    // MARK: - Clustering test
-     
-     /*
-     Hierarchical clustering algorithm (single-linkage):
-     1. Values recalculation.
-        a. Get first value position row.
-        b. Get second value position row.
-        c. Merge this values to array of tuples.
-        d. For each keyword pairs get MAX(1v,2v).
-        e. Put this values to first value position row, column.
-     3. Add keyword from second value position row to
-        second value position row.
-     4. Remove keyword from second value position row.
-     5. Remove second value position row, column from
-        similarity matrix.
-     6. Repeat steps 1-5, until clusters.count == 1.
-     */
-     
-     
-     // TODO: fix row/column removal function // gives wrong results
-     
+    
+    
+    
+    
+    
+    
+    // MARK: - Clustering
+    
      @objc func hierarchicalClustering() {
          var (similarityMatrix, keywords) = getSimilarityMatrix()
          var clusters: [[String]] = []
-         for keyword in keywords {
+         for (index, keyword) in keywords.enumerated() {
              clusters.append([keyword])
+             keywords[index] = "\(keyword)-\(index)" // for print
          }
          
          while clusters.count > 1 {
-             
-             // get most two most similar keywords
-             let minValues = similarityMatrix.grid.filter { $0 != 0 }
+//            print(similarityMatrix.show())
+            
+            // get most two most similar keywords
+             let minValues = similarityMatrix.grid.filter { $0 != 0.012434 }
              let minValue = minValues.min()
              let firstValue = similarityMatrix.position(of: minValue!)[0]
              let secondValue = similarityMatrix.position(of: minValue!)[1]
@@ -692,46 +682,51 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
              // get max values from similar keywords value pairs
              let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
              let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
+             print("Min value \(minValue!) between: \(keywords[firstValue.row]) and \(keywords[secondValue.row])")
              var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
-             maxValues[firstValue.row] = 0.0
+             maxValues[firstValue.row] = 0.012434
              
              // update matrix with new values
              for column in 0...similarityMatrix.columns-1 {
                  similarityMatrix[firstValue.row, column] = maxValues[column]
                  similarityMatrix[column, firstValue.row] = maxValues[column]
              }
+             print("Row values to remove: \(secondValuesRow)")
+             print("Column values to remove: \(similarityMatrix.getRowValues(firstValue.column))")
              similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
              
-             // update keywords cluster labels
-             clusters[firstValue.column].append(contentsOf: clusters[secondValue.column])
-             clusters.remove(at: secondValue.column)
              
+             // update keywords cluster labels
+             clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
+             clusters.remove(at: secondValue.row)
+            
              print("Number of clusters: \(clusters.count)")
              for cluster in clusters {
                  print(cluster)
              }
          }
      }
+    
 
      func getSimilarityMatrix() -> (Matrix, [String]) {
          let keywordsWithEmbeddings = getKeywordsEmbeddings()
          let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
          let keywords = keywordsWithEmbeddings.map { $0.keyword }
-         
+
          let matrixSize = Int(keywords.count)
          var matrix = Matrix(rows: matrixSize, columns: matrixSize)
-         
+
          for (index, keyword) in keywords.enumerated() {
              let currentKeywordIndex = keywords.firstIndex(of: keyword)!
              let currentKeywordEmbedding = keywordsEmbeddings[index]
              for index in currentKeywordIndex..<keywords.count {
-                 var score: Float = 0.0
+                 var score: Float = 0.012434
                  let otherKeywordEmbedding = keywordsEmbeddings[index]
                  if keyword != keywords[index] {
                      score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
                      print("Score \(score) between \(keyword) and \(keywords[index])")
                  } else {
-                     score = 0.0
+                     score = 0.012434
                  }
                  matrix[index, currentKeywordIndex] = score
                  matrix[currentKeywordIndex, index] = score
@@ -740,6 +735,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
          return (matrix, keywords)
      }
+    
+    
      
      func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
          var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
@@ -752,8 +749,20 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                  }
              }
          }
-         return keywordsWithEmbeddings
+        
+        return keywordsWithEmbeddings
      }
+    
+    
+    func getItemsEmbeddingsTest() -> [(item: String, embedding: [Float])] {
+        var itemsEmbeddings: [(item: String, embedding: [Float])] = []
+        
+        for item in self.items {
+            itemsEmbeddings.append((item: item.content!, embedding: item.embedding!))
+        }
+        
+        return itemsEmbeddings
+    }
     
     
     // Handle keyboard appearence

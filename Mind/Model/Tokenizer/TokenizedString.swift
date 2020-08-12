@@ -87,6 +87,7 @@ struct TokenizedString {
                 
                 // Convert the string to lowercase to match the vocabulary.
                 let searchTerm = Substring(prefix + subToken).lowercased() // for uncased-models
+//                let searchTerm = Substring(prefix + subToken) // for cased-models
                 
                 let subTokenID = BERTVocabulary.tokenID(of: searchTerm)
                 

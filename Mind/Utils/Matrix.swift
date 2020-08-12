@@ -65,7 +65,6 @@ extension Matrix {
         for row in 0..<self.rows {
             let thisRow = Array(self.grid[row*(self.columns)..<((row+1)*self.columns)])
             matrixArrays.append(thisRow)
-            print(thisRow, row)
         }
         return matrixArrays
     }
