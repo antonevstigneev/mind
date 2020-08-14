@@ -33,6 +33,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var mostFrequentKeywords: [String] = []
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
+    var refreshControl = UIRefreshControl()
     
     
     // MARK: - Outlets
@@ -112,35 +113,35 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(hierarchicalClustering),
-                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
-                                               object: nil)
+//        NotificationCenter.default.addObserver(self,
+//        selector: #selector(hierarchicalClustering),
+//        name: NSNotification.Name(rawValue: "itemsLoaded"),
+//        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateHeaderView),
-                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
-                                               object: nil)
+        selector: #selector(updateHeaderView),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(defaultKeywordsCollectionView),
-                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
-                                               object: nil)
+        selector: #selector(defaultKeywordsCollectionView),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(fetchData),
-                                               name: NSNotification.Name(rawValue: "itemsChanged"),
-                                               object: nil)
+        selector: #selector(fetchData),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handle(keyboardShowNotification:)),
-                                               name: UIResponder.keyboardDidShowNotification,
-                                               object: nil)
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handle(keyboardHideNotification:)),
-                                               name: UIResponder.keyboardWillHideNotification,
-                                               object: nil)
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
     }
     
     func setupViews() {
@@ -157,6 +158,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.addSubview(refreshControl)
         
         // plusButton initial setup
         plusButton.layer.masksToBounds = true
@@ -164,6 +166,16 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
         view.addGestureRecognizer(tapGesture)
+        
+        // pullDown to search initital setup
+        refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
+        refreshControl.setValue(100, forKey: "_snappingHeight")
+        refreshControl.alpha = 0
+    }
+    
+    @objc func pullToSearch(_ sender: AnyObject) {
+        self.searchBar.becomeFirstResponder()
+        refreshControl.endRefreshing()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -211,7 +223,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.item = self.items[indexPath.row]
             self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
         }
-        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), identifier: nil, discoverabilityTitle: nil, attributes: .destructive) { _ in
+        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"),
+                              identifier: nil, discoverabilityTitle: nil, attributes: .destructive) { _ in
             self.deleteItem(indexPath: indexPath)
         }
         
@@ -266,7 +279,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 3.0
-        let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.systemFont(ofSize: 17, weight: .regular), .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
+        let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.systemFont(ofSize: 17, weight: .regular),
+                                                                 .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
         let mutableString = NSMutableAttributedString(string: content, attributes: regularAttributes)
         cell.itemContentText.isSelectable = false
         
@@ -513,12 +527,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         
         for keywordEmbedding in keywordsEmbeddings {
-            //            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
-            let score = EuclideanDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
         
-        keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 < $1.1 }
+        keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
         let suggestedKeywords = keywordsSimilarityScores.prefix(11)
         
         return suggestedKeywords.map { $0.keyword }
@@ -656,7 +669,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Clustering
-    
     @objc func hierarchicalClustering() {
         var (similarityMatrix, keywords) = getSimilarityMatrix()
         var clusters: [[String]] = []
@@ -671,9 +683,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let minValues = similarityMatrix.grid.filter { $0 != 0.0 }
             let minValue = minValues.min()
             
-            if minValue! > matrixMeanValue {
-                break
-            }
+            if minValue! > matrixMeanValue { break }
             
             let firstValue = similarityMatrix.position(of: minValue!)[0]
             let secondValue = similarityMatrix.position(of: minValue!)[1]
@@ -698,7 +708,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             print("Number of clusters: \(clusters.count)")
             for cluster in clusters {
-                print(cluster)
+                print(cluster) // add return clusters <---------------------------- TODO
             }
         }
     }
