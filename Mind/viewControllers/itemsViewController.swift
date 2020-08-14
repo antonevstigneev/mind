@@ -94,7 +94,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         fetchData()
         tableView.reloadData()
     }
-
+    
     
     // MARK: - View initialization
     override func viewDidLoad() {
@@ -102,45 +102,45 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         setupNotifications()
         setupViews()
     }
-
+    
     override func viewDidLayoutSubviews() {
         setupSearchBar(searchBar: searchBar)
     }
-
+    
     func setupSearchBar(searchBar : UISearchBar) {
         searchBar.setPlaceholderTextColorTo(color: UIColor(named: "content2")!)
     }
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
-        selector: #selector(hierarchicalClustering),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
+                                               selector: #selector(hierarchicalClustering),
+                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(updateHeaderView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
+                                               selector: #selector(updateHeaderView),
+                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(defaultKeywordsCollectionView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
+                                               selector: #selector(defaultKeywordsCollectionView),
+                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
+                                               selector: #selector(fetchData),
+                                               name: NSNotification.Name(rawValue: "itemsChanged"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
+                                               selector: #selector(handle(keyboardShowNotification:)),
+                                               name: UIResponder.keyboardDidShowNotification,
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
+                                               selector: #selector(handle(keyboardHideNotification:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
     }
     
     func setupViews() {
@@ -169,7 +169,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         updateHeaderView()
-//        updateAllEmbeddings() // ! remove in final build
+        //        updateAllEmbeddings() // ! remove in final build
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -187,7 +187,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             emptyPlaceholderLabel.isHidden = false
         }
     }
-
+    
     
     // MARK: - Context menu
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
@@ -198,24 +198,24 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
-       let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
+        let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
             self.item = self.items[indexPath.row]
             self.findSimilarItems(for: self.item)
             Analytics.logEvent("similarItems_search", parameters: nil)
-       }
-       let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
+        }
+        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
             self.copyItemContent(indexPath: indexPath)
             self.item = self.items[indexPath.row]
-       }
-       let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
+        }
+        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
             self.item = self.items[indexPath.row]
             self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
-       }
-       let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), identifier: nil, discoverabilityTitle: nil, attributes: .destructive) { _ in
+        }
+        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), identifier: nil, discoverabilityTitle: nil, attributes: .destructive) { _ in
             self.deleteItem(indexPath: indexPath)
-       }
-
-       return UIMenu(title: "", children: [similar, copy, edit, delete])
+        }
+        
+        return UIMenu(title: "", children: [similar, copy, edit, delete])
     }
     
     func copyItemContent(indexPath: IndexPath) {
@@ -232,7 +232,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action:UIAlertAction) in
             print("You've pressed cancel");
         }
-
+        
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { (action:UIAlertAction) in
             let item = self.items[indexPath.row]
             self.context.delete(item)
@@ -240,12 +240,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"),
-            object: nil)
+                NSNotification.Name(rawValue: "itemsChanged"),
+                                            object: nil)
             
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }
-
+        
         alertController.addAction(cancelAction)
         alertController.addAction(deleteAction)
         self.present(alertController, animated: true, completion: nil)
@@ -259,7 +259,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
-
+        
         let item = items[indexPath.row]
         
         let content = item.value(forKey: "content") as! String
@@ -271,17 +271,17 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         cell.itemContentText.isSelectable = false
         
         cell.itemContentText.attributedText = mutableString
-    
+        
         cell.itemContentText.textContainerInset = UIEdgeInsets(top: 10, left: 6, bottom: 11, right: 6)
         
-//        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
-
+        //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
+        
         cell.itemContentText.linkTextAttributes = [
             .underlineStyle: NSUnderlineStyle.single.rawValue,
         ]
         
         cell.itemKeywordsCollectionView.tag = indexPath.row
-
+        
         return cell
     }
     
@@ -289,7 +289,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         guard let tableViewCell = cell as? ItemsCell else { return }
         tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
     }
-
+    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -301,10 +301,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Fetch items data
     @objc func fetchData() {
-       
-       let request: NSFetchRequest = Item.fetchRequest()
-       let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
-       request.sortDescriptors = [sortDescriptor]
+        
+        let request: NSFetchRequest = Item.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
+        request.sortDescriptors = [sortDescriptor]
         do {
             items = try context.fetch(request)
             let itemsLoading = DispatchGroup()
@@ -313,8 +313,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
             itemsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "itemsLoaded"),
-                object: nil)
+                    NSNotification.Name(rawValue: "itemsLoaded"),
+                                                object: nil)
             }
         } catch {
             print("Fetching failed")
@@ -325,32 +325,32 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let request: NSFetchRequest = Item.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
-         do {
+        do {
             self.tableView.hide()
             self.showSpinner()
             var itemsWithSelectedKeyword: [Item] = []
-             items = try context.fetch(request)
-             for item in items {
+            items = try context.fetch(request)
+            for item in items {
                 if item.keywords!.contains(selectedKeyword!.title) {
                     itemsWithSelectedKeyword.append(item)
                 }
-             }
-             DispatchQueue.main.async {
+            }
+            DispatchQueue.main.async {
                 self.items = itemsWithSelectedKeyword
                 self.tableView.reloadData()
                 self.scrollToTopTableView()
                 self.tableView.show()
                 self.removeSpinner()
-             }
-         } catch {
-             print("Fetching failed")
-         }
+            }
+        } catch {
+            print("Fetching failed")
+        }
     }
     
-
+    
     // MARK: - Get similar items
     func getSimilarItems(item: Item? = nil, text: String = "") -> [Item] {
-
+        
         var selectedItemEmbedding: [Float] = []
         var similarItems: [Item] = []
         var scores: [Float] = []
@@ -412,7 +412,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             fetchData()
         }
     }
-
+    
     func performSimilaritySearch(_ searchText: String) {
         
         var similarItems: [Item] = []
@@ -426,8 +426,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
-
-//            similarItems = self.getSimilarItems(text: searchText)
+            
+            //            similarItems = self.getSimilarItems(text: searchText)
             
             let keywordsForSearchText = getKeywords(from: searchText, count: 6)
             if keywordsForSearchText == [] {
@@ -441,7 +441,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             for item in self.items {
                 itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
             }
-
+            
             for keyword in suggestedKeywords {
                 for item in self.items {
                     if item.keywords!.contains(keyword) {
@@ -451,11 +451,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     }
                 }
             }
-
+            
             itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
             itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
-
-
+            
+            
             for item in itemsWithMatchedKeywords {
                 var keywordsScore: [Int] = []
                 for keyword in item.matchedKeywords {
@@ -464,7 +464,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
                 keywordsScores.append((item: item.item, score: keywordsScore.min()!))
             }
-
+            
             keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
             similarItems = keywordsScores.map { $0.item }
             
@@ -504,7 +504,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
     }
-
+    
     
     // MARK: - Keywords suggestions
     func getKeywordSuggestions(for text: String) -> [String] {
@@ -513,7 +513,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         
         for keywordEmbedding in keywordsEmbeddings {
-//            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+            //            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             let score = EuclideanDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
@@ -538,7 +538,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         return keywordsEmbeddings
     }
-
+    
     
     func showSuggestedKeywords(_ suggestedKeywords: [String]) {
         keywordsCollection = [self.selectedAllKeyword.title]
@@ -548,7 +548,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if keywordsCollection.contains(searchBar.text!.lowercased()) {
             keywordsCollection.remove(at:
-            keywordsCollection.firstIndex(of: self.searchBar.text!.lowercased())!)
+                keywordsCollection.firstIndex(of: self.searchBar.text!.lowercased())!)
             keywordsCollection.insert(searchBar.text!.lowercased(), at: 1)
         }
         self.keywordsCollectionView.reloadData()
@@ -569,7 +569,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let counts = Dictionary(mappedKeywords, uniquingKeysWith: +)
         let sortedCounts = counts.sorted { $0.1 > $1.1 }
         let topKeywords = sortedCounts.prefix(10).map { $0.key }
-
+        
         return topKeywords
     }
     
@@ -597,7 +597,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         var itemsTotalScores: [(itemContent: String, score: Float)] = []
         
         let itemsEmbeddings = getItemsEmbeddings()
-
+        
         for item in items {
             let currentItemEmbedding = item.embedding!
             var itemTotalScore: Float = 0
@@ -621,7 +621,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             print("\n")
         }
     }
-
+    
     func getItemsEmbeddings() -> [[Float]] {
         var itemsEmbeddings: [[Float]] = []
         for item in items {
@@ -630,7 +630,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return itemsEmbeddings
     }
     
-
+    
     func addPlaceholderLabel() {
         let placeholderLabel = UILabel()
         placeholderLabel.textAlignment = .center
@@ -655,103 +655,97 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    
-    
-    
-    
-    
     // MARK: - Clustering
     
-     @objc func hierarchicalClustering() {
-         var (similarityMatrix, keywords) = getSimilarityMatrix()
-         var clusters: [[String]] = []
-         for (index, keyword) in keywords.enumerated() {
-             clusters.append([keyword])
-             keywords[index] = "\(keyword)-\(index)" // for print
-         }
-         
-         while clusters.count > 1 {
-//            print(similarityMatrix.show())
+    @objc func hierarchicalClustering() {
+        var (similarityMatrix, keywords) = getSimilarityMatrix()
+        var clusters: [[String]] = []
+        for keyword in keywords {
+            clusters.append([keyword])
+        }
+        let matrixMeanValue = similarityMatrix.grid.avg()
+        
+        while clusters.count > 1 {
             
             // get most two most similar keywords
-             let minValues = similarityMatrix.grid.filter { $0 != 0.012434 }
-             let minValue = minValues.min()
-             let firstValue = similarityMatrix.position(of: minValue!)[0]
-             let secondValue = similarityMatrix.position(of: minValue!)[1]
-             
-             // get max values from similar keywords value pairs
-             let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
-             let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
-             print("Min value \(minValue!) between: \(keywords[firstValue.row]) and \(keywords[secondValue.row])")
-             var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
-             maxValues[firstValue.row] = 0.012434
-             
-             // update matrix with new values
-             for column in 0...similarityMatrix.columns-1 {
-                 similarityMatrix[firstValue.row, column] = maxValues[column]
-                 similarityMatrix[column, firstValue.row] = maxValues[column]
-             }
-             print("Row values to remove: \(secondValuesRow)")
-             print("Column values to remove: \(similarityMatrix.getRowValues(firstValue.column))")
-             similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
-             
-             
-             // update keywords cluster labels
-             clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
-             clusters.remove(at: secondValue.row)
+            let minValues = similarityMatrix.grid.filter { $0 != 0.0 }
+            let minValue = minValues.min()
             
-             print("Number of clusters: \(clusters.count)")
-             for cluster in clusters {
-                 print(cluster)
-             }
-         }
-     }
+            if minValue! > matrixMeanValue {
+                break
+            }
+            
+            let firstValue = similarityMatrix.position(of: minValue!)[0]
+            let secondValue = similarityMatrix.position(of: minValue!)[1]
+            
+            // get max values from similar keywords value pairs
+            let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
+            let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
+            print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
+            var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
+            maxValues[firstValue.row] = 0.0
+            
+            // update matrix with new values
+            for column in 0...similarityMatrix.columns-1 {
+                similarityMatrix[firstValue.row, column] = maxValues[column]
+                similarityMatrix[column, firstValue.row] = maxValues[column]
+            }
+            similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
+            
+            // update keywords cluster labels
+            clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
+            clusters.remove(at: secondValue.row)
+            
+            print("Number of clusters: \(clusters.count)")
+            for cluster in clusters {
+                print(cluster)
+            }
+        }
+    }
     
-
-     func getSimilarityMatrix() -> (Matrix, [String]) {
-         let keywordsWithEmbeddings = getKeywordsEmbeddings()
-         let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
-         let keywords = keywordsWithEmbeddings.map { $0.keyword }
-
-         let matrixSize = Int(keywords.count)
-         var matrix = Matrix(rows: matrixSize, columns: matrixSize)
-
-         for (index, keyword) in keywords.enumerated() {
-             let currentKeywordIndex = keywords.firstIndex(of: keyword)!
-             let currentKeywordEmbedding = keywordsEmbeddings[index]
-             for index in currentKeywordIndex..<keywords.count {
-                 var score: Float = 0.012434
-                 let otherKeywordEmbedding = keywordsEmbeddings[index]
-                 if keyword != keywords[index] {
-                     score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                     print("Score \(score) between \(keyword) and \(keywords[index])")
-                 } else {
-                     score = 0.012434
-                 }
-                 matrix[index, currentKeywordIndex] = score
-                 matrix[currentKeywordIndex, index] = score
-             }
-         }
-
-         return (matrix, keywords)
-     }
+    func getSimilarityMatrix() -> (Matrix, [String]) {
+        let keywordsWithEmbeddings = getKeywordsEmbeddings()
+        let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
+        let keywords = keywordsWithEmbeddings.map { $0.keyword }
+        
+        let matrixSize = Int(keywords.count)
+        var matrix = Matrix(rows: matrixSize, columns: matrixSize)
+        
+        for (index, keyword) in keywords.enumerated() {
+            let currentKeywordIndex = keywords.firstIndex(of: keyword)!
+            let currentKeywordEmbedding = keywordsEmbeddings[index]
+            for index in currentKeywordIndex..<keywords.count {
+                var score: Float = 0.0
+                let otherKeywordEmbedding = keywordsEmbeddings[index]
+                if keyword != keywords[index] {
+                    score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                    print("Score \(score) between \(keyword) and \(keywords[index])")
+                } else {
+                    score = 0.0
+                }
+                matrix[index, currentKeywordIndex] = score
+                matrix[currentKeywordIndex, index] = score
+            }
+        }
+        
+        return (matrix, keywords)
+    }
     
     
-     
-     func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
-         var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
-         
-         for item in self.items {
-             for (index, keyword) in item.keywords!.enumerated() {
-                 if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
-                     let keywordEmbedding = item.keywordsEmbeddings![index]
-                     keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
-                 }
-             }
-         }
+    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
+        var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
+        
+        for item in self.items {
+            for (index, keyword) in item.keywords!.enumerated() {
+                if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
+                    let keywordEmbedding = item.keywordsEmbeddings![index]
+                    keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
+                }
+            }
+        }
         
         return keywordsWithEmbeddings
-     }
+    }
     
     
     func getItemsEmbeddingsTest() -> [(item: String, embedding: [Float])] {
@@ -772,7 +766,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             tableViewBC.constant = keyboardFrame.height
         }
     }
-
+    
     @objc private func handle(keyboardHideNotification notification: Notification) {
         tableViewBC.constant = 0
     }
@@ -783,7 +777,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let date = NSDate(timeIntervalSince1970: x)
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy"
-
+        
         return formatter.string(from: date as Date)
     }
     
@@ -792,7 +786,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let date = NSDate(timeIntervalSince1970: TimeInterval(x))
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-
+        
         return formatter.string(from: date as Date)
     }
     
@@ -811,7 +805,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
         selectedKeyword = selectedAllKeyword
         keywordsCollectionView.reloadData()
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == keywordsCollectionView {
             if keywordsCollection != [] {
@@ -834,25 +828,25 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             let text = keywordsCollection[indexPath.item]
             let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
             let cellHeight = CGFloat(26.0)
-        
+            
             return CGSize(width: cellWidth, height: cellHeight)
         }
-
+            
         else {
             let item = items[collectionView.tag]
             let text = item.keywords![indexPath.row]
             let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
             let cellHeight = CGFloat(26.0)
-
+            
             return CGSize(width: cellWidth, height: cellHeight)
         }
     }
-
-
+    
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 8
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 8
     }
@@ -875,7 +869,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             
             return cell
         }
-        
+            
         else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "keywordCell", for: indexPath) as! ItemsKeywordsCell
             
@@ -911,15 +905,15 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
                 self.tableView.show()
                 self.keywordsCollectionView.show()
                 self.keywordsCollectionView?.scrollToItem(at: IndexPath(row: 0, section: 0),
-                      at: .left,
-                animated: false)
+                                                          at: .left,
+                                                          animated: false)
                 Analytics.logEvent("keywordItem_pressed", parameters: nil)
             }
         }
     }
     
     
-     
+    
     
 }
 
@@ -933,11 +927,11 @@ class itemContentText: UITextView {
         let tapLocation = point.applying(CGAffineTransform(translationX: -textContainerInset.left, y: -textContainerInset.top))
         let characterAtIndex = layoutManager.characterIndex(for: tapLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
         let linkAttributeAtIndex = textStorage.attribute(.link, at: characterAtIndex, effectiveRange: nil)
-
+        
         // Returns true for points located on linked text
         return linkAttributeAtIndex != nil
     }
-
+    
     override func becomeFirstResponder() -> Bool {
         // Returning false disables double-tap selection of link text
         return false
@@ -972,7 +966,7 @@ public extension UIImage {
         UIRectFill(rect)
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-
+        
         guard let cgImage = image?.cgImage else { return nil }
         self.init(cgImage: cgImage)
     }
@@ -982,20 +976,20 @@ public extension UIImage {
         let rect = CGRect(origin: CGPoint.zero, size: size)
         let context = UIGraphicsGetCurrentContext()
         let path = UIBezierPath(roundedRect: rect, cornerRadius: cornerRadius)
-
+        
         context?.beginPath()
         context?.addPath(path.cgPath)
         context?.closePath()
         context?.clip()
-
+        
         draw(at: CGPoint.zero)
-
+        
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext();
-
+        
         return image;
     }
-
+    
 }
 
 
@@ -1005,7 +999,7 @@ extension UIView {
             self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
         }, completion: nil)
     }
-
+    
     func animateButtonUp() {
         UIView.animate(withDuration: 0.1, delay: 0.0, options: [.allowUserInteraction, .curveEaseOut], animations: {
             self.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
@@ -1039,11 +1033,11 @@ extension UIImage {
             circle.lineWidth = 2.8
             circle.stroke()
         }
-
+        
         ctx.restoreGState()
         let img = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
-
+        
         return img
     }
 }
@@ -1069,25 +1063,25 @@ extension Array where Element == Float {
 extension Array where Element:Equatable {
     func removeDuplicates() -> [Element] {
         var result = [Element]()
-
+        
         for value in self {
             if result.contains(value) == false {
                 result.append(value)
             }
         }
-
+        
         return result
     }
 }
 
 
 extension itemsViewController {
-  func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-    return 300
-  }
-  func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-    return UITableView.automaticDimension
-  }
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 300
+    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
 }
 
 
