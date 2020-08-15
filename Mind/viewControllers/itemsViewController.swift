@@ -33,11 +33,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var mostFrequentKeywords: [String] = []
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
+    var keywordsClusters: [[String]] = []
     var refreshControl = UIRefreshControl()
     
     
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var clustersButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var keywordsCollectionView: UICollectionView!
@@ -47,6 +49,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Actions
+    @IBAction func clustersButtonTouchDownInside(_ sender: Any) {
+        // TODO: check if clusters are created, if so -> perform segue
+                                                // else wait, show spinner
+        
+        performSegue(withIdentifier: "toClustersViewController", sender: sender)
+        Analytics.logEvent("clustersButton_pressed", parameters: nil)
+    }
+
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
         performSegue(withIdentifier: "toAddItemViewController", sender: sender)
@@ -113,10 +123,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupNotifications() {
-//        NotificationCenter.default.addObserver(self,
-//        selector: #selector(hierarchicalClustering),
-//        name: NSNotification.Name(rawValue: "itemsLoaded"),
-//        object: nil)
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(hierarchicalClustering),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(updateHeaderView),
@@ -164,24 +174,25 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         plusButton.layer.masksToBounds = true
         plusButton.layer.cornerRadius = plusButton.frame.size.height / 2
         
-        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
-        view.addGestureRecognizer(tapGesture)
-        
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
-        refreshControl.setValue(100, forKey: "_snappingHeight")
+        refreshControl.setValue(75, forKey: "_snappingHeight")
         refreshControl.alpha = 0
+        
+        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
+        view.addGestureRecognizer(tapGesture)
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
-        self.searchBar.becomeFirstResponder()
+        searchBar.becomeFirstResponder()
         refreshControl.endRefreshing()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         updateHeaderView()
-        //        updateAllEmbeddings() // ! remove in final build
+        hierarchicalClustering()
+        //        updateAllEmbeddings()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -309,6 +320,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destinationVC = segue.destination as? editItemViewController {
             destinationVC.item = self.item
+        }
+        if let destinationVC = segue.destination as? clustersViewController {
+            destinationVC.clusters = self.keywordsClusters
         }
     }
     
@@ -670,46 +684,56 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Clustering
     @objc func hierarchicalClustering() {
-        var (similarityMatrix, keywords) = getSimilarityMatrix()
-        var clusters: [[String]] = []
-        for keyword in keywords {
-            clusters.append([keyword])
+        let clustersCreation = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: clustersCreation) {
+            var (similarityMatrix, keywords) = self.getSimilarityMatrix()
+            var clusters: [[String]] = []
+            for keyword in keywords {
+                clusters.append([keyword])
+            }
+            let matrixMeanValue = similarityMatrix.grid.avg()
+            
+            while clusters.count > 1 {
+                
+                // get most two most similar keywords
+                let minValues = similarityMatrix.grid.filter { $0 != 0.0 }
+                let minValue = minValues.min()
+                
+                if minValue! > matrixMeanValue { break }
+                
+                let firstValue = similarityMatrix.position(of: minValue!)[0]
+                let secondValue = similarityMatrix.position(of: minValue!)[1]
+                
+                // get max values from similar keywords value pairs
+                let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
+                let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
+//                print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
+                var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
+                maxValues[firstValue.row] = 0.0
+                
+                // update matrix with new values
+                for column in 0...similarityMatrix.columns-1 {
+                    similarityMatrix[firstValue.row, column] = maxValues[column]
+                    similarityMatrix[column, firstValue.row] = maxValues[column]
+                }
+                similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
+                
+                // update keywords cluster labels
+                clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
+                clusters.remove(at: secondValue.row)
+                
+//                print("Number of clusters: \(clusters.count)")
+//                for cluster in clusters {
+//                    print(cluster)
+//                }
+                
+                self.keywordsClusters = clusters
+            }
         }
-        let matrixMeanValue = similarityMatrix.grid.avg()
-        
-        while clusters.count > 1 {
-            
-            // get most two most similar keywords
-            let minValues = similarityMatrix.grid.filter { $0 != 0.0 }
-            let minValue = minValues.min()
-            
-            if minValue! > matrixMeanValue { break }
-            
-            let firstValue = similarityMatrix.position(of: minValue!)[0]
-            let secondValue = similarityMatrix.position(of: minValue!)[1]
-            
-            // get max values from similar keywords value pairs
-            let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
-            let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
-            print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
-            var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
-            maxValues[firstValue.row] = 0.0
-            
-            // update matrix with new values
-            for column in 0...similarityMatrix.columns-1 {
-                similarityMatrix[firstValue.row, column] = maxValues[column]
-                similarityMatrix[column, firstValue.row] = maxValues[column]
-            }
-            similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
-            
-            // update keywords cluster labels
-            clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
-            clusters.remove(at: secondValue.row)
-            
-            print("Number of clusters: \(clusters.count)")
-            for cluster in clusters {
-                print(cluster) // add return clusters <---------------------------- TODO
-            }
+        clustersCreation.notify(queue: .main) {
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "clustersCreated"),
+            object: nil)
         }
     }
     
@@ -729,7 +753,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 let otherKeywordEmbedding = keywordsEmbeddings[index]
                 if keyword != keywords[index] {
                     score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                    print("Score \(score) between \(keyword) and \(keywords[index])")
+//                    print("Score \(score) between \(keyword) and \(keywords[index])")
                 } else {
                     score = 0.0
                 }

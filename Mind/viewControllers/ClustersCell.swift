@@ -1,22 +1,19 @@
 //
-//  Itemsswift
+//  ClustersCell.swift
 //  Mind
 //
-//  Created by Anton Evstigneev on 09.04.2020.
+//  Created by Anton Evstigneev on 15.08.2020.
 //  Copyright © 2020 Anton Evstigneev. All rights reserved.
 //
 
 import UIKit
 
+class ClustersCell: UITableViewCell {
 
-class ItemsCell: UITableViewCell {
-    
-    @IBOutlet weak var itemContentText: UITextView!
-    @IBOutlet weak var itemKeywordsCollectionView: UICollectionView!
+    @IBOutlet weak var clusterKeywordsCollectionView: UICollectionView!
 }
 
-
-class ItemsKeywordsCell: UICollectionViewCell {
+class ClusterKeywordsCell: UICollectionViewCell {
 
     @IBOutlet weak var keywordButton: UIButton!
     
@@ -34,27 +31,12 @@ class ItemsKeywordsCell: UICollectionViewCell {
     }
 }
 
-
-extension ItemsCell {
+extension ClustersCell {
     
     func setCollectionViewDataSourceDelegate<D: UICollectionViewDataSource & UICollectionViewDelegate>(_ dataSourceDelegate: D, forRow row: Int) {
-        itemKeywordsCollectionView.delegate = dataSourceDelegate
-        itemKeywordsCollectionView.dataSource = dataSourceDelegate
-        itemKeywordsCollectionView.tag = row
-        itemKeywordsCollectionView.reloadData()
-    }
-}
-
-
-extension UIButton {
-
-    func setBackgroundColor(_ color: UIColor, for state: UIControl.State) {
-        UIGraphicsBeginImageContext(CGSize(width: 1, height: 1))
-        UIGraphicsGetCurrentContext()!.setFillColor(color.cgColor)
-        UIGraphicsGetCurrentContext()!.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
-        let colorImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-
-        setBackgroundImage(colorImage, for: state)
+        clusterKeywordsCollectionView.delegate = dataSourceDelegate
+        clusterKeywordsCollectionView.dataSource = dataSourceDelegate
+        clusterKeywordsCollectionView.tag = row
+        clusterKeywordsCollectionView.reloadData()
     }
 }

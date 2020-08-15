@@ -9,6 +9,7 @@
 
 import UIKit
 
+// for keywords in header (keywords selector collection view)
 class keywordsCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var keywordButton: UIButton!
