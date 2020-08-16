@@ -34,6 +34,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     let selectedAllKeyword = (title: "all", path: 0)
     var selectedKeyword: (title: String, path: Int)? = nil
     var keywordsClusters: [[String]] = []
+    var selectedClusterKeyword: String = ""
     var refreshControl = UIRefreshControl()
     
     
@@ -101,6 +102,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         Analytics.logEvent("keywordCollection_pressed", parameters: nil)
     }
     
+    @IBAction func itemKeywordTouchUpInside(_ sender: UIButton) {
+        showItemsForSelectedKeyword(sender.titleLabel!.text!)
+    }
+    
+    
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
         fetchData()
         tableView.reloadData()
@@ -124,7 +130,17 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
+        selector: #selector(clusterKeywordClicked),
+        name: NSNotification.Name(rawValue: "clusterKeywordClicked"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
         selector: #selector(hierarchicalClustering),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(fetchData),
         name: NSNotification.Name(rawValue: "itemsChanged"),
         object: nil)
         
@@ -136,11 +152,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         NotificationCenter.default.addObserver(self,
         selector: #selector(defaultKeywordsCollectionView),
         name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
@@ -181,6 +192,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
         view.addGestureRecognizer(tapGesture)
+        
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
@@ -209,6 +221,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             keywordsCollectionView.isHidden = true
             emptyPlaceholderLabel.isHidden = false
         }
+    }
+    
+    @objc func clusterKeywordClicked() {
+        showItemsForSelectedKeyword(selectedClusterKeyword)
     }
     
     
@@ -264,7 +280,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             
             NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "itemsChanged"),
+            NSNotification.Name(rawValue: "itemsChanged"),
                                             object: nil)
             
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -906,16 +922,14 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
             let item = items[collectionView.tag]
             let itemKeywordTitle = item.keywords![indexPath.row]
             cell.keywordButton.setTitle(itemKeywordTitle, for: .normal)
-            // detect pressed keyword item
-            cell.keywordButton.tag = collectionView.tag
-            cell.keywordButton.addTarget(self, action: #selector(itemKeywordSelected(_:)), for: .touchUpInside)
             
             return cell
         }
     }
     
-    @objc func itemKeywordSelected(_ sender: UIButton) {
-        let keywordTitle = sender.titleLabel!.text!
+    func showItemsForSelectedKeyword(_ keywordTitle: String) {
+        
+        print(keywordTitle)
         
         tableView.hide()
         keywordsCollectionView.hide()

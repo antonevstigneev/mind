@@ -158,6 +158,9 @@
                                                                         <state key="highlighted">
                                                                             <color key="titleColor" name="background"/>
                                                                         </state>
+                                                                        <connections>
+                                                                            <action selector="itemKeywordTouchUpInside:" destination="SGi-zd-M47" eventType="touchUpInside" id="Q6m-Og-Aat"/>
+                                                                        </connections>
                                                                     </button>
                                                                 </subviews>
                                                             </view>
@@ -316,6 +319,10 @@
                                                                         <state key="highlighted">
                                                                             <color key="titleColor" name="background"/>
                                                                         </state>
+                                                                        <connections>
+                                                                            <action selector="clusterKeywordTouchUpInside:" destination="Nhg-bm-Ml1" eventType="touchUpInside" id="MJq-WW-n22"/>
+                                                                            <segue destination="OXK-QM-cTw" kind="unwind" unwindAction="unwindToHomeWithSegue:" id="XDy-iK-sMP"/>
+                                                                        </connections>
                                                                     </button>
                                                                 </subviews>
                                                             </view>

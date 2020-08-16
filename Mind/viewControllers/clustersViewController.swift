@@ -12,17 +12,21 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     
     // MARK: - Variables
     var clusters: [[String]] = []
-    
+    var selectedClusterKeyword: String = ""
     
     // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
+    
+    // Actions
+    @IBAction func clusterKeywordTouchUpInside(_ sender: UIButton) {
+        selectedClusterKeyword = sender.titleLabel!.text!
+    }
     
     
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
-        print(clusters)
     }
 
 
@@ -32,6 +36,12 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
         tableView.reloadData()
+    }
+    
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let tableViewCell = cell as? ClustersCell else { return }
+        tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
     }
 
     
@@ -55,15 +65,14 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    
 }
+
 
 // MARK: - Keywords setup
 extension clustersViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
         return clusters[collectionView.tag].count
     }
 
@@ -78,14 +87,15 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
         return CGSize(width: cellWidth, height: cellHeight)
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 8
     }
     
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 8
+        return 10
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
@@ -94,12 +104,19 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
         let cluster = clusters[collectionView.tag]
         let keywordTitle = cluster[indexPath.row]
         cell.keywordButton.setTitle(keywordTitle, for: .normal)
-        // detect pressed keyword item
-        cell.keywordButton.tag = collectionView.tag
         
         return cell
     }
     
-
     
+    // MARK: - Prepare for segue
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let itemsViewController = segue.destination as! itemsViewController
+        itemsViewController.selectedClusterKeyword = self.selectedClusterKeyword
+        NotificationCenter.default.post(name:
+        NSNotification.Name(rawValue: "clusterKeywordClicked"),
+                                        object: nil)
+    }
+
+
 }

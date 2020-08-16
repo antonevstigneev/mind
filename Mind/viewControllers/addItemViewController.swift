@@ -56,7 +56,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         object: nil)
     
         // textInput initial setup
-        textInputView.text = UserDefaults.standard.value(forKey:"Draft") as? String
+        textInputView.text = UserDefaults.standard.value(forKey: "Draft") as? String
         textInputView.delegate = self
         textInputView.tintColor = UIColor(named: "content")
         
