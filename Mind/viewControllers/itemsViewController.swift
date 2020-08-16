@@ -722,11 +722,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
                 clusters.remove(at: secondValue.row)
                 
-//                print("Number of clusters: \(clusters.count)")
-//                for cluster in clusters {
-//                    print(cluster)
-//                }
-                
+                // save clusters
                 self.keywordsClusters = clusters
             }
         }

@@ -13,35 +13,27 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     // MARK: - Variables
     var clusters: [[String]] = []
     
+    
     // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
     
     
+    // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
-        checkClusters()
-        
+        setupViews()
+        print(clusters)
+    }
+
+
+    @objc func setupViews() {
         // tableView initial setup
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
         tableView.reloadData()
     }
-    
-    
-    override func viewWillAppear(_ animated: Bool) {
-        // viewWillAppear method (it waits for items rendering in view)
-        // if clusters == 0, show spinner
-    }
 
-    
-    @objc func checkClusters() {
-        print("Number of clusters: \(clusters.count)")
-        for cluster in clusters {
-            print(cluster)
-        }
-    }
-    
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return clusters.count
@@ -50,17 +42,18 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ClustersCell
-        
         cell.clusterKeywordsCollectionView.tag = indexPath.row
+        
+        cell.clusterKeywordsCollectionView.delegate = self
+        cell.clusterKeywordsCollectionView.dataSource = self
+        
+        let height = cell.clusterKeywordsCollectionView.collectionViewLayout.collectionViewContentSize.height
+        
+        cell.updateClustersHeights(height)
         
         return cell
     }
     
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let tableViewCell = cell as? ClustersCell else { return }
-        tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
-    }
     
     
 }
@@ -73,6 +66,7 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
         
         return clusters[collectionView.tag].count
     }
+
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
