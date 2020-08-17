@@ -296,9 +296,9 @@
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="62"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" contentInsetAdjustmentBehavior="never" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="6Ua-QG-OoB">
+                                                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" contentInsetAdjustmentBehavior="never" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="6Ua-QG-OoB" customClass="DynamicCollectionView" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="20" y="8" width="374" height="26"/>
-                                                    <color key="backgroundColor" systemColor="systemPinkColor" red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <color key="backgroundColor" name="background"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" priority="999" constant="26" id="tQb-uK-1QU"/>
                                                     </constraints>
@@ -348,7 +348,7 @@
                                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="6Ua-QG-OoB" secondAttribute="bottom" constant="28" id="zS9-R2-vCP"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" name="background"/>
                                         <connections>
                                             <outlet property="clusterKeywordsCollectionView" destination="6Ua-QG-OoB" id="G9V-NT-oa0"/>
                                             <outlet property="heightConstraint" destination="tQb-uK-1QU" id="1Ue-Jl-4Vk"/>

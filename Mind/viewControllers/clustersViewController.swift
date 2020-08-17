@@ -52,8 +52,8 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         cell.clusterKeywordsCollectionView.dataSource = self
         
         let height = cell.clusterKeywordsCollectionView.collectionViewLayout.collectionViewContentSize.height
-        
-        cell.updateClustersHeights(height)
+        cell.heightConstraint.constant = height
+        self.view.layoutIfNeeded()
         
         return cell
     }
