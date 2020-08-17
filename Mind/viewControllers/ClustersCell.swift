@@ -34,13 +34,6 @@ class ClusterKeywordsCell: UICollectionViewCell {
 
 extension ClustersCell {
     
-    func setCollectionViewDataSourceDelegate<D: UICollectionViewDataSource & UICollectionViewDelegate>(_ dataSourceDelegate: D, forRow row: Int) {
-        clusterKeywordsCollectionView.delegate = dataSourceDelegate
-        clusterKeywordsCollectionView.dataSource = dataSourceDelegate
-        clusterKeywordsCollectionView.tag = row
-        clusterKeywordsCollectionView.reloadData()
-    }
-    
     func updateClustersHeights(_ height: CGFloat) {
         heightConstraint.constant = height
         clusterKeywordsCollectionView.layoutIfNeeded()

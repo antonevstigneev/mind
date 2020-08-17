@@ -928,9 +928,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
     }
     
     func showItemsForSelectedKeyword(_ keywordTitle: String) {
-        
-        print(keywordTitle)
-        
+
         tableView.hide()
         keywordsCollectionView.hide()
         fetchData()
@@ -957,7 +955,7 @@ extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSou
     }
     
     
-    
+
     
 }
 
