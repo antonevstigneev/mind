@@ -224,7 +224,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func clusterKeywordClicked() {
-        showItemsForSelectedKeyword(selectedClusterKeyword)
+        if selectedClusterKeyword != "" {
+          showItemsForSelectedKeyword(selectedClusterKeyword)
+        }
     }
     
     

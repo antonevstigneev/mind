@@ -74,8 +74,7 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 22, weight: .regular),
-            .paragraphStyle: paragraphStyle,
-        ]
+            .paragraphStyle: paragraphStyle]
 
         let mutablestring = NSMutableAttributedString.init(string: text, attributes: attributes)
 
@@ -83,8 +82,8 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
 
         if requiredHeight.size.width > Width {
             requiredHeight = CGRect.init(x: 0, y: 0, width: Width, height: requiredHeight.height)
-
         }
+        
         return requiredHeight.size.height;
     }
     
