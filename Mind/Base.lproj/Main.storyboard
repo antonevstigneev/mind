@@ -290,23 +290,23 @@
                                 <inset key="separatorInset" minX="12" minY="0.0" maxX="12" maxY="0.0"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" translatesAutoresizingMaskIntoConstraints="NO" id="aso-NZ-Ukq" customClass="ClustersCell" customModule="Mind" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="414" height="62"/>
+                                        <rect key="frame" x="0.0" y="28" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="aso-NZ-Ukq" id="gOO-4e-gEd">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="62"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" contentInsetAdjustmentBehavior="never" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="6Ua-QG-OoB" customClass="DynamicCollectionView" customModule="Mind" customModuleProvider="target">
-                                                    <rect key="frame" x="20" y="8" width="374" height="26"/>
-                                                    <color key="backgroundColor" name="background"/>
+                                                    <rect key="frame" x="20" y="8" width="374" height="28"/>
+                                                    <color key="backgroundColor" systemColor="systemPinkColor" red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="height" priority="999" constant="26" id="tQb-uK-1QU"/>
+                                                        <constraint firstAttribute="height" constant="28" id="tQb-uK-1QU"/>
                                                     </constraints>
                                                     <collectionViewLayout key="collectionViewLayout" id="BKA-kQ-8WH" customClass="KeywordsClusterFlowLayout" customModule="Mind" customModuleProvider="target"/>
                                                     <cells>
                                                         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" reuseIdentifier="keywordCell" id="I8W-Nl-OlF" customClass="ClusterKeywordsCell" customModule="Mind" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="68" height="26"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
                                                                 <rect key="frame" x="0.0" y="0.0" width="68" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask"/>
@@ -345,16 +345,20 @@
                                                 <constraint firstItem="6Ua-QG-OoB" firstAttribute="top" secondItem="gOO-4e-gEd" secondAttribute="top" constant="8" id="INS-DO-sSN"/>
                                                 <constraint firstItem="6Ua-QG-OoB" firstAttribute="leading" secondItem="gOO-4e-gEd" secondAttribute="leading" constant="20" id="LRp-MX-NhA"/>
                                                 <constraint firstAttribute="trailing" secondItem="6Ua-QG-OoB" secondAttribute="trailing" constant="20" id="ZKg-76-Soj"/>
-                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="6Ua-QG-OoB" secondAttribute="bottom" constant="28" id="zS9-R2-vCP"/>
+                                                <constraint firstAttribute="bottom" secondItem="6Ua-QG-OoB" secondAttribute="bottom" constant="8" id="zS9-R2-vCP"/>
                                             </constraints>
                                         </tableViewCellContentView>
-                                        <color key="backgroundColor" name="background"/>
+                                        <color key="backgroundColor" systemColor="systemTealColor" red="0.35294117650000001" green="0.7843137255" blue="0.98039215690000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <connections>
                                             <outlet property="clusterKeywordsCollectionView" destination="6Ua-QG-OoB" id="G9V-NT-oa0"/>
                                             <outlet property="heightConstraint" destination="tQb-uK-1QU" id="1Ue-Jl-4Vk"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="Nhg-bm-Ml1" id="hL9-Mu-ucR"/>
+                                    <outlet property="delegate" destination="Nhg-bm-Ml1" id="H71-jh-AM6"/>
+                                </connections>
                             </tableView>
                         </subviews>
                         <color key="backgroundColor" name="background"/>

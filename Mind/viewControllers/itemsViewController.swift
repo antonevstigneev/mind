@@ -325,6 +325,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         return cell
     }
+
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         guard let tableViewCell = cell as? ItemsCell else { return }

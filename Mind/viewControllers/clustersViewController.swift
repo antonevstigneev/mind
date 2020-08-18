@@ -32,10 +32,7 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
 
     @objc func setupViews() {
         // tableView initial setup
-        tableView.delegate = self
-        tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.reloadData()
     }
     
     
@@ -44,18 +41,51 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let tableViewCell = cell as? ClustersCell else { return }
+        tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
+    }
+    
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+    
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ClustersCell
         cell.clusterKeywordsCollectionView.tag = indexPath.row
         
-        cell.clusterKeywordsCollectionView.delegate = self
-        cell.clusterKeywordsCollectionView.dataSource = self
-        
-        let height = cell.clusterKeywordsCollectionView.collectionViewLayout.collectionViewContentSize.height
-        cell.heightConstraint.constant = height
-        self.view.layoutIfNeeded()
-        
+        let clusterKeywords = clusters[indexPath.row].joined(separator: " ")
+        let clusterHeight = getHeigthForCluster(text: clusterKeywords, Width: cell.frame.width - 26.0)
+
+        cell.heightConstraint.constant = clusterHeight
+
         return cell
+    }
+    
+    func getHeigthForCluster(text: String, Width: CGFloat) -> CGFloat {
+
+        let constrainedSize = CGSize.init(width: Width, height: CGFloat(MAXFLOAT))
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 10
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 22, weight: .regular),
+            .paragraphStyle: paragraphStyle,
+        ]
+
+        let mutablestring = NSMutableAttributedString.init(string: text, attributes: attributes)
+
+        var requiredHeight = mutablestring.boundingRect(with: constrainedSize, options: NSStringDrawingOptions.usesFontLeading.union(NSStringDrawingOptions.usesLineFragmentOrigin), context: nil)
+
+        if requiredHeight.size.width > Width {
+            requiredHeight = CGRect.init(x: 0, y: 0, width: Width, height: requiredHeight.height)
+
+        }
+        return requiredHeight.size.height;
     }
     
     
@@ -69,7 +99,6 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return clusters[collectionView.tag].count
     }
-
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
@@ -101,6 +130,7 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
         
         return cell
     }
+    
     
     
     // MARK: - Prepare for segue

@@ -12,6 +12,7 @@ class ClustersCell: UITableViewCell {
 
     @IBOutlet weak var clusterKeywordsCollectionView: UICollectionView!
     @IBOutlet weak var heightConstraint: NSLayoutConstraint!
+    
 }
 
 class ClusterKeywordsCell: UICollectionViewCell {
@@ -28,16 +29,21 @@ class ClusterKeywordsCell: UICollectionViewCell {
          keywordButton.setBackgroundColor(UIColor(named: "background")!, for: .normal)
          keywordButton.setBackgroundColor(UIColor(named: "content")!, for: .highlighted)
          keywordButton.setBackgroundColor(UIColor(named: "buttonBackground")!, for: .selected)
-         keywordButton.setTitleColor(UIColor(named: "background")!, for: .selected)
     }
+    
 }
 
 extension ClustersCell {
     
-    func updateClustersHeights(_ height: CGFloat) {
-        heightConstraint.constant = height
+    func setCollectionViewDataSourceDelegate<D: UICollectionViewDataSource & UICollectionViewDelegate>(_ dataSourceDelegate: D, forRow row: Int) {
+        clusterKeywordsCollectionView.delegate = dataSourceDelegate
+        clusterKeywordsCollectionView.dataSource = dataSourceDelegate
+        clusterKeywordsCollectionView.tag = row
+        clusterKeywordsCollectionView.reloadData()
         clusterKeywordsCollectionView.layoutIfNeeded()
     }
+    
 }
+
 
 
