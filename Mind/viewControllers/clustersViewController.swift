@@ -26,15 +26,35 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNotifications()
         setupViews()
+        if clusters.count == 0 {
+            showSpinner()
+            print("Clusters are not ready yet.")
+        }
     }
 
-
-    @objc func setupViews() {
+    func setupViews() {
         // tableView initial setup
         tableView.rowHeight = UITableView.automaticDimension
     }
     
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(checkClusters),
+        name: NSNotification.Name(rawValue: "clustersCreated"),
+        object: nil)
+    }
+    
+    @objc func checkClusters() {
+        
+        print("Clusters are loaded and ready.")
+        print("Clusters number: \(clusters.count)")
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+            self.removeSpinner()
+        }
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return clusters.count

@@ -14,7 +14,6 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
-
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
     // MARK: - Model
@@ -53,7 +52,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func clustersButtonTouchDownInside(_ sender: Any) {
         // TODO: check if clusters are created, if so -> perform segue
                                                 // else wait, show spinner
-        
         performSegue(withIdentifier: "toClustersViewController", sender: sender)
         Analytics.logEvent("clustersButton_pressed", parameters: nil)
     }
@@ -239,58 +237,97 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
-        let similar = UIAction(title: "Find similar", image: UIImage.circles(diameter: 50, color: UIColor(named: "buttonBackground")!)) { _ in
-            self.item = self.items[indexPath.row]
+        self.item = self.items[indexPath.row]
+        var favoriteLabel: String!
+        var favoriteImage: UIImage!
+        
+        if item.favorited == true {
+            favoriteLabel = "Unfavorite"
+            favoriteImage = UIImage(systemName: "star.slash")
+        } else {
+            favoriteLabel = "Favorite"
+            favoriteImage = UIImage(systemName: "star")
+        }
+        
+        let similar = UIAction(title: "Similar", image: UIImage.circles()) { _ in
             self.findSimilarItems(for: self.item)
             Analytics.logEvent("similarItems_search", parameters: nil)
         }
         let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
-            self.copyItemContent(indexPath: indexPath)
-            self.item = self.items[indexPath.row]
+            self.copyItemContent(self.item)
         }
         let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
-            self.item = self.items[indexPath.row]
             self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
         }
-        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"),
-                              identifier: nil, discoverabilityTitle: nil, attributes: .destructive) { _ in
-            self.deleteItem(indexPath: indexPath)
+        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
+            self.favoriteItem(self.item)
+        }
+        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
+            self.hideItem(self.item, indexPath)
+        }
+        let archive = UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { _ in
+            self.archiveItem(self.item, indexPath)
         }
         
-        return UIMenu(title: "", children: [similar, copy, edit, delete])
+        return UIMenu(title: "", children: [similar, copy, edit, favorite, hide, archive])
     }
     
-    func copyItemContent(indexPath: IndexPath) {
-        let item = self.items[indexPath.row]
+    func copyItemContent(_ item: Item) {
         let content = item.content
         let pasteboard = UIPasteboard.general
         pasteboard.string = content
     }
     
-    func deleteItem(indexPath: IndexPath) {
-        let alertController = UIAlertController(title: "Are you sure you want to delete this?", message: nil, preferredStyle: .alert)
-        alertController.view.tintColor = UIColor.lightGray;
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action:UIAlertAction) in
-            print("You've pressed cancel");
+    func favoriteItem(_ item: Item) {
+        var alertTitle: String!
+        if item.favorited == true {
+            alertTitle = "Removed from Favorites"
+            item.favorited = false
+        } else {
+            alertTitle = "Added to Favorites"
+            item.favorited = true
         }
-        
-        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { (action:UIAlertAction) in
-            let item = self.items[indexPath.row]
+        postAlert(title: alertTitle)
+        print(item.favorited)
+    }
+    
+    func hideItem(_ item: Item, _ indexPath: IndexPath) {
+        let actionMessage = "This will be hidded from all places but can be found in the Hidden folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Hide", success: { () -> Void in
+            print("Hide clicked")
+            self.item.hidden = true
+            self.items.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
+          }) { () -> Void in
+            print("Cancelled")
+        }
+    }
+    
+    func archiveItem(_ item: Item, _ indexPath: IndexPath) {
+        let actionMessage = "This will be archived but can be found in the Archived folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+            print("Archive clicked")
+            self.item.archived = true
+            self.items.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
+          }) { () -> Void in
+            print("Cancelled")
+        }
+    }
+    
+    func deleteItem(_ item: Item, indexPath: IndexPath) {
+        let actionTitle = "Are you sure you want to delete this?"
+        postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
+            print("Delete clicked")
             self.context.delete(item)
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-            
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"),
-                                            object: nil)
-            
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
+          }) { () -> Void in
+            print("Cancelled")
         }
-        
-        alertController.addAction(cancelAction)
-        alertController.addAction(deleteAction)
-        self.present(alertController, animated: true, completion: nil)
     }
     
     
@@ -341,8 +378,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             destinationVC.item = self.item
         }
         if let destinationVC = segue.destination as? clustersViewController {
-            destinationVC.clusters = self.keywordsClusters
+            destinationVC.clusters = self.keywordsClusters // <------------ this passes empty array!
         }
+    }
+    
+    @objc func getKeywordsClusters(notification: NSNotification) {
+        
     }
     
     
@@ -354,6 +395,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         request.sortDescriptors = [sortDescriptor]
         do {
             items = try context.fetch(request)
+            items = items.filter {
+                $0.hidden == false &&
+                $0.archived == false
+            }
             let itemsLoading = DispatchGroup()
             DispatchQueue.main.async(group: itemsLoading) {
                 self.tableView.reloadData()
@@ -742,7 +787,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 clusters.remove(at: secondValue.row)
                 
                 // save clusters
-                self.keywordsClusters = clusters
+                DispatchQueue.main.async {
+                    self.keywordsClusters = clusters
+                }
+                
             }
         }
         clustersCreation.notify(queue: .main) {
@@ -837,6 +885,38 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         formatter.dateFormat = "HH:mm"
         
         return formatter.string(from: date as Date)
+    }
+    
+    func postAlert(title: String, _ message: String = "") {
+      let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+      self.present(alert, animated: true, completion: nil)
+
+      // delays execution of code to dismiss
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: {
+        alert.dismiss(animated: true, completion: nil)
+      })
+    }
+    
+    func postActionSheet(title: String!, message: String!, confirmation: String!, success: (() -> Void)? , cancel: (() -> Void)?) {
+        DispatchQueue.main.async {
+      let alertController = UIAlertController(title:title,
+        message: message,
+        preferredStyle: .actionSheet)
+        alertController.view.tintColor = UIColor.lightGray
+
+      let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel",
+                                                      style: .cancel) {
+          action -> Void in cancel?()
+      }
+      let successAction: UIAlertAction = UIAlertAction(title: confirmation,
+                                                       style: .destructive) {
+          action -> Void in success?()
+      }
+        alertController.addAction(cancelAction)
+        alertController.addAction(successAction)
+
+        self.present(alertController, animated: true, completion: nil)
+      }
     }
     
     
@@ -1067,7 +1147,9 @@ extension UISearchBar {
 
 
 extension UIImage {
-    class func circles(diameter: CGFloat, color: UIColor) -> UIImage {
+    class func circles() -> UIImage {
+        let diameter = CGFloat(50)
+        let color = UIColor(named: "buttonBackground")!
         UIGraphicsBeginImageContextWithOptions(CGSize(width: diameter, height: diameter), false, 0)
         let ctx = UIGraphicsGetCurrentContext()!
         ctx.saveGState()
