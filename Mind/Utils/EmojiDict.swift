@@ -1,4 +1,4 @@
-let emojiDict = [
+public let emojiDict = [
 (emoji: "💀", word: "death"), 
 (emoji: "🤖", word: "robot"),
 (emoji: "👽", word: "alien"),
@@ -9,6 +9,8 @@ let emojiDict = [
 (emoji: "🔥", word: "fire"),
 (emoji: "🎓", word: "education"),
 (emoji: "🎥", word: "movie"),
+(emoji: "🎼", word: "music"),
+(emoji: "🔊", word: "sound"),
 (emoji: "🦠", word: "virus"),
 (emoji: "🌱", word: "nature"),
 (emoji: "🌎", word: "world"),
@@ -170,4 +172,4 @@ let emojiDict = [
 (emoji: "🪐", word: "cosmos"),
 ]
 
-var emojiEmbeddings: [[Float]] = []
+public var emojiEmbeddings: [[Float]] = []

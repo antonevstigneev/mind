@@ -13,6 +13,7 @@ import CoreML
 import Foundation
 import NaturalLanguage
 import Firebase
+import SwiftyJSON
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
@@ -203,6 +204,35 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         updateHeaderView()
         hierarchicalClustering()
         //        updateAllEmbeddings()
+    }
+    
+    func saveEmojiEmbeddings() {
+        let emojiWords = emojiDict.map { $0.word }
+        print(emojiWords)
+        self.showSpinner()
+        DispatchQueue.global(qos: .userInitiated).async {
+            let embeddings = self.bert.getKeywordsEmbeddings(keywords: emojiWords)
+            DispatchQueue.main.async {
+                print("🎉 EmojiEmbiddings calculations DONE!")
+                print(embeddings[0])
+                let json = JSON(embeddings)
+                let string = json.description
+                let filename = self.getDocumentsDirectory().appendingPathComponent("emojiEmbeddings.json")
+
+                do {
+                    try string.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+                } catch {
+                    print("Failed to write a JSON file.")
+                }
+                self.removeSpinner()
+            }
+        }
+    }
+    
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        print("🗂 Local file folder for Simulator: \(paths[0])")
+        return paths[0]
     }
     
     override func viewWillDisappear(_ animated: Bool) {
