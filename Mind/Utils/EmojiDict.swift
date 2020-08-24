@@ -171,5 +171,3 @@ public let emojiDict = [
 (emoji: "🚀", word: "rocket"),
 (emoji: "🪐", word: "cosmos"),
 ]
-
-public var emojiEmbeddings: [[Float]] = []
