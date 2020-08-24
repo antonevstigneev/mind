@@ -28,6 +28,7 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         setupNotifications()
         setupViews()
+        clusters = clusters.filter { $0.count > 1}
         if clusters.count == 0 {
             showSpinner()
             print("Clusters are not ready yet.")
