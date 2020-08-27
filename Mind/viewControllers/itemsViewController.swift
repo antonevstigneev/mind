@@ -58,6 +58,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func plusButtonTouchUpOutside(_ sender: UIButton) {
         plusButton.animateButtonUp()
     }
+    @IBAction func moreButtonTouchUpInside(_ sender: Any) {
+        showMoreButtonMenu()
+    }
+    @IBAction func filterButtonTouchUpInside(_ sender: Any) {
+        showFilterButtonMenu()
+    }
+    
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
         fetchData()
         tableView.reloadData()
@@ -110,16 +117,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // searchBar initial setup
         searchBar.delegate = self
         searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
-        if let textfield = searchBar.value(forKey: "searchField") as? UITextField {
-
-//            textfield.backgroundColor = UIColor(named: "searchBar")! // for changing searchBar background color
-            textfield.attributedPlaceholder = NSAttributedString(string: textfield.placeholder ?? "", attributes: [NSAttributedString.Key.foregroundColor : UIColor(named: "content")!])
-        }
         
         // tableView initial setup
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.allowsSelection = true
+        tableView.isEditing = false
         tableView.addSubview(refreshControl)
         
         // plusButton initial setup
@@ -131,8 +135,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         refreshControl.setValue(75, forKey: "_snappingHeight")
         refreshControl.alpha = 0
         
-        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
-        view.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
+//        view.addGestureRecognizer(tapGesture)
         
     }
     
@@ -194,48 +198,48 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Context menu
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
-            return self.createContextMenu(indexPath: indexPath)
-        }
-    }
+//    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+//        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
+//            return self.createContextMenu(indexPath: indexPath)
+//        }
+//    }
     
     
-    func createContextMenu(indexPath: IndexPath) -> UIMenu {
-        self.item = self.items[indexPath.row]
-        var favoriteLabel: String!
-        var favoriteImage: UIImage!
-        
-        if item.favorited == true {
-            favoriteLabel = "Unfavorite"
-            favoriteImage = UIImage(systemName: "star.slash")
-        } else {
-            favoriteLabel = "Favorite"
-            favoriteImage = UIImage(systemName: "star")
-        }
-        
-        let similar = UIAction(title: "Similar", image: UIImage.circles()) { _ in
-            self.findSimilarItems(for: self.item)
-            Analytics.logEvent("similarItems_search", parameters: nil)
-        }
-        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
-            self.copyItemContent(self.item)
-        }
-        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
-            self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
-        }
-        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
-            self.favoriteItem(self.item)
-        }
-        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
-            self.hideItem(self.item, indexPath)
-        }
-        let archive = UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { _ in
-            self.archiveItem(self.item, indexPath)
-        }
-        
-        return UIMenu(title: "", children: [similar, copy, edit, favorite, hide, archive])
-    }
+//    func createContextMenu(indexPath: IndexPath) -> UIMenu {
+//        self.item = self.items[indexPath.row]
+//        var favoriteLabel: String!
+//        var favoriteImage: UIImage!
+//
+//        if item.favorited == true {
+//            favoriteLabel = "Unfavorite"
+//            favoriteImage = UIImage(systemName: "star.slash")
+//        } else {
+//            favoriteLabel = "Favorite"
+//            favoriteImage = UIImage(systemName: "star")
+//        }
+//
+//        let similar = UIAction(title: "Similar", image: UIImage.circles()) { _ in
+//            self.findSimilarItems(for: self.item)
+//            Analytics.logEvent("similarItems_search", parameters: nil)
+//        }
+//        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
+//            self.copyItemContent(self.item)
+//        }
+//        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
+//            self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
+//        }
+//        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
+//            self.favoriteItem(self.item)
+//        }
+//        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
+//            self.hideItem(self.item, indexPath)
+//        }
+//        let archive = UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { _ in
+//            self.archiveItem(self.item, indexPath)
+//        }
+//
+//        return UIMenu(title: "", children: [similar, copy, edit, favorite, hide, archive])
+//    }
     
     func copyItemContent(_ item: Item) {
         let content = item.content
@@ -315,10 +319,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return cell
     }
     
-    private func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print(indexPath.row)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        showItemMenu(indexPath: indexPath)
     }
 
+    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -844,28 +850,75 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    func showMoreButtonMenu() {
+        
+    }
+    
+    func showFilterButtonMenu() {
+        
+    }
+    
+    func showItemMenu(indexPath: IndexPath) {
+        self.item = self.items[indexPath.row]
+        var favoriteLabel: String!
+        var favoriteImage: UIImage!
+        
+        if item.favorited == true {
+            favoriteLabel = "Unfavorite"
+            favoriteImage = UIImage(systemName: "star.slash")
+        } else {
+            favoriteLabel = "Favorite"
+            favoriteImage = UIImage(systemName: "star")
+        }
+        
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: nil,
+                                                    message: nil,
+                                                    preferredStyle: .actionSheet)
+            
+            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
+            
+            let archiveAction: UIAlertAction = UIAlertAction(title: "Archive", style: .default)
+            archiveAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            archiveAction.setValue(UIImage(systemName: "archivebox"), forKey: "image")
+            
+            let hideAction: UIAlertAction = UIAlertAction(title: "Hide", style: .default)
+            hideAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            hideAction.setValue(UIImage(systemName: "eye.slash"), forKey: "image")
+            
+            let favoriteAction: UIAlertAction = UIAlertAction(title: favoriteLabel, style: .default)
+            favoriteAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            favoriteAction.setValue(favoriteImage, forKey: "image")
+            
+            let editAction: UIAlertAction = UIAlertAction(title: "Edit", style: .default)
+            editAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            editAction.setValue(UIImage(systemName: "square.and.pencil"), forKey: "image")
+            
+            let copyAction: UIAlertAction = UIAlertAction(title: "Copy", style: .default)
+            copyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            copyAction.setValue(UIImage(systemName: "doc.on.doc"), forKey: "image")
+            
+            let similarAction: UIAlertAction = UIAlertAction(title: "Similar", style: .default)
+            similarAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            similarAction.setValue(UIImage(systemName: "circle.grid.2x2"), forKey: "image")
+            
+            alertController.addAction(cancelAction)
+            alertController.addAction(similarAction)
+            alertController.addAction(copyAction)
+            alertController.addAction(editAction)
+            alertController.addAction(favoriteAction)
+            alertController.addAction(hideAction)
+            alertController.addAction(archiveAction)
+            
+            alertController.view.tintColor = UIColor(named: "buttonBackground")!
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
     
 }
 
 
 // MARK: - Extensions
-
-class itemContentText: UITextView {
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        let tapLocation = point.applying(CGAffineTransform(translationX: -textContainerInset.left, y: -textContainerInset.top))
-        let characterAtIndex = layoutManager.characterIndex(for: tapLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
-        let linkAttributeAtIndex = textStorage.attribute(.link, at: characterAtIndex, effectiveRange: nil)
-        
-        // Returns true for points located on linked text
-        return linkAttributeAtIndex != nil
-    }
-    
-    override func becomeFirstResponder() -> Bool {
-        // Returning false disables double-tap selection of link text
-        return false
-    }
-}
-
 
 extension Array where Element: Hashable {
     func difference(from other: [Element]) -> [Element] {
@@ -885,6 +938,13 @@ extension Date {
     }
 }
 
+extension UIImageView {
+    func setImageColor(color: UIColor) {
+        let templateImage = self.image?.withRenderingMode(.alwaysTemplate)
+        self.image = templateImage
+        self.tintColor = color
+    }
+}
 
 public extension UIImage {
     convenience init?(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) {
@@ -945,30 +1005,6 @@ extension UISearchBar {
         
         // Make the magnifying glass the same color
         (textFieldInsideSearchBar!.leftView as? UIImageView)?.tintColor = color
-    }
-}
-
-
-extension UIImage {
-    class func circles() -> UIImage {
-        let diameter = CGFloat(50)
-        let color = UIColor(named: "buttonBackground")!
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: diameter, height: diameter), false, 0)
-        let ctx = UIGraphicsGetCurrentContext()!
-        ctx.saveGState()
-        
-        for i in 0...1 {
-            let circle = UIBezierPath(arcCenter: CGPoint(x: diameter/2.5 + CGFloat(i*11), y: diameter/2), radius: diameter/3.5, startAngle: 0, endAngle: CGFloat.pi * 2, clockwise: true)
-            color.setStroke()
-            circle.lineWidth = 2.8
-            circle.stroke()
-        }
-        
-        ctx.restoreGState()
-        let img = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        
-        return img
     }
 }
 
