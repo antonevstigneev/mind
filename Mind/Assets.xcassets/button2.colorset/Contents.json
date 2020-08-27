@@ -23,7 +23,7 @@
         "color-space" : "extended-gray",
         "components" : {
           "alpha" : "1.000",
-          "white" : "0.650"
+          "white" : "0.600"
         }
       },
       "idiom" : "universal"
@@ -36,10 +36,12 @@
         }
       ],
       "color" : {
-        "color-space" : "extended-gray",
+        "color-space" : "srgb",
         "components" : {
           "alpha" : "1.000",
-          "white" : "0.250"
+          "blue" : "0x77",
+          "green" : "0x77",
+          "red" : "0x77"
         }
       },
       "idiom" : "universal"

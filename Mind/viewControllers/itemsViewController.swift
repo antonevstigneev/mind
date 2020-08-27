@@ -110,6 +110,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // searchBar initial setup
         searchBar.delegate = self
         searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
+        if let textfield = searchBar.value(forKey: "searchField") as? UITextField {
+
+//            textfield.backgroundColor = UIColor(named: "searchBar")! // for changing searchBar background color
+            textfield.attributedPlaceholder = NSAttributedString(string: textfield.placeholder ?? "", attributes: [NSAttributedString.Key.foregroundColor : UIColor(named: "content")!])
+        }
         
         // tableView initial setup
         tableView.delegate = self

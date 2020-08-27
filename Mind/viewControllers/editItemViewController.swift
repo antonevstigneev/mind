@@ -59,7 +59,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         // textInput initial setup
         textInputView.delegate = self
         textInputView.text = itemContentText
-        textInputView.tintColor = UIColor(named: "Content")
+        textInputView.tintColor = UIColor(named: "content")
 
         // sendButton initial setup
         doneButton.layer.cornerRadius = doneButton.frame.size.height / 2.0
