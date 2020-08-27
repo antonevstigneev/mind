@@ -13,7 +13,6 @@ import CoreML
 import Foundation
 import NaturalLanguage
 import Firebase
-import SwiftyJSON
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
     
@@ -36,27 +35,18 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var keywordsClusters: [[String]] = []
     var selectedClusterKeyword: String = ""
     var refreshControl = UIRefreshControl()
-    
+    var emojiEmbeddings = getEmojiEmbeddings()
     
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
-    @IBOutlet weak var clustersButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
-    @IBOutlet weak var keywordsCollectionView: UICollectionView!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var emptyPlaceholderLabel: UILabel!
     
     
     // MARK: - Actions
-    @IBAction func clustersButtonTouchDownInside(_ sender: Any) {
-        // TODO: check if clusters are created, if so -> perform segue
-                                                // else wait, show spinner
-        performSegue(withIdentifier: "toClustersViewController", sender: sender)
-        Analytics.logEvent("clustersButton_pressed", parameters: nil)
-    }
-
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
         performSegue(withIdentifier: "toAddItemViewController", sender: sender)
@@ -68,44 +58,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func plusButtonTouchUpOutside(_ sender: UIButton) {
         plusButton.animateButtonUp()
     }
-    
-    
-    @IBAction func keywordsCollectionViewTouchUpInside(_ sender: UIButton) {
-        let keywordTitle = sender.titleLabel!.text!
-        let keywordPath = keywordsCollection.firstIndex(of: keywordTitle)!
-        let pressedKeyword = (title: keywordTitle, path: keywordPath)
-        
-        if pressedKeyword.title != "all" {
-            sender.isSelected = true
-            selectedKeyword = (title: keywordTitle, path: keywordPath)
-            fetchDataForSelectedKeyword()
-            keywordsCollectionView.reloadData()
-        } else if pressedKeyword.title == "all" {
-            sender.isSelected = true
-            selectedKeyword = selectedAllKeyword
-            
-            if !searchBar.text!.isEmpty {
-                fetchData()
-                reloadSearch()
-                tableView.reloadData()
-            } else {
-                fetchData()
-                defaultKeywordsCollectionView()
-            }
-        } else {
-            sender.isSelected = false
-            keywordsCollectionView.reloadData()
-            reloadSearch()
-        }
-        tableView.show()
-        Analytics.logEvent("keywordCollection_pressed", parameters: nil)
-    }
-    
-    @IBAction func itemKeywordTouchUpInside(_ sender: UIButton) {
-        showItemsForSelectedKeyword(sender.titleLabel!.text!)
-    }
-    
-    
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
         fetchData()
         tableView.reloadData()
@@ -128,29 +80,19 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(clusterKeywordClicked),
-        name: NSNotification.Name(rawValue: "clusterKeywordClicked"),
-        object: nil)
+//        NotificationCenter.default.addObserver(self,
+//        selector: #selector(hierarchicalClustering),
+//        name: NSNotification.Name(rawValue: "itemsChanged"),
+//        object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(hierarchicalClustering),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
+        selector: #selector(updateEmptyView),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(fetchData),
         name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(updateHeaderView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(defaultKeywordsCollectionView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
@@ -168,11 +110,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // searchBar initial setup
         searchBar.delegate = self
         searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
-        UISearchBar.appearance().setSearchFieldBackgroundImage(UIImage(), for: .normal)
-        
-        // keywords collection initial setup
-        keywordsCollectionView.delegate = self
-        keywordsCollectionView.dataSource = self
         
         // tableView initial setup
         tableView.delegate = self
@@ -201,60 +138,53 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-        updateHeaderView()
-        hierarchicalClustering()
-        //        updateAllEmbeddings()
+//        getEmojiForKeywords()
+//        recalculateAllKeywords()
+//        hierarchicalClustering() // calculates clusters in the background
+//        updateAllEmbeddings()
     }
     
-//    func saveEmojiEmbeddings() {
-//        let emojiWords = emojiDict.map { $0.word }
-//        print(emojiWords)
-//        self.showSpinner()
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            let embeddings = self.bert.getKeywordsEmbeddings(keywords: emojiWords)
-//            DispatchQueue.main.async {
-//                print("🎉 EmojiEmbiddings calculations DONE!")
-//                print(embeddings[0])
-//                let json = JSON(embeddings)
-//                let string = json.description
-//                let filename = self.getDocumentsDirectory().appendingPathComponent("emojiEmbeddings.json")
-//
-//                do {
-//                    try string.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
-//                } catch {
-//                    print("Failed to write a JSON file.")
-//                }
-//                self.removeSpinner()
-//            }
-//        }
-//    }
-//
-//    func getDocumentsDirectory() -> URL {
-//        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-//        print("🗂 Local file folder for Simulator: \(paths[0])")
-//        return paths[0]
-//    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-    }
-    
-    @objc func updateHeaderView() {
+    @objc func updateEmptyView() {
         if items.count > 0 {
             searchBar.isHidden = false
-            keywordsCollectionView.isHidden = false
             emptyPlaceholderLabel.isHidden = true
         } else {
             searchBar.isHidden = true
-            keywordsCollectionView.isHidden = true
             emptyPlaceholderLabel.isHidden = false
         }
     }
     
-    @objc func clusterKeywordClicked() {
-        if selectedClusterKeyword != "" {
-          showItemsForSelectedKeyword(selectedClusterKeyword)
+    func recalculateAllKeywords() {
+        // for restoring texted keywords
+        for item in items {
+            item.keywords = []
+            let keywords = getKeywords(from: item.content!, count: 8)
+            item.keywords = keywords
+            item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            tableView.reloadData()
         }
+    }
+
+    func getEmojiForKeywords() {
+        for item in items {
+            let keywordEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
+            for (index, keywordEmbedding) in keywordEmbeddings.enumerated() {
+                var scores: [(emoji: String, score: Float)] = []
+                for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
+                    let score = SimilarityDistance(A: keywordEmbedding, B: emojiEmbedding)
+                    let emoji = getEmoji(index)
+                    scores.append((emoji: emoji, score: score))
+                }
+                scores = scores.sorted {$0.1 > $1.1}
+                print("keyword: '\(item.keywords![index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
+            }
+        }
+    }
+    
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
     }
     
     
@@ -370,37 +300,16 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
         
         let item = items[indexPath.row]
-        
         let content = item.value(forKey: "content") as! String
         
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 3.0
-        let regularAttributes: [NSAttributedString.Key : Any] = [.font : UIFont.systemFont(ofSize: 17, weight: .regular),
-                                                                 .paragraphStyle : paragraphStyle, .foregroundColor: UIColor(named: "content")! ]
-        let mutableString = NSMutableAttributedString(string: content, attributes: regularAttributes)
-        cell.itemContentText.isSelectable = false
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!)
+        cell.itemContentText.textColor = UIColor(named: "content")!
         
-        cell.itemContentText.attributedText = mutableString
-        
-        cell.itemContentText.textContainerInset = UIEdgeInsets(top: 10, left: 6, bottom: 11, right: 6)
-        
-        //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
-        
-        cell.itemContentText.linkTextAttributes = [
-            .underlineStyle: NSUnderlineStyle.single.rawValue,
-        ]
-        
-        cell.itemKeywordsCollectionView.tag = indexPath.row
+//        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
         
         return cell
     }
 
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let tableViewCell = cell as? ItemsCell else { return }
-        tableViewCell.setCollectionViewDataSourceDelegate(self, forRow: indexPath.row)
-    }
-    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -408,12 +317,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             destinationVC.item = self.item
         }
         if let destinationVC = segue.destination as? clustersViewController {
-            destinationVC.clusters = self.keywordsClusters // <------------ this passes empty array!
+            destinationVC.clusters = self.keywordsClusters // <------------ this passes empty array if clusters are not ready!
         }
-    }
-    
-    @objc func getKeywordsClusters(notification: NSNotification) {
-        
     }
     
     
@@ -522,7 +427,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.perform(#selector(itemsViewController.reloadSearch), with: nil, afterDelay: 1.0)
         } else {
             fetchData()
-            defaultKeywordsCollectionView()
         }
     }
     
@@ -541,7 +445,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         var suggestedKeywords: [String] = []
         
         tableView.hide()
-        keywordsCollectionView.hide()
         items = []
         tableView.reloadData()
         fetchData()
@@ -592,11 +495,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             
             DispatchQueue.main.async {
-                self.showSuggestedKeywords(suggestedKeywords)
                 self.items = similarItems.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
-                self.keywordsCollectionView.show()
                 self.scrollToTopTableView()
                 self.removeSpinner()
                 Analytics.logEvent("search_completed", parameters: nil)
@@ -658,21 +559,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
         return keywordsEmbeddings
-    }
-    
-    
-    func showSuggestedKeywords(_ suggestedKeywords: [String]) {
-        keywordsCollection = [self.selectedAllKeyword.title]
-        keywordsCollection.append(self.selectedKeyword!.title)
-        keywordsCollection.append(contentsOf: suggestedKeywords)
-        keywordsCollection = self.keywordsCollection.removeDuplicates()
-        
-        if keywordsCollection.contains(searchBar.text!.lowercased()) {
-            keywordsCollection.remove(at:
-                keywordsCollection.firstIndex(of: self.searchBar.text!.lowercased())!)
-            keywordsCollection.insert(searchBar.text!.lowercased(), at: 1)
-        }
-        self.keywordsCollectionView.reloadData()
     }
     
     
@@ -953,128 +839,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 }
 
 
-
-// MARK: - Keywords setup
-extension itemsViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
-    @objc func defaultKeywordsCollectionView() {
-        keywordsCollection = [selectedAllKeyword.title]
-        mostFrequentKeywords = getMostFrequentKeywords()
-        keywordsCollection.append(contentsOf: mostFrequentKeywords)
-        selectedKeyword = selectedAllKeyword
-        keywordsCollectionView.reloadData()
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == keywordsCollectionView {
-            if keywordsCollection != [] {
-                return keywordsCollection.count
-            } else {
-                return 0
-            }
-        } else {
-            if items[collectionView.tag].keywords != nil {
-                return items[collectionView.tag].keywords!.count
-            } else {
-                return 0
-            }
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        if collectionView == keywordsCollectionView {
-            let text = keywordsCollection[indexPath.item]
-            let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
-            let cellHeight = CGFloat(26.0)
-            
-            return CGSize(width: cellWidth, height: cellHeight)
-        }
-            
-        else {
-            let item = items[collectionView.tag]
-            let text = item.keywords![indexPath.row]
-            let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
-            let cellHeight = CGFloat(26.0)
-            
-            return CGSize(width: cellWidth, height: cellHeight)
-        }
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 8
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 8
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        if collectionView == keywordsCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "keywordCell", for: indexPath) as! keywordsCollectionViewCell
-            
-            let itemKeywordTitle = keywordsCollection[indexPath.item]
-            cell.keywordButton.setTitle(itemKeywordTitle, for: .normal)
-            
-            if selectedKeyword!.path == indexPath.row {
-                cell.keywordButton.isSelected = true
-                cell.keywordButton.layer.borderColor = UIColor(named: "buttonBackground")?.cgColor
-            } else {
-                cell.keywordButton.isSelected = false
-                cell.keywordButton.layer.borderColor = UIColor(named: "content2")?.cgColor
-            }
-            
-            return cell
-        }
-            
-        else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "keywordCell", for: indexPath) as! ItemsKeywordsCell
-            
-            let item = items[collectionView.tag]
-            let itemKeywordTitle = item.keywords![indexPath.row]
-            cell.keywordButton.setTitle(itemKeywordTitle, for: .normal)
-            
-            return cell
-        }
-    }
-    
-    func showItemsForSelectedKeyword(_ keywordTitle: String) {
-
-        tableView.hide()
-        keywordsCollectionView.hide()
-        fetchData()
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            
-            let suggestedKeywords = self.getKeywordSuggestions(for: keywordTitle)
-            
-            DispatchQueue.main.async {
-                self.searchBar.text = ""
-                self.keywordsCollection = [self.selectedAllKeyword.title]
-                self.keywordsCollection.append(contentsOf: suggestedKeywords)
-                self.selectedKeyword = (title: keywordTitle, path: 1)
-                self.keywordsCollectionView.reloadData()
-                self.fetchDataForSelectedKeyword()
-                self.tableView.show()
-                self.keywordsCollectionView.show()
-                self.keywordsCollectionView?.scrollToItem(at: IndexPath(row: 0, section: 0),
-                                                          at: .left,
-                                                          animated: false)
-                Analytics.logEvent("keywordItem_pressed", parameters: nil)
-            }
-        }
-    }
-    
-    
-
-    
-}
-
-
-
-
 // MARK: - Extensions
 
 class itemContentText: UITextView {
@@ -1242,3 +1006,26 @@ extension itemsViewController {
 }
 
 
+extension UITextView {
+    
+    func addHyperLinksToText(originalText: String, hyperLinks: [String]) {
+        let style = NSMutableParagraphStyle()
+        style.alignment = .left
+        style.lineSpacing = 3.0
+
+        let attributedOriginalText = NSMutableAttributedString(string: originalText)
+        for hyperLink in hyperLinks {
+            let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
+            let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: "#" + hyperLink, range: linkRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: fullRange)
+        }
+        
+        self.linkTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
+            NSAttributedString.Key.underlineStyle: 0,
+        ]
+        self.attributedText = attributedOriginalText
+    }
+}

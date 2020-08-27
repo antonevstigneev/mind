@@ -1,4 +1,35 @@
-public let emojiDict = [
+import Foundation
+
+public func getEmojiEmbeddings() -> [[Float]] {
+    let emojiJSONEmbeddings = readJSONFromFile(fileName: "EmojiEmbeddings")
+    var emojiEmbeddings: [[Float]] = []
+    for embedding in emojiJSONEmbeddings! {
+        emojiEmbeddings.append(embedding.map { $0.floatValue })
+    }
+    return emojiEmbeddings
+}
+
+
+public func readJSONFromFile(fileName: String) -> [[NSNumber]]? {
+    var json: [[NSNumber]]?
+    if let path = Bundle.main.path(forResource: fileName, ofType: "json") {
+        do {
+            let fileUrl = URL(fileURLWithPath: path)
+            let data = try Data(contentsOf: fileUrl, options: .mappedIfSafe)
+            json = try? JSONSerialization.jsonObject(with: data) as? [[NSNumber]]
+        } catch {
+            print("Can't read JSON file.")
+        }
+    }
+    
+    return json
+}
+
+public func getEmoji(_ index: Int) -> String {
+    return emojiDict[index].emoji
+}
+
+let emojiDict = [
 (emoji: "💀", word: "death"), 
 (emoji: "🤖", word: "robot"),
 (emoji: "👽", word: "alien"),
@@ -171,3 +202,36 @@ public let emojiDict = [
 (emoji: "🚀", word: "rocket"),
 (emoji: "🪐", word: "cosmos"),
 ]
+
+
+// MARK: - For saving embeddings in JSON
+
+//    func saveEmojiEmbeddings() {
+//        // install package ---> https://github.com/SwiftyJSON/SwiftyJSON
+//        let emojiWords = emojiDict.map { $0.word }
+//        print(emojiWords)
+//        self.showSpinner()
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            let embeddings = self.bert.getKeywordsEmbeddings(keywords: emojiWords)
+//            DispatchQueue.main.async {
+//                print("🎉 EmojiEmbiddings calculations DONE!")
+//                print(embeddings[0])
+//                let json = JSON(embeddings)
+//                let string = json.description
+//                let filename = self.getDocumentsDirectory().appendingPathComponent("emojiEmbeddings.json")
+//
+//                do {
+//                    try string.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+//                } catch {
+//                    print("Failed to write a JSON file.")
+//                }
+//                self.removeSpinner()
+//            }
+//        }
+//    }
+//
+//    func getDocumentsDirectory() -> URL {
+//        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+//        print("🗂 Local file folder for Simulator: \(paths[0])")
+//        return paths[0]
+//    }

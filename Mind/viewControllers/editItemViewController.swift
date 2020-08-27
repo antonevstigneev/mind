@@ -15,6 +15,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
     let bert = BERT()
     
     var item: Item!
+    var emojiEmbeddings = getEmojiEmbeddings()
     
     // Outlets
     @IBOutlet weak var doneButton: UIButton!
@@ -73,11 +74,15 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
             
             let keywords = getKeywords(from: entryText, count: 8)
+            let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
+            let keywordsWithEmojis = self.getKeywordsWithEmojis(keywords, keywordsEmbeddings)
+            let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
+            let itemContent = self.replaceWordsWithKeywords(entryText, keywords, keywordsWithEmojis)
             
-            self.item.content = entryText
-            self.item.keywords = keywords
-            self.item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            self.item.embedding = self.bert.getTextEmbedding(text: entryText)
+            self.item.content = itemContent
+            self.item.keywordsEmbeddings = keywordsEmbeddings
+            self.item.keywords = keywordsWithEmojis
+            self.item.embedding = itemEmbedding
         
             DispatchQueue.main.async {
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -88,6 +93,31 @@ class editItemViewController: UIViewController, UITextViewDelegate {
             NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
+    }
+    
+    func replaceWordsWithKeywords(_ text: String, _ words: [String], _ keywords: [String]) -> String {
+        var replacedText = text
+        for (index, word) in words.enumerated() {
+            replacedText = replacedText.replacingOccurrences(of: word, with: keywords[index])
+        }
+
+        return replacedText
+    }
+    
+    func getKeywordsWithEmojis(_ keywords: [String], _ keywordsEmbeddings: [[Float]]) -> [String] {
+        var keywordsWithEmojis: [String] = []
+        for (index, keywordEmbedding) in keywordsEmbeddings.enumerated() {
+            var scores: [(emoji: String, score: Float)] = []
+            for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
+                let score = SimilarityDistance(A: keywordEmbedding, B: emojiEmbedding)
+                let emoji = getEmoji(index)
+                scores.append((emoji: emoji, score: score))
+            }
+            scores = scores.sorted {$0.1 > $1.1}
+            keywordsWithEmojis.append(scores[0].emoji + " " + keywords[index])
+            print("keyword: '\(keywords[index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
+        }
+        return keywordsWithEmojis
     }
     
     
@@ -125,4 +155,6 @@ class editItemViewController: UIViewController, UITextViewDelegate {
             }
         }
 }
+
+
 

@@ -26,9 +26,6 @@ class ClusterKeywordsCell: UICollectionViewCell {
          keywordButton.layer.borderColor = UIColor(named: "content")?.cgColor
          keywordButton.contentEdgeInsets = UIEdgeInsets(top: 1, left: 3, bottom: 3, right: 3)
          keywordButton.clipsToBounds = true
-         keywordButton.setBackgroundColor(UIColor(named: "background")!, for: .normal)
-         keywordButton.setBackgroundColor(UIColor(named: "content")!, for: .highlighted)
-         keywordButton.setBackgroundColor(UIColor(named: "buttonBackground")!, for: .selected)
     }
     
 }
