@@ -134,10 +134,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
         refreshControl.setValue(75, forKey: "_snappingHeight")
         refreshControl.alpha = 0
-        
-//        let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.endEditing))
-//        view.addGestureRecognizer(tapGesture)
-        
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
@@ -196,51 +192,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         super.viewWillDisappear(animated)
     }
     
-    
-    // MARK: - Context menu
-//    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-//        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
-//            return self.createContextMenu(indexPath: indexPath)
-//        }
-//    }
-    
-    
-//    func createContextMenu(indexPath: IndexPath) -> UIMenu {
-//        self.item = self.items[indexPath.row]
-//        var favoriteLabel: String!
-//        var favoriteImage: UIImage!
-//
-//        if item.favorited == true {
-//            favoriteLabel = "Unfavorite"
-//            favoriteImage = UIImage(systemName: "star.slash")
-//        } else {
-//            favoriteLabel = "Favorite"
-//            favoriteImage = UIImage(systemName: "star")
-//        }
-//
-//        let similar = UIAction(title: "Similar", image: UIImage.circles()) { _ in
-//            self.findSimilarItems(for: self.item)
-//            Analytics.logEvent("similarItems_search", parameters: nil)
-//        }
-//        let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
-//            self.copyItemContent(self.item)
-//        }
-//        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
-//            self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
-//        }
-//        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
-//            self.favoriteItem(self.item)
-//        }
-//        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
-//            self.hideItem(self.item, indexPath)
-//        }
-//        let archive = UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { _ in
-//            self.archiveItem(self.item, indexPath)
-//        }
-//
-//        return UIMenu(title: "", children: [similar, copy, edit, favorite, hide, archive])
-//    }
-    
     func copyItemContent(_ item: Item) {
         let content = item.content
         let pasteboard = UIPasteboard.general
@@ -257,7 +208,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             item.favorited = true
         }
         postAlert(title: alertTitle)
-        print(item.favorited)
+        NotificationCenter.default.post(name:
+        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
     func hideItem(_ item: Item, _ indexPath: IndexPath) {
@@ -267,6 +220,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.item.hidden = true
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
           }) { () -> Void in
             print("Cancelled")
         }
@@ -858,6 +814,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
+    
+    // MARK: - Item menu
     func showItemMenu(indexPath: IndexPath) {
         self.item = self.items[indexPath.row]
         var favoriteLabel: String!
@@ -879,26 +837,45 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
             
             let archiveAction: UIAlertAction = UIAlertAction(title: "Archive", style: .default)
+            { _ in
+                self.archiveItem(self.item, indexPath)
+            }
             archiveAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             archiveAction.setValue(UIImage(systemName: "archivebox"), forKey: "image")
             
             let hideAction: UIAlertAction = UIAlertAction(title: "Hide", style: .default)
+            { _ in
+                self.hideItem(self.item, indexPath)
+            }
             hideAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             hideAction.setValue(UIImage(systemName: "eye.slash"), forKey: "image")
             
             let favoriteAction: UIAlertAction = UIAlertAction(title: favoriteLabel, style: .default)
+            { _ in
+                self.favoriteItem(self.item)
+            }
             favoriteAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             favoriteAction.setValue(favoriteImage, forKey: "image")
             
             let editAction: UIAlertAction = UIAlertAction(title: "Edit", style: .default)
+            { _ in
+                self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
+            }
             editAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             editAction.setValue(UIImage(systemName: "square.and.pencil"), forKey: "image")
             
             let copyAction: UIAlertAction = UIAlertAction(title: "Copy", style: .default)
+            { _ in
+                self.copyItemContent(self.item)
+            }
             copyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             copyAction.setValue(UIImage(systemName: "doc.on.doc"), forKey: "image")
             
             let similarAction: UIAlertAction = UIAlertAction(title: "Similar", style: .default)
+            { _ in
+                self.findSimilarItems(for: self.item)
+                Analytics.logEvent("similarItems_search", parameters: nil)
+            }
             similarAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             similarAction.setValue(UIImage(systemName: "circle.grid.2x2"), forKey: "image")
             
