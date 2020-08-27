@@ -12,7 +12,6 @@ import UIKit
 class ItemsCell: UITableViewCell {
     
     @IBOutlet weak var itemContentText: UITextView!
-    
-}
 
+}
 

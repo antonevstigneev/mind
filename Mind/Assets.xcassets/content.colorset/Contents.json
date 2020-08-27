@@ -34,10 +34,12 @@
         }
       ],
       "color" : {
-        "color-space" : "extended-gray",
+        "color-space" : "srgb",
         "components" : {
           "alpha" : "1.000",
-          "white" : "0.650"
+          "blue" : "0xB0",
+          "green" : "0xB0",
+          "red" : "0xB0"
         }
       },
       "idiom" : "universal"

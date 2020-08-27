@@ -51,10 +51,14 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         selector: #selector(handle(keyboardHideNotification:)),
         name: UIResponder.keyboardWillHideNotification,
         object: nil)
+        
+        var itemContentText = item.content!.components(separatedBy: CharacterSet.symbols).joined()
+        itemContentText = itemContentText.replacingOccurrences(of: "  ", with: " ")
+        itemContentText = itemContentText.replacingOccurrences(of: "\u{2139}", with: "")
     
         // textInput initial setup
         textInputView.delegate = self
-        textInputView.text = item.content
+        textInputView.text = itemContentText
         textInputView.tintColor = UIColor(named: "Content")
 
         // sendButton initial setup
@@ -70,6 +74,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
+        
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
             
@@ -114,7 +119,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
                 scores.append((emoji: emoji, score: score))
             }
             scores = scores.sorted {$0.1 > $1.1}
-            keywordsWithEmojis.append(scores[0].emoji + " " + keywords[index])
+            keywordsWithEmojis.append(scores[0].emoji + keywords[index])
             print("keyword: '\(keywords[index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
         }
         return keywordsWithEmojis

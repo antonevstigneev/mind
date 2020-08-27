@@ -309,6 +309,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         return cell
     }
+    
+    private func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        print(indexPath.row)
+    }
 
     
     // MARK: - Prepare for segue
@@ -815,24 +819,24 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func postActionSheet(title: String!, message: String!, confirmation: String!, success: (() -> Void)? , cancel: (() -> Void)?) {
         DispatchQueue.main.async {
-      let alertController = UIAlertController(title:title,
-        message: message,
-        preferredStyle: .actionSheet)
-        alertController.view.tintColor = UIColor.lightGray
-
-      let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel",
-                                                      style: .cancel) {
-          action -> Void in cancel?()
-      }
-      let successAction: UIAlertAction = UIAlertAction(title: confirmation,
-                                                       style: .destructive) {
-          action -> Void in success?()
-      }
-        alertController.addAction(cancelAction)
-        alertController.addAction(successAction)
-
-        self.present(alertController, animated: true, completion: nil)
-      }
+            let alertController = UIAlertController(title: title,
+                                                    message: message,
+                                                    preferredStyle: .actionSheet)
+            alertController.view.tintColor = UIColor.lightGray
+            
+            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel",
+                                                            style: .cancel) {
+                                                                action -> Void in cancel?()
+            }
+            let successAction: UIAlertAction = UIAlertAction(title: confirmation,
+                                                             style: .destructive) {
+                                                                action -> Void in success?()
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(successAction)
+            
+            self.present(alertController, animated: true, completion: nil)
+        }
     }
     
     
@@ -1019,7 +1023,7 @@ extension UITextView {
             let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
             attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: "#" + hyperLink, range: linkRange)
             attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: fullRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 16, weight: .regular), range: fullRange)
         }
         
         self.linkTextAttributes = [
