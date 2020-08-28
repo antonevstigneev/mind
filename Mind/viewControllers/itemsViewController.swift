@@ -40,6 +40,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var mindLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
@@ -78,6 +79,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         super.viewDidLoad()
         setupNotifications()
         setupViews()
+        setupLabelTap()
     }
     
     override func viewDidLayoutSubviews() {
@@ -136,6 +138,19 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
         refreshControl.setValue(75, forKey: "_snappingHeight")
         refreshControl.alpha = 0
+    }
+    
+    func setupLabelTap() {
+        let labelTap = UITapGestureRecognizer(target: self, action: #selector(self.mindTapped(_:)))
+        self.mindLabel.isUserInteractionEnabled = true
+        self.mindLabel.addGestureRecognizer(labelTap)
+    }
+    
+    @objc func mindTapped(_ sender: UITapGestureRecognizer) {
+        let indexPath = IndexPath(row: 0, section: 0)
+        if self.items.isEmpty == false {
+            self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+        }
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
@@ -289,7 +304,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
-                                  .withAlphaComponent(-scrollView.contentOffset.y/100)
+                                .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
     
