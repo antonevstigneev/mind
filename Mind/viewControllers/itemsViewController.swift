@@ -37,6 +37,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var refreshControl = UIRefreshControl()
     var emojiEmbeddings = getEmojiEmbeddings()
     
+
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
@@ -280,6 +281,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showItemMenu(indexPath: indexPath)
     }
 
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
+                                  .withAlphaComponent(-scrollView.contentOffset.y/100)
+    }
     
     
     // MARK: - Prepare for segue
@@ -747,13 +752,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            tableView.allowsSelection = false
             tableViewBC.constant = keyboardFrame.height
         }
     }
     
     @objc private func handle(keyboardHideNotification notification: Notification) {
-        tableView.allowsSelection = true
         tableViewBC.constant = 0
     }
     
@@ -1053,3 +1056,4 @@ extension UITextView {
         self.attributedText = attributedOriginalText
     }
 }
+
