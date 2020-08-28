@@ -47,6 +47,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var emptyPlaceholderLabel: UILabel!
     
     
+    
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
@@ -200,15 +201,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func favoriteItem(_ item: Item) {
-        var alertTitle: String!
         if item.favorited == true {
-            alertTitle = "Removed from Favorites"
             item.favorited = false
         } else {
-            alertTitle = "Added to Favorites"
             item.favorited = true
         }
-        postAlert(title: alertTitle)
         NotificationCenter.default.post(name:
         NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -270,6 +267,15 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!)
         cell.itemContentText.textColor = UIColor(named: "content")!
+        
+        if item.favorited {
+            cell.favoritedButton.isHidden = false
+            cell.itemContentTextRC.constant = 35
+            
+        } else {
+            cell.favoritedButton.isHidden = true
+            cell.itemContentTextRC.constant = 16
+        }
         
 //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
         
@@ -812,7 +818,66 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func showMoreButtonMenu() {
-        
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: nil,
+                                                    message: nil,
+                                                    preferredStyle: .actionSheet)
+            
+            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
+            
+            let FAQAction: UIAlertAction = UIAlertAction(title: "Mind FAQ", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            FAQAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            FAQAction.setValue(UIImage(systemName: "questionmark.circle"), forKey: "image")
+            
+            let questionAction: UIAlertAction = UIAlertAction(title: "Ask a Question", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            questionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            questionAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
+            
+            let appearanceAction: UIAlertAction = UIAlertAction(title: "Appearance", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            appearanceAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            appearanceAction.setValue(UIImage(systemName: "paintbrush"), forKey: "image")
+            
+            let privacyAction: UIAlertAction = UIAlertAction(title: "Privacy and Security", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            privacyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            privacyAction.setValue(UIImage(systemName: "lock"), forKey: "image")
+            
+            let syncAction: UIAlertAction = UIAlertAction(title: "Synchronization", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            syncAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            syncAction.setValue(UIImage(systemName: "icloud"), forKey: "image")
+            
+            let subscriptionAction: UIAlertAction = UIAlertAction(title: "Subscription", style: .default)
+            { _ in
+//                self.performSegue(withIdentifier: "", sender: (Any).self)
+            }
+            subscriptionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            subscriptionAction.setValue(UIImage(systemName: "goforward"), forKey: "image")
+            
+            alertController.addAction(cancelAction)
+            alertController.addAction(subscriptionAction)
+            alertController.addAction(syncAction)
+            alertController.addAction(privacyAction)
+            alertController.addAction(appearanceAction)
+            alertController.addAction(questionAction)
+            alertController.addAction(FAQAction)
+            
+            alertController.view.tintColor = UIColor(named: "buttonBackground")!
+            self.present(alertController, animated: true, completion: nil)
+        }
     }
     
     func showFilterButtonMenu() {

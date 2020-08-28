@@ -89,10 +89,10 @@
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" translatesAutoresizingMaskIntoConstraints="NO" id="eh3-OJ-aoT" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="414" height="60"/>
+                                        <rect key="frame" x="0.0" y="28" width="414" height="60.5"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="eh3-OJ-aoT" id="VLQ-gI-o7I">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="60.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Content" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
@@ -106,17 +106,32 @@
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                                 </textView>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cag-xX-4c0">
+                                                    <rect key="frame" x="372" y="19" width="30" height="22.5"/>
+                                                    <color key="tintColor" name="button2"/>
+                                                    <state key="normal" image="star" catalog="system">
+                                                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="font" scale="small" weight="medium">
+                                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                        </preferredSymbolConfiguration>
+                                                    </state>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="rF4-xP-943" firstAttribute="leading" secondItem="VLQ-gI-o7I" secondAttribute="leading" constant="16" id="KHZ-n8-go8"/>
                                                 <constraint firstAttribute="trailing" secondItem="rF4-xP-943" secondAttribute="trailing" constant="16" id="Lk4-bi-Ws1"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Cag-xX-4c0" secondAttribute="trailing" constant="-8" id="aIo-3h-dU3"/>
+                                                <constraint firstItem="Cag-xX-4c0" firstAttribute="leading" secondItem="VLQ-gI-o7I" secondAttribute="leading" constant="372" id="dEb-RA-U3Y"/>
+                                                <constraint firstItem="Cag-xX-4c0" firstAttribute="top" secondItem="VLQ-gI-o7I" secondAttribute="topMargin" constant="8" id="ju6-J1-rJi"/>
                                                 <constraint firstItem="rF4-xP-943" firstAttribute="top" secondItem="VLQ-gI-o7I" secondAttribute="top" constant="12" id="lm6-Mc-2Bz"/>
                                                 <constraint firstAttribute="bottom" secondItem="rF4-xP-943" secondAttribute="bottom" constant="12" id="oZA-8P-89p"/>
+                                                <constraint firstItem="Cag-xX-4c0" firstAttribute="centerY" secondItem="rF4-xP-943" secondAttribute="centerY" id="szn-p7-qIR"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" name="background"/>
                                         <connections>
+                                            <outlet property="favoritedButton" destination="Cag-xX-4c0" id="N2Z-II-sex"/>
                                             <outlet property="itemContentText" destination="rF4-xP-943" id="Tnf-PO-fcL"/>
+                                            <outlet property="itemContentTextRC" destination="Lk4-bi-Ws1" id="H7P-uq-Vd5"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -451,6 +466,7 @@
         <image name="ellipsis" catalog="system" width="128" height="37"/>
         <image name="line.horizontal.3.decrease.circle" catalog="system" width="128" height="121"/>
         <image name="plus" catalog="system" width="128" height="113"/>
+        <image name="star" catalog="system" width="128" height="116"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="background">
             <color white="0.89999997615814209" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

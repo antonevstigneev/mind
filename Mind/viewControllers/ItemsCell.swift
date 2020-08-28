@@ -12,6 +12,8 @@ import UIKit
 class ItemsCell: UITableViewCell, UITextViewDelegate {
     
     @IBOutlet weak var itemContentText: UITextView!
+    @IBOutlet weak var itemContentTextRC: NSLayoutConstraint!
+    @IBOutlet weak var favoritedButton: UIButton!
     
 }
 
