@@ -55,6 +55,8 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         var itemContentText = item.content!.components(separatedBy: CharacterSet.symbols).joined()
         itemContentText = itemContentText.replacingOccurrences(of: "  ", with: " ")
         itemContentText = itemContentText.replacingOccurrences(of: "\u{2139}", with: "")
+//        let emojis: Array<Character> = emojiDict.flatMap { $0.emoji }
+//        itemContentText.removeAll(where: { emojis.contains($0) })
     
         // textInput initial setup
         textInputView.delegate = self
@@ -78,7 +80,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
             
-            let keywords = getKeywords(from: entryText, count: 8)
+            let keywords = getKeywords(from: entryText, count: 7)
             let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             let keywordsWithEmojis = self.getKeywordsWithEmojis(keywords, keywordsEmbeddings)
             let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
@@ -114,13 +116,13 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         for (index, keywordEmbedding) in keywordsEmbeddings.enumerated() {
             var scores: [(emoji: String, score: Float)] = []
             for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
-                let score = SimilarityDistance(A: keywordEmbedding, B: emojiEmbedding)
+                let score = Distance.cosine(A: keywordEmbedding, B: emojiEmbedding)
                 let emoji = getEmoji(index)
                 scores.append((emoji: emoji, score: score))
             }
             scores = scores.sorted {$0.1 > $1.1}
             keywordsWithEmojis.append(scores[0].emoji + keywords[index])
-            print("keyword: '\(keywords[index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
+//            print("keyword: '\(keywords[index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
         }
         return keywordsWithEmojis
     }

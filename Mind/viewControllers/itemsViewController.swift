@@ -177,7 +177,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             for (index, keywordEmbedding) in keywordEmbeddings.enumerated() {
                 var scores: [(emoji: String, score: Float)] = []
                 for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
-                    let score = SimilarityDistance(A: keywordEmbedding, B: emojiEmbedding)
+                    let score = Distance.cosine(A: keywordEmbedding, B: emojiEmbedding)
                     let emoji = getEmoji(index)
                     scores.append((emoji: emoji, score: score))
                 }
@@ -361,7 +361,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         for item in items {
-            let distance = SimilarityDistance(A: selectedItemEmbedding, B: item.embedding!)
+            let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
             similarItems.append(item)
             scores.append(distance)
         }
@@ -507,7 +507,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         
         for keywordEmbedding in keywordsEmbeddings {
-            let score = SimilarityDistance(A: forKeywordEmbedding, B: keywordEmbedding.value)
+            let score = Distance.cosine(A: forKeywordEmbedding, B: keywordEmbedding.value)
             keywordsSimilarityScores.append((keyword: keywordEmbedding.keyword, score: score))
         }
         
@@ -583,7 +583,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 let otherItemEmbedding = itemsEmbeddings[index]
                 if item != items[index] {
                     itemsPairs.append([item, items[index]])
-                    let score = SimilarityDistance(A: currentItemEmbedding, B: otherItemEmbedding)
+                    let score = Distance.cosine(A: currentItemEmbedding, B: otherItemEmbedding)
                     itemTotalScore += score
                     itemsPairsScores.append(score)
                 }
@@ -702,7 +702,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 var score: Float = 0.0
                 let otherKeywordEmbedding = keywordsEmbeddings[index]
                 if keyword != keywords[index] {
-                    score = EuclideanDistance(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
+                    score = Distance.euclidean(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
 //                    print("Score \(score) between \(keyword) and \(keywords[index])")
                 } else {
                     score = 0.0
@@ -747,11 +747,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+            tableView.allowsSelection = false
             tableViewBC.constant = keyboardFrame.height
         }
     }
     
     @objc private func handle(keyboardHideNotification notification: Notification) {
+        tableView.allowsSelection = true
         tableViewBC.constant = 0
     }
     
