@@ -65,7 +65,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showMoreButtonMenu()
     }
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
-        showFilterButtonMenu()
+        performSegue(withIdentifier: "toFilterViewController", sender: sender)
+        Analytics.logEvent("filterButton_pressed", parameters: nil)
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
@@ -153,6 +154,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    
     @objc func pullToSearch(_ sender: AnyObject) {
         searchBar.becomeFirstResponder()
         refreshControl.endRefreshing()
@@ -162,7 +164,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         fetchData()
 //        getEmojiForKeywords()
 //        recalculateAllKeywords()
-//        hierarchicalClustering() // calculates clusters in the background
+        hierarchicalClustering()
 //        updateAllEmbeddings()
     }
     
@@ -203,7 +205,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
     }
-    
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -313,7 +314,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if let destinationVC = segue.destination as? editItemViewController {
             destinationVC.item = self.item
         }
-        if let destinationVC = segue.destination as? clustersViewController {
+        if let destinationVC = segue.destination as? filterViewController {
             destinationVC.clusters = self.keywordsClusters // <------------ this passes empty array if clusters are not ready!
         }
     }
@@ -702,6 +703,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 // save clusters
                 DispatchQueue.main.async {
                     self.keywordsClusters = clusters
+                    // remove outliers
+                    self.keywordsClusters = self.keywordsClusters
+                                            .filter { $0.count > 1}
                 }
                 
             }
@@ -893,10 +897,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alertController.view.tintColor = UIColor(named: "buttonBackground")!
             self.present(alertController, animated: true, completion: nil)
         }
-    }
-    
-    func showFilterButtonMenu() {
-        
     }
     
     
@@ -1136,4 +1136,3 @@ extension UITextView {
         self.attributedText = attributedOriginalText
     }
 }
-

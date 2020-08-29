@@ -11,6 +11,7 @@ import UIKit
 class ClustersCell: UITableViewCell {
 
     @IBOutlet weak var clusterKeywordsCollectionView: UICollectionView!
+    @IBOutlet weak var clusterLabel: UILabel!
     @IBOutlet weak var heightConstraint: NSLayoutConstraint!
     
 }

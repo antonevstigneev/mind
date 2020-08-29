@@ -8,18 +8,20 @@
 
 import UIKit
 
-class clustersViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class filterViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Variables
     var clusters: [[String]] = []
-    var selectedClusterKeyword: String = ""
+    var clustersLabels: [String] = []
     
     // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var applyButton: UIButton!
+    
     
     // Actions
     @IBAction func clusterKeywordTouchUpInside(_ sender: UIButton) {
-        selectedClusterKeyword = sender.titleLabel!.text!
+        
     }
     
     
@@ -28,16 +30,13 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         setupNotifications()
         setupViews()
-        clusters = clusters.filter { $0.count > 1}
-        if clusters.count == 0 {
-            showSpinner()
-            print("Clusters are not ready yet.")
-        }
+        getClustersLabels()
     }
 
     func setupViews() {
         // tableView initial setup
         tableView.rowHeight = UITableView.automaticDimension
+        applyButton.layer.cornerRadius = applyButton.frame.size.height / 2
     }
     
     func setupNotifications() {
@@ -48,13 +47,24 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     @objc func checkClusters() {
-        
         print("Clusters are loaded and ready.")
         print("Clusters number: \(clusters.count)")
         DispatchQueue.main.async {
             self.tableView.reloadData()
             self.removeSpinner()
         }
+    }
+    
+    func getClustersLabels() {
+        for cluster in self.clusters {
+            let clusterEmojis = cluster.map { String($0.first!) }
+            var counts: [String: Int] = [:]
+            clusterEmojis.forEach { counts[$0, default: 0] += 1 }
+            let sortedEmojis = counts.sorted {$0.1 > $1.1}
+            let topClusterEmojis = sortedEmojis.map { $0.key }.prefix(3)
+            self.clustersLabels.append(topClusterEmojis.joined(separator: " "))
+        }
+        print(clustersLabels)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -78,9 +88,13 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ClustersCell
         cell.clusterKeywordsCollectionView.tag = indexPath.row
         
-        let clusterKeywords = clusters[indexPath.row].joined(separator: " ")
+        cell.clusterLabel.text = clustersLabels[indexPath.row]
+        
+        var clusterKeywords = clusters[indexPath.row].joined(separator: " ").components(separatedBy: CharacterSet.symbols).joined()
+        clusterKeywords = clusterKeywords.replacingOccurrences(of: "  ", with: " ")
+        clusterKeywords = clusterKeywords.replacingOccurrences(of: "\u{2139}", with: "")
+        
         let clusterHeight = getHeigthForCluster(text: clusterKeywords, Width: cell.frame.width - 26.0)
-
         cell.heightConstraint.constant = clusterHeight
 
         return cell
@@ -113,7 +127,7 @@ class clustersViewController: UIViewController, UITableViewDelegate, UITableView
 
 
 // MARK: - Keywords setup
-extension clustersViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+extension filterViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -123,7 +137,7 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         let cluster = clusters[collectionView.tag]
-        let text = cluster[indexPath.row]
+        let text = String(cluster[indexPath.row].dropFirst())
         let cellWidth = text.size(withAttributes:[.font: UIFont.systemFont(ofSize: 17, weight: .regular)]).width + 20
         let cellHeight = CGFloat(26.0)
         
@@ -145,7 +159,7 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "keywordCell", for: indexPath) as! ClusterKeywordsCell
         
         let cluster = clusters[collectionView.tag]
-        let keywordTitle = cluster[indexPath.row]
+        let keywordTitle = String(cluster[indexPath.row].dropFirst())
         cell.keywordButton.setTitle(keywordTitle, for: .normal)
         
         return cell
@@ -155,11 +169,11 @@ extension clustersViewController: UICollectionViewDelegate, UICollectionViewData
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let itemsViewController = segue.destination as! itemsViewController
-        itemsViewController.selectedClusterKeyword = self.selectedClusterKeyword
-        NotificationCenter.default.post(name:
-        NSNotification.Name(rawValue: "clusterKeywordClicked"),
-                                        object: nil)
+//        let itemsViewController = segue.destination as! itemsViewController
+//        itemsViewController.selectedClusterKeyword = self.selectedClusterKeyword
+//        NotificationCenter.default.post(name:
+//        NSNotification.Name(rawValue: "clusterKeywordClicked"),
+//                                        object: nil)
     }
 
 
