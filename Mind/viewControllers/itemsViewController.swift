@@ -34,6 +34,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedKeyword: (title: String, path: Int)? = nil
     var keywordsClusters: [[String]] = []
     var selectedClusterKeyword: String = ""
+    var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     var emojiEmbeddings = getEmojiEmbeddings()
     
@@ -65,7 +66,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showMoreButtonMenu()
     }
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
-        performSegue(withIdentifier: "toFilterViewController", sender: sender)
+//        performSegue(withIdentifier: "toFilterViewController", sender: sender)
+        showFilterMenu()
         Analytics.logEvent("filterButton_pressed", parameters: nil)
     }
     
@@ -314,9 +316,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if let destinationVC = segue.destination as? editItemViewController {
             destinationVC.item = self.item
         }
-        if let destinationVC = segue.destination as? filterViewController {
-            destinationVC.clusters = self.keywordsClusters // <------------ this passes empty array if clusters are not ready!
-        }
     }
     
     
@@ -328,10 +327,41 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         request.sortDescriptors = [sortDescriptor]
         do {
             items = try context.fetch(request)
-            items = items.filter {
-                $0.hidden == false &&
-                $0.archived == false
+            switch selectedFilter {
+            case "Recent":
+                items = items.filter {
+                    $0.hidden == false &&
+                    $0.archived == false
+                }
+            case "Favorite":
+                items = items.filter {
+                    $0.hidden == false &&
+                    $0.archived == false
+                }
+                items.sort { $0.favorited && !$1.favorited }
+            case "Random":
+                items = items.shuffled()
+                items = items.filter {
+                    $0.hidden == false &&
+                    $0.archived == false
+                }
+            case "Hidden":
+                items = items.filter {
+                    $0.hidden == true &&
+                    $0.archived == false
+                }
+            case "Archived":
+                items = items.filter {
+                    $0.hidden == false &&
+                    $0.archived == true
+                }
+            default:
+                items = items.filter {
+                    $0.hidden == false &&
+                    $0.archived == false
+                }
             }
+            
             let itemsLoading = DispatchGroup()
             DispatchQueue.main.async(group: itemsLoading) {
                 self.tableView.reloadData()
@@ -836,6 +866,24 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    func showFilterMenu() {
+        let titles = ["Recent", "Favorite", "Random", "Hidden", "Archived"]
+        let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        for title in titles {
+            let actionAlert: UIAlertAction = UIAlertAction(title: title, style: .default) { action in
+                self.selectedFilter = title
+                self.fetchData()
+            }
+            if title == selectedFilter {
+                actionAlert.setValue(UIImage(systemName: "checkmark"), forKey: "image")
+            }
+            controller.addAction(actionAlert)
+        }
+        controller.addAction(UIAlertAction.init(title: "Cancel", style: .cancel, handler: nil))
+        controller.view.tintColor = UIColor(named: "buttonBackground")!
+        self.present(controller, animated: true, completion: nil)
+    }
+    
     func showMoreButtonMenu() {
         DispatchQueue.main.async {
             let alertController = UIAlertController(title: nil,
@@ -1136,3 +1184,4 @@ extension UITextView {
         self.attributedText = attributedOriginalText
     }
 }
+
