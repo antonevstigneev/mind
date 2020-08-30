@@ -1,5 +1,7 @@
 import Foundation
 
+let emojiEmbeddings = getEmojiEmbeddings()
+
 public func getEmojiEmbeddings() -> [[Float]] {
     let emojiJSONEmbeddings = readJSONFromFile(fileName: "EmojiEmbeddings")
     var emojiEmbeddings: [[Float]] = []
@@ -27,6 +29,21 @@ public func readJSONFromFile(fileName: String) -> [[NSNumber]]? {
 
 public func getEmoji(_ index: Int) -> String {
     return emojiDict[index].emoji
+}
+
+public func getKeywordsWithEmojis(_ keywords: [String], _ keywordsEmbeddings: [[Float]]) -> [String] {
+    var keywordsWithEmojis: [String] = []
+    for (index, keywordEmbedding) in keywordsEmbeddings.enumerated() {
+        var scores: [(emoji: String, score: Float)] = []
+        for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
+            let score = Distance.cosine(A: keywordEmbedding, B: emojiEmbedding)
+            let emoji = getEmoji(index)
+            scores.append((emoji: emoji, score: score))
+        }
+        scores = scores.sorted {$0.1 > $1.1}
+        keywordsWithEmojis.append(scores[0].emoji + keywords[index])
+    }
+    return keywordsWithEmojis
 }
 
 let emojiDict = [

@@ -15,7 +15,6 @@ class editItemViewController: UIViewController, UITextViewDelegate {
     let bert = BERT()
     
     var item: Item!
-    var emojiEmbeddings = getEmojiEmbeddings()
     
     // Outlets
     @IBOutlet weak var doneButton: UIButton!
@@ -82,13 +81,13 @@ class editItemViewController: UIViewController, UITextViewDelegate {
             
             let keywords = getKeywords(from: entryText, count: 7)
             let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            let keywordsWithEmojis = self.getKeywordsWithEmojis(keywords, keywordsEmbeddings)
+            let keywordsWithEmojis = getKeywordsWithEmojis(keywords, keywordsEmbeddings)
             let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
             let itemContent = self.replaceWordsWithKeywords(entryText, keywords, keywordsWithEmojis)
             
             self.item.content = itemContent
-            self.item.keywordsEmbeddings = keywordsEmbeddings
             self.item.keywords = keywordsWithEmojis
+            self.item.keywordsEmbeddings = keywordsEmbeddings
             self.item.embedding = itemEmbedding
         
             DispatchQueue.main.async {
@@ -110,23 +109,6 @@ class editItemViewController: UIViewController, UITextViewDelegate {
 
         return replacedText
     }
-    
-    func getKeywordsWithEmojis(_ keywords: [String], _ keywordsEmbeddings: [[Float]]) -> [String] {
-        var keywordsWithEmojis: [String] = []
-        for (index, keywordEmbedding) in keywordsEmbeddings.enumerated() {
-            var scores: [(emoji: String, score: Float)] = []
-            for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
-                let score = Distance.cosine(A: keywordEmbedding, B: emojiEmbedding)
-                let emoji = getEmoji(index)
-                scores.append((emoji: emoji, score: score))
-            }
-            scores = scores.sorted {$0.1 > $1.1}
-            keywordsWithEmojis.append(scores[0].emoji + keywords[index])
-//            print("keyword: '\(keywords[index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
-        }
-        return keywordsWithEmojis
-    }
-    
     
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {

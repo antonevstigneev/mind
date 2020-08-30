@@ -172,11 +172,22 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func updateEmptyView() {
         if items.count > 0 {
+            tableView.isHidden = false
             searchBar.isHidden = false
             emptyPlaceholderLabel.isHidden = true
         } else {
+            tableView.isHidden = true
             searchBar.isHidden = true
             emptyPlaceholderLabel.isHidden = false
+            if selectedFilter == "Archived"  {
+                emptyPlaceholderLabel.text = "Archive is empty."
+            }
+            if selectedFilter == "Hidden" {
+                emptyPlaceholderLabel.text = "No hidden elements."
+            }
+            if selectedFilter == "Favorite" {
+                emptyPlaceholderLabel.text = "No favorites."
+            }
         }
     }
     
@@ -246,17 +257,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func archiveItem(_ item: Item, _ indexPath: IndexPath) {
         let actionMessage = "This will be archived but can be found in the Archived folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-            print("Archive clicked")
-            self.item.archived = true
+        if item.archived == true {
+            self.item.archived = false
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-          }) { () -> Void in
-            print("Cancelled")
+        } else {
+            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+                self.item.archived = true
+                self.items.remove(at: indexPath.row)
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
+              }) { () -> Void in
+                print("Cancelled")
+            }
         }
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
-    func deleteItem(_ item: Item, indexPath: IndexPath) {
+    func deleteItem(_ item: Item, _ indexPath: IndexPath) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
             print("Delete clicked")
@@ -335,10 +352,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
             case "Favorite":
                 items = items.filter {
+                    $0.favorited == true &&
                     $0.hidden == false &&
                     $0.archived == false
                 }
-                items.sort { $0.favorited && !$1.favorited }
             case "Random":
                 items = items.shuffled()
                 items = items.filter {
@@ -953,6 +970,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.item = self.items[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
+        var archivedLabel: String!
         
         if item.favorited == true {
             favoriteLabel = "Unfavorite"
@@ -962,6 +980,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             favoriteImage = UIImage(systemName: "star")
         }
         
+        if item.archived == true {
+            archivedLabel = "Unarchive"
+        } else {
+            archivedLabel = "Archive"
+        }
+        
         DispatchQueue.main.async {
             let alertController = UIAlertController(title: nil,
                                                     message: nil,
@@ -969,7 +993,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
             
-            let archiveAction: UIAlertAction = UIAlertAction(title: "Archive", style: .default)
+            let archiveAction: UIAlertAction = UIAlertAction(title: archivedLabel, style: .default)
             { _ in
                 self.archiveItem(self.item, indexPath)
             }
@@ -1019,6 +1043,16 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alertController.addAction(favoriteAction)
             alertController.addAction(hideAction)
             alertController.addAction(archiveAction)
+            
+            if self.item.archived == true {
+                let deleteAction: UIAlertAction = UIAlertAction(title: "Delete", style: .destructive)
+                { _ in
+                    self.deleteItem(self.item, indexPath)
+                }
+                deleteAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+                deleteAction.setValue(UIImage(systemName: "trash"), forKey: "image")
+                alertController.addAction(deleteAction)
+            }
             
             alertController.view.tintColor = UIColor(named: "buttonBackground")!
             self.present(alertController, animated: true, completion: nil)

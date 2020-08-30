@@ -88,15 +88,19 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
             
-            let keywords = getKeywords(from: entryText, count: 8)
+            let keywords = getKeywords(from: entryText, count: 7)
+            let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
+            let keywordsWithEmojis = getKeywordsWithEmojis(keywords, keywordsEmbeddings)
+            let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
+            let itemContent = self.replaceWordsWithKeywords(entryText, keywords, keywordsWithEmojis)
 
             let newEntry = Item(context: self.context)
             newEntry.id = UUID()
-            newEntry.content = entryText
+            newEntry.content = itemContent
             newEntry.timestamp = Date().current
-            newEntry.keywords = keywords
-            newEntry.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            newEntry.embedding = self.bert.getTextEmbedding(text: entryText)
+            newEntry.keywords = keywordsWithEmojis
+            newEntry.keywordsEmbeddings = keywordsEmbeddings
+            newEntry.embedding = itemEmbedding
             
             DispatchQueue.main.async {
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -107,6 +111,15 @@ class addItemViewController: UIViewController, UITextViewDelegate {
             NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
+    }
+    
+    func replaceWordsWithKeywords(_ text: String, _ words: [String], _ keywords: [String]) -> String {
+        var replacedText = text
+        for (index, word) in words.enumerated() {
+            replacedText = replacedText.replacingOccurrences(of: word, with: keywords[index])
+        }
+
+        return replacedText
     }
     
     // Handle keyboard appearence
