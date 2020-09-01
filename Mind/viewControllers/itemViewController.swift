@@ -22,18 +22,27 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Outlets
     @IBOutlet weak var itemContentTextView: UITextView!
+    @IBOutlet weak var itemTimestampLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
     
     // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
-        itemContentTextView.text = self.selectedItem.content!
         setupViews()
         fetchData()
     }
     
     func setupViews() {
+        
+        // itemView initial setup
+        itemContentTextView.text = self.selectedItem.content!
+        itemContentTextView.isScrollEnabled = false
+        itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
+        itemContentTextView.sizeToFit()
+        itemContentTextView.textColor = UIColor(named: "content")
+        itemTimestampLabel.text = convertTimestamp(timestamp: selectedItem.value(forKey: "timestamp") as! Double)
+        
         // tableView initial setup
         tableView.delegate = self
         tableView.dataSource = self
@@ -56,7 +65,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let item = similarItems[indexPath.row]
         let content = item.content!
         
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!)
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
         if item.favorited {
@@ -85,11 +94,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             destinationVC.items = self.items
         }
     }
-
         
     
     // MARK: - Fetch items data
-
     @objc func fetchData() {
         self.tableView.hide()
         self.showSpinner()
@@ -143,6 +150,22 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         return sortedResults.map {$0.0}
     }
     
+    func convertTimestamp(timestamp: Double) -> String {
+        let x = timestamp / 1000
+        let date = NSDate(timeIntervalSince1970: x)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        
+        return formatter.string(from: date as Date)
+    }
     
+    func convertTime(time: UInt64) -> String {
+        let x = time / 1000
+        let date = NSDate(timeIntervalSince1970: TimeInterval(x))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        
+        return formatter.string(from: date as Date)
+    }
     
 }

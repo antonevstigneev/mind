@@ -36,6 +36,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedClusterKeyword: String = ""
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
+    let searchController = UISearchController(searchResultsController: nil)
     var emojiEmbeddings = getEmojiEmbeddings()
     
     
@@ -85,13 +86,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         setupLabelTap()
     }
     
-    override func viewDidLayoutSubviews() {
-        setupSearchBar(searchBar: searchBar)
-    }
-    
-    func setupSearchBar(searchBar : UISearchBar) {
-        searchBar.setPlaceholderTextColorTo(color: UIColor(named: "content2")!)
-    }
     
     func setupNotifications() {
         //        NotificationCenter.default.addObserver(self,
@@ -121,9 +115,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupViews() {
-        // searchBar initial setup
-        searchBar.delegate = self
-        searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
+        navigationItem.searchController = searchController
+        searchController.searchBar.delegate = self
+        searchController.searchBar.sizeToFit()
+        searchController.searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
+        self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
+        searchController.searchBar.showsCancelButton = false
         
         // tableView initial setup
         tableView.delegate = self
@@ -158,7 +155,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     @objc func pullToSearch(_ sender: AnyObject) {
-        searchBar.becomeFirstResponder()
+        searchController.searchBar.becomeFirstResponder()
         refreshControl.endRefreshing()
     }
     
@@ -173,11 +170,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc func updateEmptyView() {
         if items.count > 0 {
             tableView.isHidden = false
-            searchBar.isHidden = false
             emptyPlaceholderLabel.isHidden = true
         } else {
             tableView.isHidden = true
-            searchBar.isHidden = true
             emptyPlaceholderLabel.isHidden = false
             if selectedFilter == "Archived"  {
                 emptyPlaceholderLabel.text = "Archive is empty."
@@ -337,7 +332,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let content = item.value(forKey: "content") as! String
         
         cell.itemContentText.delegate = self
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!)
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
         if item.favorited {
@@ -348,7 +343,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.favoritedButton.isHidden = true
             cell.itemContentTextRC.constant = 16
         }
-        //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
         
         return cell
     }
@@ -361,7 +355,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
+        searchController.searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
             .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
@@ -518,7 +512,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func reloadSearch() {
-        guard let searchText = searchBar.text else { return }
+        guard let searchText = searchController.searchBar.text else { return }
         if !searchText.isEmpty {
             performSimilaritySearch(searchText)
         } else {
@@ -874,25 +868,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         tableViewBC.constant = 0
     }
     
-    
-    func convertTimestamp(timestamp: Double) -> String {
-        let x = timestamp / 1000
-        let date = NSDate(timeIntervalSince1970: x)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
-        
-        return formatter.string(from: date as Date)
-    }
-    
-    func convertTime(time: UInt64) -> String {
-        let x = time / 1000
-        let date = NSDate(timeIntervalSince1970: TimeInterval(x))
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        
-        return formatter.string(from: date as Date)
-    }
-    
     func postAlert(title: String, _ message: String = "") {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         self.present(alert, animated: true, completion: nil)
@@ -1144,7 +1119,7 @@ extension itemsViewController {
 
 extension UITextView {
     
-    func addHyperLinksToText(originalText: String, hyperLinks: [String]) {
+    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int) {
         let style = NSMutableParagraphStyle()
         style.alignment = .left
         style.lineSpacing = 3.0
@@ -1155,7 +1130,7 @@ extension UITextView {
             let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
             attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: "#" + hyperLink, range: linkRange)
             attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: 16, weight: .regular), range: fullRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: .regular), range: fullRange)
         }
         
         self.linkTextAttributes = [
