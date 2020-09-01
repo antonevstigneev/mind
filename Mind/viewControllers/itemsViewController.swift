@@ -223,6 +223,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         super.viewWillDisappear(animated)
     }
     
+    
+    
     func copyItemContent(_ item: Item) {
         let content = item.content
         let pasteboard = UIPasteboard.general
@@ -300,6 +302,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let item = items[indexPath.row]
         let content = item.value(forKey: "content") as! String
         
+        cell.itemContentText.delegate = self
         cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
@@ -311,7 +314,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.favoritedButton.isHidden = true
             cell.itemContentTextRC.constant = 16
         }
-        
 //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
         
         return cell
@@ -319,7 +321,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        showItemMenu(indexPath: indexPath)
+//        showItemMenu(indexPath: indexPath)
+        self.item = self.items[indexPath.row]
+        self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -332,6 +336,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destinationVC = segue.destination as? editItemViewController {
             destinationVC.item = self.item
+        }
+        if let destinationVC = segue.destination as? itemViewController {
+            destinationVC.selectedItem = self.item
+            destinationVC.items = self.items
         }
     }
     
@@ -1071,7 +1079,6 @@ extension Array where Element: Hashable {
         return Array(thisSet.symmetricDifference(otherSet))
     }
 }
-
 
 extension Date {
     var current: Double {
