@@ -38,7 +38,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var refreshControl = UIRefreshControl()
     var emojiEmbeddings = getEmojiEmbeddings()
     
-
+    
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var mindLabel: UILabel!
@@ -66,7 +66,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showMoreButtonMenu()
     }
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
-//        performSegue(withIdentifier: "toFilterViewController", sender: sender)
+        //        performSegue(withIdentifier: "toFilterViewController", sender: sender)
         showFilterMenu()
         Analytics.logEvent("filterButton_pressed", parameters: nil)
     }
@@ -94,30 +94,30 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupNotifications() {
-//        NotificationCenter.default.addObserver(self,
-//        selector: #selector(hierarchicalClustering),
-//        name: NSNotification.Name(rawValue: "itemsChanged"),
-//        object: nil)
+        //        NotificationCenter.default.addObserver(self,
+        //        selector: #selector(hierarchicalClustering),
+        //        name: NSNotification.Name(rawValue: "itemsChanged"),
+        //        object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(updateEmptyView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
+                                               selector: #selector(updateEmptyView),
+                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
+                                               selector: #selector(fetchData),
+                                               name: NSNotification.Name(rawValue: "itemsChanged"),
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
+                                               selector: #selector(handle(keyboardShowNotification:)),
+                                               name: UIResponder.keyboardDidShowNotification,
+                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
+                                               selector: #selector(handle(keyboardHideNotification:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
     }
     
     func setupViews() {
@@ -164,10 +164,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-//        getEmojiForKeywords()
-//        recalculateAllKeywords()
+        //        getEmojiForKeywords()
+        //        recalculateAllKeywords()
         hierarchicalClustering()
-//        updateAllEmbeddings()
+        //        updateAllEmbeddings()
     }
     
     @objc func updateEmptyView() {
@@ -202,7 +202,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             tableView.reloadData()
         }
     }
-
+    
     func getEmojiForKeywords() {
         for item in items {
             let keywordEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
@@ -218,17 +218,58 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
         }
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
     }
     
+    // MARK: - Context menu
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
+            return self.createContextMenu(indexPath: indexPath)
+        }
+    }
     
-    
-    func copyItemContent(_ item: Item) {
-        let content = item.content
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = content
+    func createContextMenu(indexPath: IndexPath) -> UIMenu {
+        self.item = self.items[indexPath.row]
+        var favoriteLabel: String!
+        var favoriteImage: UIImage!
+        var archivedLabel: String!
+        
+        if item.favorited == true {
+            favoriteLabel = "Unfavorite"
+            favoriteImage = UIImage(systemName: "star.slash")
+        } else {
+            favoriteLabel = "Favorite"
+            favoriteImage = UIImage(systemName: "star")
+        }
+        if item.archived == true {
+            archivedLabel = "Unarchive"
+        } else {
+            archivedLabel = "Archive"
+        }
+        
+        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
+            self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
+        }
+        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
+            self.favoriteItem(self.item)
+        }
+        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
+            self.hideItem(self.item, indexPath)
+        }
+        let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
+            self.archiveItem(self.item, indexPath)
+        }
+        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+            self.deleteItem(self.item, indexPath)
+        }
+        
+        if self.item.archived == true {
+            return UIMenu(title: "", children: [edit, favorite, hide, archive, delete])
+        } else {
+            return UIMenu(title: "", children: [edit, favorite, hide, archive])
+        }
     }
     
     func favoriteItem(_ item: Item) {
@@ -238,7 +279,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             item.favorited = true
         }
         NotificationCenter.default.post(name:
-        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
@@ -249,43 +290,36 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             self.item.hidden = true
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-            NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+            //           NotificationCenter.default.post(name:
+            //           NSNotification.Name(rawValue: "itemsChanged"), object: nil)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
-          }) { () -> Void in
+        }) { () -> Void in
             print("Cancelled")
         }
     }
     
     func archiveItem(_ item: Item, _ indexPath: IndexPath) {
         let actionMessage = "This will be archived but can be found in the Archived folder"
-        if item.archived == true {
-            self.item.archived = false
+        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+            self.item.archived = true
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-        } else {
-            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-                self.item.archived = true
-                self.items.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .fade)
-              }) { () -> Void in
-                print("Cancelled")
-            }
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        }) { () -> Void in
+            print("Cancelled")
         }
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
     func deleteItem(_ item: Item, _ indexPath: IndexPath) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
-            print("Delete clicked")
             self.context.delete(item)
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+                NSNotification.Name(rawValue: "itemsChanged"), object: nil)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
-          }) { () -> Void in
+        }) { () -> Void in
             print("Cancelled")
         }
     }
@@ -314,21 +348,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.favoritedButton.isHidden = true
             cell.itemContentTextRC.constant = 16
         }
-//        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
+        //        cell.itemTimestampLabel?.text = convertTimestamp(timestamp: item.value(forKey: "timestamp") as! Double)
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-//        showItemMenu(indexPath: indexPath)
+        //        showItemMenu(indexPath: indexPath)
         self.item = self.items[indexPath.row]
         self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
     }
-
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
-                                .withAlphaComponent(-scrollView.contentOffset.y / 100)
+            .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
     
@@ -356,34 +390,34 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             case "Recent":
                 items = items.filter {
                     $0.hidden == false &&
-                    $0.archived == false
+                        $0.archived == false
                 }
             case "Favorite":
                 items = items.filter {
                     $0.favorited == true &&
-                    $0.hidden == false &&
-                    $0.archived == false
+                        $0.hidden == false &&
+                        $0.archived == false
                 }
             case "Random":
                 items = items.shuffled()
                 items = items.filter {
                     $0.hidden == false &&
-                    $0.archived == false
+                        $0.archived == false
                 }
             case "Hidden":
                 items = items.filter {
                     $0.hidden == true &&
-                    $0.archived == false
+                        $0.archived == false
                 }
             case "Archived":
                 items = items.filter {
                     $0.hidden == false &&
-                    $0.archived == true
+                        $0.archived == true
                 }
             default:
                 items = items.filter {
                     $0.hidden == false &&
-                    $0.archived == false
+                        $0.archived == false
                 }
             }
             
@@ -740,7 +774,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 // get max values from similar keywords value pairs
                 let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
                 let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
-//                print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
+                //                print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
                 var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
                 maxValues[firstValue.row] = 0.0
                 
@@ -760,15 +794,15 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     self.keywordsClusters = clusters
                     // remove outliers
                     self.keywordsClusters = self.keywordsClusters
-                                            .filter { $0.count > 1}
+                        .filter { $0.count > 1}
                 }
                 
             }
         }
         clustersCreation.notify(queue: .main) {
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "clustersCreated"),
-            object: nil)
+                NSNotification.Name(rawValue: "clustersCreated"),
+                                            object: nil)
         }
     }
     
@@ -788,7 +822,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 let otherKeywordEmbedding = keywordsEmbeddings[index]
                 if keyword != keywords[index] {
                     score = Distance.euclidean(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-//                    print("Score \(score) between \(keyword) and \(keywords[index])")
+                    //                    print("Score \(score) between \(keyword) and \(keywords[index])")
                 } else {
                     score = 0.0
                 }
@@ -860,13 +894,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func postAlert(title: String, _ message: String = "") {
-      let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-      self.present(alert, animated: true, completion: nil)
-
-      // delays execution of code to dismiss
-      DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: {
-        alert.dismiss(animated: true, completion: nil)
-      })
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        self.present(alert, animated: true, completion: nil)
+        
+        // delays execution of code to dismiss
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: {
+            alert.dismiss(animated: true, completion: nil)
+        })
     }
     
     func postActionSheet(title: String!, message: String!, confirmation: String!, success: (() -> Void)? , cancel: (() -> Void)?) {
@@ -919,42 +953,42 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let FAQAction: UIAlertAction = UIAlertAction(title: "Mind FAQ", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             FAQAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             FAQAction.setValue(UIImage(systemName: "questionmark.circle"), forKey: "image")
             
             let questionAction: UIAlertAction = UIAlertAction(title: "Ask a Question", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             questionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             questionAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
             
             let appearanceAction: UIAlertAction = UIAlertAction(title: "Appearance", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             appearanceAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             appearanceAction.setValue(UIImage(systemName: "paintbrush"), forKey: "image")
             
             let privacyAction: UIAlertAction = UIAlertAction(title: "Privacy and Security", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             privacyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             privacyAction.setValue(UIImage(systemName: "lock"), forKey: "image")
             
             let syncAction: UIAlertAction = UIAlertAction(title: "Synchronization", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             syncAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             syncAction.setValue(UIImage(systemName: "icloud"), forKey: "image")
             
             let subscriptionAction: UIAlertAction = UIAlertAction(title: "Subscription", style: .default)
             { _ in
-//                self.performSegue(withIdentifier: "", sender: (Any).self)
+                //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             subscriptionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             subscriptionAction.setValue(UIImage(systemName: "goforward"), forKey: "image")
@@ -972,100 +1006,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    
-    // MARK: - Item menu
-    func showItemMenu(indexPath: IndexPath) {
-        self.item = self.items[indexPath.row]
-        var favoriteLabel: String!
-        var favoriteImage: UIImage!
-        var archivedLabel: String!
-        
-        if item.favorited == true {
-            favoriteLabel = "Unfavorite"
-            favoriteImage = UIImage(systemName: "star.slash")
-        } else {
-            favoriteLabel = "Favorite"
-            favoriteImage = UIImage(systemName: "star")
-        }
-        
-        if item.archived == true {
-            archivedLabel = "Unarchive"
-        } else {
-            archivedLabel = "Archive"
-        }
-        
-        DispatchQueue.main.async {
-            let alertController = UIAlertController(title: nil,
-                                                    message: nil,
-                                                    preferredStyle: .actionSheet)
-            
-            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
-            
-            let archiveAction: UIAlertAction = UIAlertAction(title: archivedLabel, style: .default)
-            { _ in
-                self.archiveItem(self.item, indexPath)
-            }
-            archiveAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            archiveAction.setValue(UIImage(systemName: "archivebox"), forKey: "image")
-            
-            let hideAction: UIAlertAction = UIAlertAction(title: "Hide", style: .default)
-            { _ in
-                self.hideItem(self.item, indexPath)
-            }
-            hideAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            hideAction.setValue(UIImage(systemName: "eye.slash"), forKey: "image")
-            
-            let favoriteAction: UIAlertAction = UIAlertAction(title: favoriteLabel, style: .default)
-            { _ in
-                self.favoriteItem(self.item)
-            }
-            favoriteAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            favoriteAction.setValue(favoriteImage, forKey: "image")
-            
-            let editAction: UIAlertAction = UIAlertAction(title: "Edit", style: .default)
-            { _ in
-                self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
-            }
-            editAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            editAction.setValue(UIImage(systemName: "square.and.pencil"), forKey: "image")
-            
-            let copyAction: UIAlertAction = UIAlertAction(title: "Copy", style: .default)
-            { _ in
-                self.copyItemContent(self.item)
-            }
-            copyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            copyAction.setValue(UIImage(systemName: "doc.on.doc"), forKey: "image")
-            
-            let similarAction: UIAlertAction = UIAlertAction(title: "Similar", style: .default)
-            { _ in
-                self.findSimilarItems(for: self.item)
-                Analytics.logEvent("similarItems_search", parameters: nil)
-            }
-            similarAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            similarAction.setValue(UIImage(systemName: "circle.grid.2x2"), forKey: "image")
-            
-            alertController.addAction(cancelAction)
-            alertController.addAction(similarAction)
-            alertController.addAction(copyAction)
-            alertController.addAction(editAction)
-            alertController.addAction(favoriteAction)
-            alertController.addAction(hideAction)
-            alertController.addAction(archiveAction)
-            
-            if self.item.archived == true {
-                let deleteAction: UIAlertAction = UIAlertAction(title: "Delete", style: .destructive)
-                { _ in
-                    self.deleteItem(self.item, indexPath)
-                }
-                deleteAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-                deleteAction.setValue(UIImage(systemName: "trash"), forKey: "image")
-                alertController.addAction(deleteAction)
-            }
-            
-            alertController.view.tintColor = UIColor(named: "buttonBackground")!
-            self.present(alertController, animated: true, completion: nil)
-        }
-    }
     
 }
 
@@ -1208,7 +1148,7 @@ extension UITextView {
         let style = NSMutableParagraphStyle()
         style.alignment = .left
         style.lineSpacing = 3.0
-
+        
         let attributedOriginalText = NSMutableAttributedString(string: originalText)
         for hyperLink in hyperLinks {
             let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
