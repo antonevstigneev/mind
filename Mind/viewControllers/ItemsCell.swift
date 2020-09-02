@@ -27,3 +27,4 @@ class ItemContentText: UITextView {
         return attributedText.attribute(.link, at: startIndex, effectiveRange: nil) != nil
     }
 }
+

@@ -98,13 +98,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Fetch items data
     @objc func fetchData() {
-        self.tableView.hide()
-        self.showSpinner()
+//        self.tableView.hide()
+//        self.showSpinner()
         similarItems = getSimilarItems(item: self.selectedItem)
         DispatchQueue.main.async() {
             self.tableView.reloadData()
-            self.tableView.show()
-            self.removeSpinner()
+//            self.tableView.show()
+//            self.removeSpinner()
         }
     }
     

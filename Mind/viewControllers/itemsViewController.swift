@@ -94,27 +94,28 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         //        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateEmptyView),
-                                               name: NSNotification.Name(rawValue: "itemsLoaded"),
-                                               object: nil)
+        selector: #selector(updateEmptyView),
+        name: NSNotification.Name(rawValue: "itemsLoaded"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(fetchData),
-                                               name: NSNotification.Name(rawValue: "itemsChanged"),
-                                               object: nil)
+        selector: #selector(fetchData),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handle(keyboardShowNotification:)),
-                                               name: UIResponder.keyboardDidShowNotification,
-                                               object: nil)
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(handle(keyboardHideNotification:)),
-                                               name: UIResponder.keyboardWillHideNotification,
-                                               object: nil)
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
     }
     
     func setupViews() {
+        // navigationController initial setup
         navigationItem.searchController = searchController
         searchController.searchBar.delegate = self
         searchController.searchBar.sizeToFit()
@@ -178,7 +179,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 emptyPlaceholderLabel.text = "Archive is empty."
             }
             if selectedFilter == "Hidden" {
-                emptyPlaceholderLabel.text = "No hidden elements."
+                emptyPlaceholderLabel.text = "There is nothing hidden."
             }
             if selectedFilter == "Favorite" {
                 emptyPlaceholderLabel.text = "No favorites."
@@ -320,7 +321,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    // MARK: - Items Table View
+    // MARK: - Table View
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items.count
     }
@@ -344,6 +345,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.itemContentTextRC.constant = 16
         }
         
+        // Add tap gesture recognizer to Text View
+        let tap = UITapGestureRecognizer(target: self, action: #selector(myMethodToHandleTap(_:)))
+        tap.delegate = self
+        cell.itemContentText.addGestureRecognizer(tap)
+        
         return cell
     }
     
@@ -359,6 +365,26 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
+    @objc func myMethodToHandleTap(_ sender: UITapGestureRecognizer) {
+
+        let myTextView = sender.view as! UITextView
+        let layoutManager = myTextView.layoutManager
+
+        // location of tap in myTextView coordinates and taking the inset into account
+        var location = sender.location(in: myTextView)
+        location.x -= myTextView.textContainerInset.left;
+        location.y -= myTextView.textContainerInset.top;
+
+        // character index at tap location
+        let characterIndex = layoutManager.characterIndex(for: location, in: myTextView.textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+
+       // check if the tap location has a certain attribute
+        let attributeName = NSAttributedString.Key.link
+        let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
+        if let value = attributeValue {
+            print("You tapped on keyword and the value is: \(value)")
+        }
+    }
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -1128,7 +1154,7 @@ extension UITextView {
         for hyperLink in hyperLinks {
             let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
             let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: "#" + hyperLink, range: linkRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: hyperLink, range: linkRange)
             attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
             attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: .regular), range: fullRange)
         }
