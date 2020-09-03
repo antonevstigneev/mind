@@ -11,12 +11,12 @@ func detectedLanguage(for string: String) -> String? {
 
 internal struct Normalize {
     
-    static func getNouns(_ text: [String]) -> [String] {
+    static func getNouns(_ keywords: [String]) -> [String] {
         var nouns: [String] = []
         
-        let text = text.joined(separator: ", ")
+        let keywords = keywords.joined(separator: ", ")
         
-        let language = detectedLanguage(for: text)
+        let language = detectedLanguage(for: keywords)
         let tagger = NSLinguisticTagger(
             tagSchemes: NSLinguisticTagger.availableTagSchemes(forLanguage: language!),
             options: 0)
@@ -24,8 +24,8 @@ internal struct Normalize {
             .omitPunctuation, .omitWhitespace, .joinNames
             ]
 
-        tagger.string = text
-        let range = NSRange(location: 0, length: text.utf16.count)
+        tagger.string = keywords
+        let range = NSRange(location: 0, length: keywords.utf16.count)
 
         tagger.enumerateTags(
             in: range,
@@ -36,7 +36,7 @@ internal struct Normalize {
 
                 if let tag = tag {
                     if tag == .noun {
-                        let word = (text as NSString)
+                        let word = (keywords as NSString)
                         .substring(with: tokenRange)
                         nouns.append(word)
                     }
@@ -46,35 +46,4 @@ internal struct Normalize {
         return Array(Set(nouns))
     }
 
-
-    static func getLemmas(_ text: [String]) -> [String] {
-        var lemmas: [String] = []
-        
-        let text = text.joined(separator: ", ")
-
-        let language = detectedLanguage(for: text)
-        let tagger = NSLinguisticTagger(tagSchemes: NSLinguisticTagger.availableTagSchemes(forLanguage: language!), options: 0)
-        tagger.string = text
-        
-        let range = NSRange(location: 0, length: text.count)
-        let options: NSLinguisticTagger.Options = [.omitWhitespace, .omitPunctuation]
-        
-        tagger.enumerateTags(in: range,
-                             unit: .word,
-                             scheme: .lemma,
-                             options: options) { (tag, tokenRange, stop) in
-        let word = (text as NSString).substring(with: tokenRange)
-            if let lemma = tag?.rawValue {
-                if lemma == "datum" {
-                    lemmas.append("data")
-                } else {
-                    lemmas.append(lemma)
-                }
-            } else {
-                lemmas.append(word)
-            }
-        }
-
-        return Array(Set(lemmas))
-    }
 }

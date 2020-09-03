@@ -50,16 +50,10 @@ class editItemViewController: UIViewController, UITextViewDelegate {
         selector: #selector(handle(keyboardHideNotification:)),
         name: UIResponder.keyboardWillHideNotification,
         object: nil)
-        
-        var itemContentText = item.content!.components(separatedBy: CharacterSet.symbols).joined()
-        itemContentText = itemContentText.replacingOccurrences(of: "  ", with: " ")
-        itemContentText = itemContentText.replacingOccurrences(of: "\u{2139}", with: "")
-//        let emojis: Array<Character> = emojiDict.flatMap { $0.emoji }
-//        itemContentText.removeAll(where: { emojis.contains($0) })
     
         // textInput initial setup
         textInputView.delegate = self
-        textInputView.text = itemContentText
+        textInputView.text = item.content!
         textInputView.tintColor = UIColor(named: "content")
 
         // sendButton initial setup
@@ -81,12 +75,10 @@ class editItemViewController: UIViewController, UITextViewDelegate {
             
             let keywords = getKeywords(from: entryText, count: 7)
             let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            let keywordsWithEmojis = getKeywordsWithEmojis(keywords, keywordsEmbeddings)
             let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
-            let itemContent = self.replaceWordsWithKeywords(entryText, keywords, keywordsWithEmojis)
             
-            self.item.content = itemContent
-            self.item.keywords = keywordsWithEmojis
+            self.item.content = entryText
+            self.item.keywords = keywords
             self.item.keywordsEmbeddings = keywordsEmbeddings
             self.item.embedding = itemEmbedding
         
@@ -100,15 +92,7 @@ class editItemViewController: UIViewController, UITextViewDelegate {
             object: nil)
         }
     }
-    
-    func replaceWordsWithKeywords(_ text: String, _ words: [String], _ keywords: [String]) -> String {
-        var replacedText = text
-        for (index, word) in words.enumerated() {
-            replacedText = replacedText.replacingOccurrences(of: word, with: keywords[index])
-        }
 
-        return replacedText
-    }
     
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {

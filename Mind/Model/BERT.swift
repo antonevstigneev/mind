@@ -11,11 +11,6 @@ class BERT {
     
     /// The underlying Core ML Model.
     let model = distilbert_base_nli()
-    
-    ///
-    /// - parameters:
-    ///     - document: The document text that will be procecced.
-    /// - returns: The output tensor.
 
     public func getTextEmbedding(text: String) -> [Float] {
         // Prepare the input for the BERT model.

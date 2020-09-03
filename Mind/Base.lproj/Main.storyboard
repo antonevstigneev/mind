@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ih5-gq-aI2">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ih5-gq-aI2">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
@@ -363,17 +363,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jDe-Mf-Usg">
-                                <rect key="frame" x="16" y="35" width="380" height="102"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <rect key="frame" x="16" y="45" width="382" height="193"/>
                                 <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
                                 <color key="textColor" name="content"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" keyboardDismissMode="onDrag" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EZ7-7F-xXo">
-                                <rect key="frame" x="0.0" y="183.5" width="414" height="624.5"/>
+                                <rect key="frame" x="0.0" y="256" width="414" height="552"/>
                                 <color key="backgroundColor" name="background"/>
                                 <gestureRecognizers/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="552" id="hQJ-b8-80Y"/>
+                                </constraints>
                                 <color key="separatorColor" name="border"/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
                                 <prototypes>
@@ -444,29 +446,41 @@
                                     <color key="titleColor" name="buttonIcon"/>
                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="42" scale="medium" weight="regular"/>
                                 </state>
+                                <connections>
+                                    <action selector="plusButtonTouchDown:" destination="nrd-Tn-dn2" eventType="touchDown" id="J5l-X4-NqK"/>
+                                    <action selector="plusButtonTouchUpInside:" destination="nrd-Tn-dn2" eventType="touchUpInside" id="MhP-fz-uKX"/>
+                                    <action selector="plusButtonTouchUpOutside:" destination="nrd-Tn-dn2" eventType="touchDragOutside" id="z6M-Yv-YiT"/>
+                                </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Timestamp" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aDQ-WF-bmf">
-                                <rect key="frame" x="19" y="145" width="85.5" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" name="content2"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b2f-Wb-2va">
+                                <rect key="frame" x="356.5" y="767" width="41.5" height="41"/>
+                                <color key="backgroundColor" name="buttonBackground"/>
+                                <color key="tintColor" name="buttonIcon"/>
+                                <inset key="contentEdgeInsets" minX="0.0" minY="1" maxX="0.0" maxY="2"/>
+                                <inset key="imageEdgeInsets" minX="6" minY="6" maxX="6" maxY="6"/>
+                                <state key="normal" image="checkmark" catalog="system">
+                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="45" scale="small" weight="regular"/>
+                                </state>
+                                <connections>
+                                    <action selector="doneButtonTouchDownInside:" destination="nrd-Tn-dn2" eventType="touchDragInside" id="VpZ-7s-bC5"/>
+                                    <action selector="editButtonTouchDown:" destination="nrd-Tn-dn2" eventType="touchDown" id="LJS-tt-aWR"/>
+                                    <action selector="editButtonTouchUpOutside:" destination="nrd-Tn-dn2" eventType="touchUpOutside" id="H9z-dp-sSa"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
-                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="trailing" secondItem="8sT-4Q-JfK" secondAttribute="trailing" id="81J-HG-Q84"/>
-                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="jDe-Mf-Usg" secondAttribute="trailing" constant="18" id="Emg-wp-9G2"/>
-                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="aDQ-WF-bmf" secondAttribute="bottom" constant="18" id="ITO-Jy-vLb"/>
+                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" constant="16" id="9xR-Nb-iuz"/>
+                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="b2f-Wb-2va" secondAttribute="trailing" constant="16" id="AC2-Yp-we5"/>
                             <constraint firstAttribute="bottom" secondItem="vly-rm-xhe" secondAttribute="bottom" constant="50" id="KUW-Sa-OJn"/>
+                            <constraint firstAttribute="bottom" secondItem="b2f-Wb-2va" secondAttribute="bottom" id="L4J-yr-zgk"/>
                             <constraint firstAttribute="bottomMargin" secondItem="EZ7-7F-xXo" secondAttribute="bottom" constant="-34" id="Nec-0k-0Mw"/>
-                            <constraint firstItem="aDQ-WF-bmf" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" constant="19" id="RJH-4y-hGs"/>
-                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="35" id="Rsg-HS-6br"/>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="vly-rm-xhe" secondAttribute="trailing" constant="16" id="a5h-Ve-wPK"/>
-                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="aDQ-WF-bmf" secondAttribute="trailing" symbolic="YES" id="d63-j5-fzP"/>
+                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="jDe-Mf-Usg" secondAttribute="trailing" constant="16" id="aeJ-Ej-nie"/>
+                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="18" id="fa9-aI-06Z"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
-                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" constant="16" id="gS6-ml-utb"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
-                            <constraint firstItem="aDQ-WF-bmf" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="8" id="vJo-Ji-aHb"/>
+                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="45" id="wTF-py-zfZ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="8sT-4Q-JfK"/>
                     </view>
@@ -474,17 +488,22 @@
                         <barButtonItem key="backBarButtonItem" title=" " id="ZTv-0u-7Mo"/>
                     </navigationItem>
                     <connections>
+                        <outlet property="doneButton" destination="b2f-Wb-2va" id="i1l-ag-Tag"/>
+                        <outlet property="doneButtonBC" destination="L4J-yr-zgk" id="9zr-Zy-mJ8"/>
                         <outlet property="itemContentTextView" destination="jDe-Mf-Usg" id="a17-7Y-Yaq"/>
-                        <outlet property="itemTimestampLabel" destination="aDQ-WF-bmf" id="y4X-QU-7ER"/>
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
+                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewItem" id="D25-9f-VJh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KPH-fj-1St" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2102.898550724638" y="873.88392857142856"/>
+            <point key="canvasLocation" x="1786.9565217391305" y="893.97321428571422"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="D25-9f-VJh"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="arrow.up" catalog="system" width="120" height="128"/>
         <image name="checkmark" catalog="system" width="128" height="114"/>

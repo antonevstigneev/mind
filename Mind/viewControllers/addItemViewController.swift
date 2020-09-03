@@ -90,15 +90,13 @@ class addItemViewController: UIViewController, UITextViewDelegate {
             
             let keywords = getKeywords(from: entryText, count: 7)
             let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            let keywordsWithEmojis = getKeywordsWithEmojis(keywords, keywordsEmbeddings)
             let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
-            let itemContent = self.replaceWordsWithKeywords(entryText, keywords, keywordsWithEmojis)
 
             let newEntry = Item(context: self.context)
             newEntry.id = UUID()
-            newEntry.content = itemContent
+            newEntry.content = entryText
             newEntry.timestamp = Date().current
-            newEntry.keywords = keywordsWithEmojis
+            newEntry.keywords = keywords
             newEntry.keywordsEmbeddings = keywordsEmbeddings
             newEntry.embedding = itemEmbedding
             
@@ -111,15 +109,6 @@ class addItemViewController: UIViewController, UITextViewDelegate {
             NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
-    }
-    
-    func replaceWordsWithKeywords(_ text: String, _ words: [String], _ keywords: [String]) -> String {
-        var replacedText = text
-        for (index, word) in words.enumerated() {
-            replacedText = replacedText.replacingOccurrences(of: word, with: keywords[index])
-        }
-
-        return replacedText
     }
     
     // Handle keyboard appearence

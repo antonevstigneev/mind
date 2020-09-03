@@ -37,11 +37,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
-    var emojiEmbeddings = getEmojiEmbeddings()
     
     
     // MARK: - Outlets
-    @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var mindLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
@@ -162,10 +160,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-        //        getEmojiForKeywords()
-        //        recalculateAllKeywords()
-        hierarchicalClustering()
-        //        updateAllEmbeddings()
+//        recalculateAllKeywords()
+//        hierarchicalClustering()
+//        updateAllEmbeddings()
     }
     
     @objc func updateEmptyView() {
@@ -178,8 +175,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             if selectedFilter == "Archived"  {
                 emptyPlaceholderLabel.text = "Archive is empty."
             }
-            if selectedFilter == "Hidden" {
-                emptyPlaceholderLabel.text = "There is nothing hidden."
+            if selectedFilter == "Locked" {
+                emptyPlaceholderLabel.text = "There is nothing locked."
             }
             if selectedFilter == "Favorite" {
                 emptyPlaceholderLabel.text = "No favorites."
@@ -191,27 +188,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // for restoring texted keywords
         for item in items {
             item.keywords = []
-            let keywords = getKeywords(from: item.content!, count: 8)
+            let keywords = getKeywords(from: item.content!, count: 7)
             item.keywords = keywords
             item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
             tableView.reloadData()
-        }
-    }
-    
-    func getEmojiForKeywords() {
-        for item in items {
-            let keywordEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
-            for (index, keywordEmbedding) in keywordEmbeddings.enumerated() {
-                var scores: [(emoji: String, score: Float)] = []
-                for (index, emojiEmbedding) in emojiEmbeddings.enumerated() {
-                    let score = Distance.cosine(A: keywordEmbedding, B: emojiEmbedding)
-                    let emoji = getEmoji(index)
-                    scores.append((emoji: emoji, score: score))
-                }
-                scores = scores.sorted {$0.1 > $1.1}
-                print("keyword: '\(item.keywords![index])', predicted emoji: \(scores[0].emoji), score: \(scores[0].score)")
-            }
         }
     }
     
@@ -251,8 +232,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
             self.favoriteItem(self.item)
         }
-        let hide = UIAction(title: "Hide", image: UIImage(systemName: "eye.slash")) { _ in
-            self.hideItem(self.item, indexPath)
+        let lock = UIAction(title: "Lock", image: UIImage(systemName: "lock")) { _ in
+            self.lockItem(self.item, indexPath)
         }
         let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
             self.archiveItem(self.item, indexPath)
@@ -262,9 +243,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         if self.item.archived == true {
-            return UIMenu(title: "", children: [edit, favorite, hide, archive, delete])
+            return UIMenu(title: "", children: [edit, favorite, lock, archive, delete])
         } else {
-            return UIMenu(title: "", children: [edit, favorite, hide, archive])
+            return UIMenu(title: "", children: [edit, favorite, lock, archive])
         }
     }
     
@@ -279,11 +260,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
-    func hideItem(_ item: Item, _ indexPath: IndexPath) {
-        let actionMessage = "This will be hidded from all places but can be found in the Hidden folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Hide", success: { () -> Void in
+    func lockItem(_ item: Item, _ indexPath: IndexPath) {
+        let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
             print("Hide clicked")
-            self.item.hidden = true
+            self.item.locked = true
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             //           NotificationCenter.default.post(name:
@@ -333,7 +314,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let content = item.value(forKey: "content") as! String
         
         cell.itemContentText.delegate = self
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16)
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, lineSpacing: 3.0)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
         if item.favorited {
@@ -345,8 +326,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.itemContentTextRC.constant = 16
         }
         
-        // Add tap gesture recognizer to Text View
-        let tap = UITapGestureRecognizer(target: self, action: #selector(myMethodToHandleTap(_:)))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
         tap.delegate = self
         cell.itemContentText.addGestureRecognizer(tap)
         
@@ -355,7 +335,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        //        showItemMenu(indexPath: indexPath)
         self.item = self.items[indexPath.row]
         self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
     }
@@ -365,7 +344,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
-    @objc func myMethodToHandleTap(_ sender: UITapGestureRecognizer) {
+    @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
 
         let myTextView = sender.view as! UITextView
         let layoutManager = myTextView.layoutManager
@@ -409,35 +388,35 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             switch selectedFilter {
             case "Recent":
                 items = items.filter {
-                    $0.hidden == false &&
-                        $0.archived == false
+                    $0.locked == false &&
+                    $0.archived == false
                 }
             case "Favorite":
                 items = items.filter {
                     $0.favorited == true &&
-                        $0.hidden == false &&
-                        $0.archived == false
+                    $0.locked == false &&
+                    $0.archived == false
                 }
             case "Random":
                 items = items.shuffled()
                 items = items.filter {
-                    $0.hidden == false &&
-                        $0.archived == false
+                    $0.locked == false &&
+                    $0.archived == false
                 }
-            case "Hidden":
+            case "Locked":
                 items = items.filter {
-                    $0.hidden == true &&
-                        $0.archived == false
+                    $0.locked == true &&
+                    $0.archived == false
                 }
             case "Archived":
                 items = items.filter {
-                    $0.hidden == false &&
-                        $0.archived == true
+                    $0.locked == false &&
+                    $0.archived == true
                 }
             default:
                 items = items.filter {
-                    $0.hidden == false &&
-                        $0.archived == false
+                    $0.locked == false &&
+                    $0.archived == false
                 }
             }
             
@@ -614,8 +593,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     func findSimilarItems(for item: Item!) {
-        searchBar.text = item.content!
-        performSimilaritySearch(searchBar.text!)
+        searchController.searchBar.text = item.content!
+        performSimilaritySearch(searchController.searchBar.text!)
     }
     
     
@@ -927,7 +906,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func showFilterMenu() {
-        let titles = ["Recent", "Favorite", "Random", "Hidden", "Archived"]
+        let titles = ["Recent", "Favorite", "Random", "Locked", "Archived"]
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         for title in titles {
             let actionAlert: UIAlertAction = UIAlertAction(title: title, style: .default) { action in
@@ -1145,10 +1124,10 @@ extension itemsViewController {
 
 extension UITextView {
     
-    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int) {
+    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int, lineSpacing: CGFloat) {
         let style = NSMutableParagraphStyle()
         style.alignment = .left
-        style.lineSpacing = 3.0
+        style.lineSpacing = lineSpacing
         
         let attributedOriginalText = NSMutableAttributedString(string: originalText)
         for hyperLink in hyperLinks {
@@ -1166,4 +1145,6 @@ extension UITextView {
         self.attributedText = attributedOriginalText
     }
 }
+
+
 
