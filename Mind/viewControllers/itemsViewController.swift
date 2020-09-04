@@ -225,10 +225,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } else {
             archivedLabel = "Archive"
         }
-        
-        let edit = UIAction(title: "Edit", image: UIImage(systemName: "square.and.pencil")) { _ in
-            self.performSegue(withIdentifier: "toEditItemViewController", sender: (Any).self)
-        }
+
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
             self.favoriteItem(self.item)
         }
@@ -243,9 +240,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         if self.item.archived == true {
-            return UIMenu(title: "", children: [edit, favorite, lock, archive, delete])
+            return UIMenu(title: "", children: [favorite, lock, archive, delete])
         } else {
-            return UIMenu(title: "", children: [edit, favorite, lock, archive])
+            return UIMenu(title: "", children: [favorite, lock, archive])
         }
     }
     
@@ -314,7 +311,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let content = item.value(forKey: "content") as! String
         
         cell.itemContentText.delegate = self
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, lineSpacing: 3.0)
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
         if item.favorited {
@@ -1124,7 +1121,7 @@ extension itemsViewController {
 
 extension UITextView {
     
-    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int, lineSpacing: CGFloat) {
+    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int, fontWeight: UIFont.Weight, lineSpacing: CGFloat) {
         let style = NSMutableParagraphStyle()
         style.alignment = .left
         style.lineSpacing = lineSpacing
@@ -1135,7 +1132,7 @@ extension UITextView {
             let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
             attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: hyperLink, range: linkRange)
             attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: .regular), range: fullRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
         }
         
         self.linkTextAttributes = [

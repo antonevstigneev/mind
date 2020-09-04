@@ -77,16 +77,12 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         showItemActionButtons()
         
         // itemView initial setup
-        let itemKeywords = self.selectedItem.keywords!
-        let itemContentText = self.selectedItem.content!
-        itemContentTextView.addHyperLinksToText(originalText: itemContentText, hyperLinks: itemKeywords, fontSize: 21, lineSpacing: 5.0)
-        itemContentTextView.textColor = UIColor(named: "content")
-        let tap = UITapGestureRecognizer(target: self, action: #selector(itemContentTextTapHandler(_:)))
-        tap.delegate = self
+        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        itemContentTextView.textColor = UIColor(named: "itemViewText")
         itemContentTextView.isScrollEnabled = false
+        itemContentTextView.isEditable = true
         itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
         itemContentTextView.sizeToFit()
-        itemContentTextView.addGestureRecognizer(tap)
 //        itemView.addSeparator(at: .bottom, color: UIColor(named: "border")!)
         
         // tableView initial setup
@@ -159,13 +155,16 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
         let archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
         let moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
-        navigationItem.rightBarButtonItems = [moreButton, archiveButton, lockButton, favoriteButton]
+//        navigationItem.rightBarButtonItems = [moreButton, archiveButton, lockButton, favoriteButton]
+        navigationItem.setRightBarButtonItems([moreButton, archiveButton, lockButton, favoriteButton],
+        animated: true)
     }
     
     func showItemCloseButton() {
         let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
         let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeButtonTapped))
-        navigationItem.rightBarButtonItems = [closeButton]
+        navigationItem.setRightBarButtonItems([closeButton],
+        animated: true)
     }
     
     @objc func addTapped() {
@@ -174,8 +173,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         (view as! UITableViewHeaderFooterView).contentView.backgroundColor = UIColor(named: "background")
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor(named: "content2")
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor(named: "content")
+        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .regular)
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -194,7 +193,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let item = similarItems[indexPath.row]
         let content = item.content!
         
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, lineSpacing: 3.0)
+        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
         cell.itemContentText.textColor = UIColor(named: "content")!
         
         if item.favorited {
@@ -241,19 +240,17 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    @objc func itemContentTextTapHandler(_ sender: UITapGestureRecognizer) {
-        tableView.hide()
-        doneButton.show()
-        plusButton.hide()
-        showItemCloseButton()
-        itemContentTextView.becomeFirstResponder()
-    }
-    
     @objc func closeButtonTapped() {
         tableView.show()
         doneButton.hide()
         plusButton.show()
         showItemActionButtons()
+        UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
+          self.itemContentTextView.linkTextAttributes = [
+              NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
+              NSAttributedString.Key.underlineStyle: 0,
+          ]
+        }, completion: nil)
         itemContentTextView.resignFirstResponder()
     }
     
@@ -330,8 +327,14 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            tableView.isHidden = true
+            tableView.hide()
             showItemCloseButton()
+            UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
+              self.itemContentTextView.linkTextAttributes = [
+                  NSAttributedString.Key.foregroundColor: UIColor(named: "itemViewText")!,
+                  NSAttributedString.Key.underlineStyle: 0,
+              ]
+            }, completion: nil)
             doneButtonBC.constant = keyboardFrame.height + 18
         }
     }
@@ -339,7 +342,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardHideNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            tableView.isHidden = false
             showItemActionButtons()
             doneButtonBC.constant = -keyboardFrame.height - 18
         }

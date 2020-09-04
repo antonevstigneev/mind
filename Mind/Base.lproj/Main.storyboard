@@ -363,7 +363,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jDe-Mf-Usg">
-                                <rect key="frame" x="16" y="45" width="382" height="193"/>
+                                <rect key="frame" x="16" y="45" width="382" height="166"/>
                                 <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
                                 <color key="textColor" name="content"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="21"/>
@@ -477,7 +477,7 @@
                             <constraint firstAttribute="bottomMargin" secondItem="EZ7-7F-xXo" secondAttribute="bottom" constant="-34" id="Nec-0k-0Mw"/>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="vly-rm-xhe" secondAttribute="trailing" constant="16" id="a5h-Ve-wPK"/>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="jDe-Mf-Usg" secondAttribute="trailing" constant="16" id="aeJ-Ej-nie"/>
-                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="18" id="fa9-aI-06Z"/>
+                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="45" id="fa9-aI-06Z"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
                             <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="45" id="wTF-py-zfZ"/>
@@ -502,7 +502,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="D25-9f-VJh"/>
+        <segue reference="WDj-KD-8Zi"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="arrow.up" catalog="system" width="120" height="128"/>
