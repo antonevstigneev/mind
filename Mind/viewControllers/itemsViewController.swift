@@ -880,28 +880,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         })
     }
     
-    func postActionSheet(title: String!, message: String!, confirmation: String!, success: (() -> Void)? , cancel: (() -> Void)?) {
-        DispatchQueue.main.async {
-            let alertController = UIAlertController(title: title,
-                                                    message: message,
-                                                    preferredStyle: .actionSheet)
-            alertController.view.tintColor = UIColor.lightGray
-            
-            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel",
-                                                            style: .cancel) {
-                                                                action -> Void in cancel?()
-            }
-            let successAction: UIAlertAction = UIAlertAction(title: confirmation,
-                                                             style: .destructive) {
-                                                                action -> Void in success?()
-            }
-            alertController.addAction(cancelAction)
-            alertController.addAction(successAction)
-            
-            self.present(alertController, animated: true, completion: nil)
-        }
-    }
-    
     func showFilterMenu() {
         let titles = ["Recent", "Favorite", "Random", "Locked", "Archived"]
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
@@ -1144,4 +1122,26 @@ extension UITextView {
 }
 
 
-
+extension UIViewController {
+    func postActionSheet(title: String!, message: String!, confirmation: String!, success: (() -> Void)? , cancel: (() -> Void)?) {
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: title,
+                                                    message: message,
+                                                    preferredStyle: .actionSheet)
+            alertController.view.tintColor = UIColor.lightGray
+            
+            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel",
+                                                            style: .cancel) {
+                                                                action -> Void in cancel?()
+            }
+            let successAction: UIAlertAction = UIAlertAction(title: confirmation,
+                                                             style: .destructive) {
+                                                                action -> Void in success?()
+            }
+            alertController.addAction(cancelAction)
+            alertController.addAction(successAction)
+            
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
+}

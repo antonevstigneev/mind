@@ -13,13 +13,23 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
-class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
+class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
+    
+    
+    // MARK: - Data
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
     
     
     // MARK: - Variables
     var items: [Item] = []
     var similarItems: [Item] = []
     var selectedItem: Item!
+    var favoriteButton: UIBarButtonItem!
+    var lockButton: UIBarButtonItem!
+    var archiveButton: UIBarButtonItem!
+    var moreButton: UIBarButtonItem!
+    let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
     
     
     // MARK: - Outlets
@@ -46,10 +56,10 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
 //        updateItemData()
     }
     @IBAction func editButtonTouchDown(_ sender: UIButton) {
-        sender.animateButtonDown()
+        doneButton.animateButtonDown()
     }
     @IBAction func editButtonTouchUpOutside(_ sender: UIButton) {
-        sender.animateButtonUp()
+        doneButton.animateButtonUp()
     }
     
     
@@ -83,7 +93,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         itemContentTextView.isEditable = true
         itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
         itemContentTextView.sizeToFit()
-//        itemView.addSeparator(at: .bottom, color: UIColor(named: "border")!)
+        itemContentTextView.delegate = self
         
         // tableView initial setup
         tableView.delegate = self
@@ -134,6 +144,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {
+        print("Item text was changed!")
         if isTextInputNotEmpty(textView: itemContentTextView) {
             doneButton.show()
         } else {
@@ -150,26 +161,70 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func showItemActionButtons() {
-        let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
-        let favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
-        let lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
-        let archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
-        let moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(addTapped))
-//        navigationItem.rightBarButtonItems = [moreButton, archiveButton, lockButton, favoriteButton]
+        favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(favoriteItem))
+        lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(lockItem))
+        archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(archiveItem))
+        moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(shareItem))
+        
+        favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
+        lockButton.applyButtonIconStyle("lock", self.selectedItem.locked)
+        archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
+        
         navigationItem.setRightBarButtonItems([moreButton, archiveButton, lockButton, favoriteButton],
         animated: true)
     }
     
     func showItemCloseButton() {
-        let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
         let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeButtonTapped))
         navigationItem.setRightBarButtonItems([closeButton],
         animated: true)
     }
     
-    @objc func addTapped() {
-        
+    
+    // MARK: - Selected Item Actions
+    @objc func favoriteItem() {
+        if selectedItem.favorited == true {
+            selectedItem.favorited = false
+            favoriteButton.image = UIImage(systemName: "star", withConfiguration: iconConfig)
+        } else {
+            selectedItem.favorited = true
+            favoriteButton.image = UIImage(systemName: "star.fill", withConfiguration: iconConfig)
+        }
+        NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
+    
+    @objc func lockItem() {
+        let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
+            print("Hide clicked")
+            self.selectedItem.locked = true
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        }) { () -> Void in
+            print("Cancelled")
+        }
+    }
+    
+    @objc func archiveItem(_ item: Item, _ indexPath: IndexPath) {
+        let actionMessage = "This will be archived but can be found in the Archived folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+            self.selectedItem.archived = true
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        }) { () -> Void in
+            print("Cancelled")
+        }
+    }
+    
+    @objc func shareItem() {
+        //
+    }
+    
+    
     
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         (view as! UITableViewHeaderFooterView).contentView.backgroundColor = UIColor(named: "background")
@@ -410,4 +465,17 @@ extension UIView {
         return view
     }
     
+}
+
+
+extension UIBarButtonItem {
+
+    func applyButtonIconStyle(_ iconName: String, _ bool: Bool) {
+        let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
+        if bool == true {
+            self.image = UIImage(systemName: iconName + ".fill", withConfiguration: iconConfig)
+        } else {
+            self.image = UIImage(systemName: iconName, withConfiguration: iconConfig)
+        }
+    }
 }
