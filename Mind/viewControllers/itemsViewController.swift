@@ -358,8 +358,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
        // check if the tap location has a certain attribute
         let attributeName = NSAttributedString.Key.link
         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
-        if let value = attributeValue {
-            searchController.searchBar.text = "#\(value)"
+        if let clickedKeyword = attributeValue {
+            searchController.searchBar.text = "#\(clickedKeyword)"
             reloadSearch()
         }
     }

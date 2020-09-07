@@ -342,6 +342,12 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
     }
     
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        self.selectedKeyword = "\(URL.absoluteString)"
+        performKeywordSearch()
+        return false
+    }
+    
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
 
         let myTextView = sender.view as! UITextView
@@ -358,22 +364,27 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
        // check if the tap location has a certain attribute
         let attributeName = NSAttributedString.Key.link
         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
-        if let value = attributeValue {
-            self.selectedKeyword = "\(value)"
-//            performSegue(withIdentifier: "backToItems", sender: sender)
-            guard let destinationVC = self.navigationController?.viewControllers[0] as? itemsViewController else {
-                fatalError("Second VC in navigation stack is NOT a RestructureFormVC")
-            }
-            destinationVC.selectedKeyword = self.selectedKeyword
-            if let navController = self.navigationController {
-                for controller in navController.viewControllers {
-                    if controller is itemsViewController {
-                        navController.popToViewController(controller, animated: true)
-                        NotificationCenter.default.post(name:
-                        NSNotification.Name(rawValue: "itemKeywordClicked"),
-                                                        object: nil)
-                        break
-                    }
+        
+        if let clickedKeyword = attributeValue {
+            self.selectedKeyword = "\(clickedKeyword)"
+            performKeywordSearch()
+        }
+    }
+    
+    func performKeywordSearch() {
+        guard let destinationVC = self.navigationController?.viewControllers[0] as? itemsViewController else {
+            fatalError("Second VC in navigation stack is not an itemsViewController")
+        }
+        destinationVC.selectedKeyword = self.selectedKeyword
+        
+        if let navController = self.navigationController {
+            for controller in navController.viewControllers {
+                if controller is itemsViewController {
+                    navController.popToViewController(controller, animated: true)
+                    NotificationCenter.default.post(name:
+                    NSNotification.Name(rawValue: "itemKeywordClicked"),
+                                                    object: nil)
+                    break
                 }
             }
         }
