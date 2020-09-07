@@ -211,7 +211,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.item = self.items[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
-        var archivedImage: UIImage!
         var archivedLabel: String!
         
         if item.favorited == true {
@@ -223,10 +222,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         if item.archived == true {
             archivedLabel = "Unarchive"
-            archivedImage = UIImage(systemName: "archivebox.fill")
         } else {
             archivedLabel = "Archive"
-            archivedImage = UIImage(systemName: "archivebox")
         }
 
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
@@ -235,7 +232,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let lock = UIAction(title: "Lock", image: UIImage(systemName: "lock")) { _ in
             self.lockItem(self.item, indexPath)
         }
-        let archive = UIAction(title: archivedLabel, image: archivedImage) { _ in
+        let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
             self.archiveItem(self.item, indexPath)
         }
         let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
@@ -1113,11 +1110,17 @@ extension UITextView {
             attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
         }
         
-        self.linkTextAttributes = [
-            NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
-            NSAttributedString.Key.underlineStyle: 0,
-        ]
-        self.attributedText = attributedOriginalText
+        if hyperLinks.count == 0 {
+            clearTextStyles(originalText: originalText, fontSize: fontSize, fontWeight: fontWeight, lineSpacing: lineSpacing)
+        } else {
+            self.linkTextAttributes = [
+                NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
+                NSAttributedString.Key.underlineStyle: 0,
+            ]
+            
+            self.attributedText = attributedOriginalText
+        }
+        
     }
     
     func clearTextStyles(originalText: String, fontSize: Int = 21, fontWeight: UIFont.Weight = .regular, lineSpacing: CGFloat) {

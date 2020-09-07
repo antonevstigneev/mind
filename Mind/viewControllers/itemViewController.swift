@@ -94,8 +94,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func updateItemView() {
-        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "itemViewText")
+        setDefaultItemTextStyle()
         UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
           self.itemContentTextView.linkTextAttributes = [
               NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
@@ -108,8 +107,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         showItemActionButtons()
         
         // itemView initial setup
-        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "itemViewText")
+        setDefaultItemTextStyle()
         itemContentTextView.isScrollEnabled = false
         itemContentTextView.isEditable = true
         itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
@@ -167,6 +165,21 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
+    // Check for text limit
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        let newText = (itemContentTextView!.text as NSString).replacingCharacters(in: range, with: text)
+        let numberOfChars = newText.count
+        if numberOfChars > 1499 {
+            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+
+            self.present(alert, animated: true)
+        }
+        return numberOfChars < 1500
+    }
+    
+    
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {
         if isTextInputNotEmpty(textView: itemContentTextView) {
@@ -174,12 +187,14 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else {
             doneButton.hide()
         }
-        let fixedWidth = textView.frame.size.width
-        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-        var newFrame = textView.frame
-        newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
-        textView.frame = newFrame
+//        let fixedWidth = textView.frame.size.width
+//        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+//        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+//        var newFrame = textView.frame
+//        newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
+//        textView.frame = newFrame
+        
+        // TODO: add max height and scroll if textHeight is greater than view.height/2 <--------------------------------- :TODO
     }
     
     func isTextInputNotEmpty(textView: UITextView) -> Bool {
@@ -357,8 +372,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc func closeEditMode() {
         if isItemChanged == false {
             itemContentTextView.text = selectedItem.content!
-            itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-            itemContentTextView.textColor = UIColor(named: "itemViewText")
+            setDefaultItemTextStyle()
         }
         tableView.show()
         doneButton.hide()
@@ -371,6 +385,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
           ]
         }, completion: nil)
         itemContentTextView.resignFirstResponder()
+    }
+    
+    func setDefaultItemTextStyle() {
+        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        itemContentTextView.textColor = UIColor(named: "itemViewText")
     }
     
     
