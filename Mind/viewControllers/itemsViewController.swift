@@ -133,7 +133,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
-        refreshControl.setValue(75, forKey: "_snappingHeight")
+        refreshControl.setValue(65, forKey: "_snappingHeight")
         refreshControl.alpha = 0
     }
     
@@ -162,9 +162,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
-//        recalculateAllKeywords()
-//        hierarchicalClustering()
-//        updateAllEmbeddings()
     }
     
     @objc func updateEmptyView() {
@@ -186,17 +183,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    func recalculateAllKeywords() {
-        // for restoring texted keywords
-        for item in items {
-            item.keywords = []
-            let keywords = getKeywords(from: item.content!, count: 10)
-            item.keywords = keywords
-            item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            tableView.reloadData()
-        }
-    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -262,12 +248,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func lockItem(_ item: Item, _ indexPath: IndexPath) {
         let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
         postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-            print("Hide clicked")
             self.item.locked = true
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-            //           NotificationCenter.default.post(name:
-            //           NSNotification.Name(rawValue: "itemsChanged"), object: nil)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }) { () -> Void in
             print("Cancelled")
@@ -527,7 +510,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func performSimilaritySearch(_ searchText: String) {
         var similarItems: [Item] = []
-        var suggestedKeywords: [String] = []
         
         tableView.hide()
         items = []
@@ -537,48 +519,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
-            //            similarItems = self.getSimilarItems(text: searchText)
-            
-            let keywordsForSearchText = getKeywords(from: searchText, count: 6)
-            if keywordsForSearchText == [] {
-                suggestedKeywords = self.getKeywordSuggestions(for: searchText)
-            }
-            suggestedKeywords = self.getKeywordSuggestions(for: keywordsForSearchText.joined(separator: " "))
-            
-            
-            var keywordsScores: [(item: Item, score: Int)] = []
-            var itemsWithMatchedKeywords: [(item: Item, matchedKeywords: [String])] = []
-            for item in self.items {
-                itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
-            }
-            
-            for keyword in suggestedKeywords {
-                for item in self.items {
-                    if item.keywords!.contains(keyword) {
-                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item.content! == item.content!}) {
-                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
-                        }
-                    }
-                }
-            }
-            
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
-            
-            
-            for item in itemsWithMatchedKeywords {
-                var keywordsScore: [Int] = []
-                for keyword in item.matchedKeywords {
-                    let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
-                    keywordsScore.append(indexOfKeyword!)
-                }
-                keywordsScores.append((item: item.item, score: keywordsScore.min()!))
-            }
-            
-            keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
-            similarItems = keywordsScores.map { $0.item }
-            
-            
+            similarItems = self.getSimilarItems(text: searchText)
+        
             DispatchQueue.main.async {
                 self.items = similarItems.slice(length: 10)
                 self.tableView.reloadData()
@@ -594,23 +536,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func findSimilarItems(for item: Item!) {
         searchController.searchBar.text = item.content!
         performSimilaritySearch(searchController.searchBar.text!)
-    }
-    
-    
-    func updateAllEmbeddings() {
-        self.showSpinner()
-        DispatchQueue.global(qos: .userInitiated).async {
-            for item in self.items {
-                item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: item.keywords!)
-                item.embedding = self.bert.getTextEmbedding(text: item.content!)
-            }
-            
-            DispatchQueue.main.async {
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                self.tableView.reloadData()
-                self.removeSpinner()
-            }
-        }
     }
     
     
@@ -744,92 +669,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if self.items.isEmpty == false {
             self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
-    }
-    
-    
-    // MARK: - Clustering
-    @objc func hierarchicalClustering() {
-        let clustersCreation = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: clustersCreation) {
-            var (similarityMatrix, keywords) = self.getSimilarityMatrix()
-            var clusters: [[String]] = []
-            for keyword in keywords {
-                clusters.append([keyword])
-            }
-            let matrixMeanValue = similarityMatrix.grid.avg()
-            
-            while clusters.count > 1 {
-                
-                // get most two most similar keywords
-                let minValues = similarityMatrix.grid.filter { $0 != 0.0 }
-                let minValue = minValues.min()
-                
-                if minValue! > matrixMeanValue { break }
-                
-                let firstValue = similarityMatrix.position(of: minValue!)[0]
-                let secondValue = similarityMatrix.position(of: minValue!)[1]
-                
-                // get max values from similar keywords value pairs
-                let firstValuesRow = similarityMatrix.getRowValues(firstValue.row)
-                let secondValuesRow = similarityMatrix.getRowValues(secondValue.row)
-                //                print("Min value \(minValue!) between: \(clusters[firstValue.row]) and \(clusters[secondValue.row])")
-                var maxValues = zip(firstValuesRow, secondValuesRow).map { max($0, $1) }
-                maxValues[firstValue.row] = 0.0
-                
-                // update matrix with new values
-                for column in 0...similarityMatrix.columns-1 {
-                    similarityMatrix[firstValue.row, column] = maxValues[column]
-                    similarityMatrix[column, firstValue.row] = maxValues[column]
-                }
-                similarityMatrix.remove(row: secondValue.row, column: firstValue.column)
-                
-                // update keywords cluster labels
-                clusters[firstValue.row].append(contentsOf: clusters[secondValue.row])
-                clusters.remove(at: secondValue.row)
-                
-                // save clusters
-                DispatchQueue.main.async {
-                    self.keywordsClusters = clusters
-                    // remove outliers
-                    self.keywordsClusters = self.keywordsClusters
-                        .filter { $0.count > 1}
-                }
-                
-            }
-        }
-        clustersCreation.notify(queue: .main) {
-            NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "clustersCreated"),
-                                            object: nil)
-        }
-    }
-    
-    func getSimilarityMatrix() -> (Matrix, [String]) {
-        let keywordsWithEmbeddings = getKeywordsEmbeddings()
-        let keywordsEmbeddings = keywordsWithEmbeddings.map { $0.embedding }
-        let keywords = keywordsWithEmbeddings.map { $0.keyword }
-        
-        let matrixSize = Int(keywords.count)
-        var matrix = Matrix(rows: matrixSize, columns: matrixSize)
-        
-        for (index, keyword) in keywords.enumerated() {
-            let currentKeywordIndex = keywords.firstIndex(of: keyword)!
-            let currentKeywordEmbedding = keywordsEmbeddings[index]
-            for index in currentKeywordIndex..<keywords.count {
-                var score: Float = 0.0
-                let otherKeywordEmbedding = keywordsEmbeddings[index]
-                if keyword != keywords[index] {
-                    score = Distance.euclidean(A: currentKeywordEmbedding, B: otherKeywordEmbedding)
-                    //                    print("Score \(score) between \(keyword) and \(keywords[index])")
-                } else {
-                    score = 0.0
-                }
-                matrix[index, currentKeywordIndex] = score
-                matrix[currentKeywordIndex, index] = score
-            }
-        }
-        
-        return (matrix, keywords)
     }
     
     
