@@ -13,6 +13,8 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
+// TODO: Make item EDITABLE <--------------------------- :TODO
+
 class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
     
@@ -29,6 +31,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     var lockButton: UIBarButtonItem!
     var archiveButton: UIBarButtonItem!
     var moreButton: UIBarButtonItem!
+    var deleteButton: UIBarButtonItem!
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
     
     
@@ -53,7 +56,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         plusButton.animateButtonUp()
     }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
-//        updateItemData()
+        updateItemData()
+        closeEditMode()
     }
     @IBAction func editButtonTouchDown(_ sender: UIButton) {
         doneButton.animateButtonDown()
@@ -144,7 +148,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {
-        print("Item text was changed!")
         if isTextInputNotEmpty(textView: itemContentTextView) {
             doneButton.show()
         } else {
@@ -165,17 +168,24 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(lockItem))
         archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(archiveItem))
         moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(shareItem))
+        deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(deleteItem))
+        deleteButton.tintColor = UIColor.systemRed
         
         favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
         lockButton.applyButtonIconStyle("lock", self.selectedItem.locked)
         archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
         
-        navigationItem.setRightBarButtonItems([moreButton, archiveButton, lockButton, favoriteButton],
-        animated: true)
+        if selectedItem.archived {
+            navigationItem.setRightBarButtonItems([deleteButton, archiveButton, lockButton, favoriteButton],
+            animated: true)
+        } else {
+            navigationItem.setRightBarButtonItems([moreButton, archiveButton, lockButton, favoriteButton],
+            animated: true)
+        }
     }
     
     func showItemCloseButton() {
-        let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeButtonTapped))
+        let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeEditMode))
         navigationItem.setRightBarButtonItems([closeButton],
         animated: true)
     }
@@ -185,35 +195,57 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc func favoriteItem() {
         if selectedItem.favorited == true {
             selectedItem.favorited = false
-            favoriteButton.image = UIImage(systemName: "star", withConfiguration: iconConfig)
         } else {
             selectedItem.favorited = true
-            favoriteButton.image = UIImage(systemName: "star.fill", withConfiguration: iconConfig)
         }
+        favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
         NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
     @objc func lockItem() {
-        let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-            print("Hide clicked")
-            self.selectedItem.locked = true
-            NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }) { () -> Void in
-            print("Cancelled")
+        if selectedItem.locked {
+            self.selectedItem.locked = false
+        } else {
+            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
+            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
+                self.selectedItem.locked = true
+            }) { () -> Void in
+                print("Cancelled")
+            }
         }
+        lockButton.applyButtonIconStyle("lock", self.selectedItem.locked)
+        NotificationCenter.default.post(name:
+        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
-    @objc func archiveItem(_ item: Item, _ indexPath: IndexPath) {
-        let actionMessage = "This will be archived but can be found in the Archived folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-            self.selectedItem.archived = true
+    @objc func archiveItem() {
+        if selectedItem.archived {
+            self.selectedItem.archived = false
+        } else {
+            let actionMessage = "This will be archived but can be found in the Archived folder"
+            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+                self.selectedItem.archived = true
+            }) { () -> Void in
+                print("Cancelled")
+            }
+        }
+        archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
+        navigationController?.popViewController(animated: true) // go back to previous viewController
+        NotificationCenter.default.post(name:
+        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+    }
+    
+    @objc func deleteItem() {
+        let actionTitle = "Are you sure you want to delete this?"
+        postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
+            self.context.delete(self.selectedItem)
+            self.navigationController?.popViewController(animated: true)
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
+                NSNotification.Name(rawValue: "itemsChanged"), object: nil)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }) { () -> Void in
             print("Cancelled")
@@ -295,7 +327,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    @objc func closeButtonTapped() {
+    @objc func closeEditMode() {
+        itemContentTextView.text = selectedItem.content!
         tableView.show()
         doneButton.hide()
         plusButton.show()
@@ -321,7 +354,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Fetch items data
     @objc func fetchData() {
-        similarItems = getSimilarItems(item: self.selectedItem)
+        if selectedItem.locked || selectedItem.archived {
+            similarItems = []
+            tableView.isHidden = true
+        } else {
+            similarItems = getSimilarItems(item: self.selectedItem)
+        }
+        
         DispatchQueue.main.async() {
             self.tableView.reloadData()
         }

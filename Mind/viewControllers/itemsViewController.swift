@@ -188,7 +188,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // for restoring texted keywords
         for item in items {
             item.keywords = []
-            let keywords = getKeywords(from: item.content!, count: 7)
+            let keywords = getKeywords(from: item.content!, count: 10)
             item.keywords = keywords
             item.keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -211,6 +211,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.item = self.items[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
+        var archivedImage: UIImage!
         var archivedLabel: String!
         
         if item.favorited == true {
@@ -222,8 +223,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         if item.archived == true {
             archivedLabel = "Unarchive"
+            archivedImage = UIImage(systemName: "archivebox.fill")
         } else {
             archivedLabel = "Archive"
+            archivedImage = UIImage(systemName: "archivebox")
         }
 
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
@@ -232,7 +235,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let lock = UIAction(title: "Lock", image: UIImage(systemName: "lock")) { _ in
             self.lockItem(self.item, indexPath)
         }
-        let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
+        let archive = UIAction(title: archivedLabel, image: archivedImage) { _ in
             self.archiveItem(self.item, indexPath)
         }
         let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
