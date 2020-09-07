@@ -88,7 +88,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
             
-            let keywords = getKeywords(from: entryText, count: 7)
+            let keywords = getKeywords(from: entryText, count: 10)
             let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
             let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
 

@@ -180,7 +180,6 @@
                         <outlet property="tableView" destination="kZQ-Zu-1em" id="YMd-D0-7by"/>
                         <outlet property="tableViewBC" destination="vtV-rb-gnd" id="Q0O-gp-z6l"/>
                         <segue destination="NfF-hC-bU7" kind="presentation" identifier="toAddItemViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="WDj-KD-8Zi"/>
-                        <segue destination="AN0-qg-UCn" kind="presentation" identifier="toEditItemViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="yZ9-SS-dbr"/>
                         <segue destination="nrd-Tn-dn2" kind="show" identifier="toItemViewController" id="1Zo-N0-bK6"/>
                     </connections>
                 </viewController>
@@ -259,76 +258,6 @@
             </objects>
             <point key="canvasLocation" x="2533.3333333333335" y="134.59821428571428"/>
         </scene>
-        <!--Edit Item View Controller-->
-        <scene sceneID="Rvw-5O-Xd0">
-            <objects>
-                <viewController modalPresentationStyle="pageSheet" id="AN0-qg-UCn" customClass="editItemViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="yWI-UE-FbH">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <button alpha="0.85000002384185791" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fRM-BE-zUM">
-                                <rect key="frame" x="361" y="14" width="37" height="38"/>
-                                <color key="tintColor" name="content"/>
-                                <inset key="contentEdgeInsets" minX="8" minY="8" maxX="8" maxY="8"/>
-                                <state key="normal" image="xmark" catalog="system">
-                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="20" weight="medium"/>
-                                </state>
-                                <connections>
-                                    <segue destination="snN-o5-cbu" kind="unwind" unwindAction="unwindToHomeWithSegue:" id="7wH-IE-E4H"/>
-                                </connections>
-                            </button>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="5Ks-MJ-XHL">
-                                <rect key="frame" x="16" y="66" width="382" height="776"/>
-                                <color key="tintColor" name="buttonBackground"/>
-                                <color key="textColor" name="content"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CkJ-Ba-lDM">
-                                <rect key="frame" x="348.5" y="777" width="41.5" height="41"/>
-                                <color key="backgroundColor" name="buttonBackground"/>
-                                <color key="tintColor" name="buttonIcon"/>
-                                <inset key="contentEdgeInsets" minX="0.0" minY="1" maxX="0.0" maxY="2"/>
-                                <inset key="imageEdgeInsets" minX="6" minY="6" maxX="6" maxY="6"/>
-                                <state key="normal" image="checkmark" catalog="system">
-                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="45" scale="small" weight="regular"/>
-                                </state>
-                                <connections>
-                                    <action selector="doneButtonTouchDownInside:" destination="AN0-qg-UCn" eventType="touchUpInside" id="QIi-zk-RyM"/>
-                                    <action selector="editButtonTouchDown:" destination="AN0-qg-UCn" eventType="touchDown" id="K7O-jd-GhN"/>
-                                    <action selector="editButtonTouchUpOutside:" destination="AN0-qg-UCn" eventType="touchUpOutside" id="PV9-B4-DYC"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <color key="backgroundColor" name="background"/>
-                        <color key="tintColor" name="buttonBackground"/>
-                        <constraints>
-                            <constraint firstItem="5Ks-MJ-XHL" firstAttribute="leading" secondItem="KKa-dJ-5sK" secondAttribute="leading" constant="16" id="6o2-oc-9dV"/>
-                            <constraint firstItem="KKa-dJ-5sK" firstAttribute="trailing" secondItem="5Ks-MJ-XHL" secondAttribute="trailing" constant="16" id="HTt-qB-Wf5"/>
-                            <constraint firstItem="KKa-dJ-5sK" firstAttribute="trailing" secondItem="fRM-BE-zUM" secondAttribute="trailing" constant="16" id="L8A-Rv-oaS"/>
-                            <constraint firstAttribute="bottom" secondItem="CkJ-Ba-lDM" secondAttribute="bottom" constant="24" id="OHv-CX-O1V"/>
-                            <constraint firstItem="KKa-dJ-5sK" firstAttribute="trailing" secondItem="CkJ-Ba-lDM" secondAttribute="trailing" constant="24" id="Qg1-et-DSJ"/>
-                            <constraint firstItem="fRM-BE-zUM" firstAttribute="top" secondItem="yWI-UE-FbH" secondAttribute="top" constant="14" id="QzV-4L-puX"/>
-                            <constraint firstAttribute="bottom" secondItem="5Ks-MJ-XHL" secondAttribute="bottom" id="Stv-Ir-QQK"/>
-                            <constraint firstItem="fRM-BE-zUM" firstAttribute="bottom" secondItem="5Ks-MJ-XHL" secondAttribute="top" constant="-14" id="tRh-Cu-9N3"/>
-                        </constraints>
-                        <viewLayoutGuide key="safeArea" id="KKa-dJ-5sK"/>
-                    </view>
-                    <navigationItem key="navigationItem" id="TZd-mt-TIk"/>
-                    <connections>
-                        <outlet property="doneButton" destination="CkJ-Ba-lDM" id="25h-Ae-1Dc"/>
-                        <outlet property="doneButtonBC" destination="OHv-CX-O1V" id="9XF-x4-tqq"/>
-                        <outlet property="textInputView" destination="5Ks-MJ-XHL" id="gvx-jC-khk"/>
-                        <outlet property="textInputViewBC" destination="Stv-Ir-QQK" id="hMr-ZZ-GcI"/>
-                        <segue destination="snN-o5-cbu" kind="unwind" identifier="unwindToHome" unwindAction="unwindToHomeWithSegue:" id="Hu1-Wg-ePs"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="oAE-RI-tD0" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <exit id="snN-o5-cbu" userLabel="Exit" sceneMemberID="exit"/>
-            </objects>
-            <point key="canvasLocation" x="3279.7101449275365" y="133.92857142857142"/>
-        </scene>
         <!--Navigation Controller-->
         <scene sceneID="3vn-Cc-xb3">
             <objects>
@@ -359,7 +288,7 @@
             <objects>
                 <viewController id="nrd-Tn-dn2" customClass="itemViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="V0g-mJ-34J">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jDe-Mf-Usg">
@@ -493,7 +422,6 @@
                         <outlet property="itemContentTextView" destination="jDe-Mf-Usg" id="a17-7Y-Yaq"/>
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
-                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewItem" id="D25-9f-VJh"/>
                         <segue destination="SGi-zd-M47" kind="show" identifier="backToItems" id="h1N-3G-VOJ"/>
                     </connections>
                 </viewController>
@@ -503,7 +431,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="D25-9f-VJh"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>

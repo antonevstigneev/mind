@@ -367,9 +367,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destinationVC = segue.destination as? editItemViewController {
-            destinationVC.item = self.item
-        }
         if let destinationVC = segue.destination as? itemViewController {
             destinationVC.selectedItem = self.item
             destinationVC.items = self.items
@@ -1120,6 +1117,21 @@ extension UITextView {
             NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
             NSAttributedString.Key.underlineStyle: 0,
         ]
+        self.attributedText = attributedOriginalText
+    }
+    
+    func clearTextStyles(originalText: String, fontSize: Int = 21, fontWeight: UIFont.Weight = .regular, lineSpacing: CGFloat) {
+        let style = NSMutableParagraphStyle()
+        style.alignment = .left
+        style.lineSpacing = lineSpacing
+        
+        let attributes: [NSAttributedString.Key : Any] = [
+            NSAttributedString.Key.paragraphStyle: style,
+            NSAttributedString.Key.font: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight)
+        ]
+        
+        let attributedOriginalText = NSMutableAttributedString(string: originalText, attributes: attributes)
+
         self.attributedText = attributedOriginalText
     }
 }

@@ -13,7 +13,6 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
-// TODO: Make item EDITABLE <--------------------------- :TODO
 
 class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
@@ -33,6 +32,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     var moreButton: UIBarButtonItem!
     var deleteButton: UIBarButtonItem!
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
+    var isItemChanged: Bool = false
     
     
     // MARK: - Outlets
@@ -57,6 +57,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
         updateItemData()
+        self.isItemChanged = true
         closeEditMode()
     }
     @IBAction func editButtonTouchDown(_ sender: UIButton) {
@@ -85,6 +86,22 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         selector: #selector(handle(keyboardHideNotification:)),
         name: UIResponder.keyboardWillHideNotification,
         object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(updateItemView),
+        name: NSNotification.Name(rawValue: "itemsChanged"),
+        object: nil)
+    }
+    
+    @objc func updateItemView() {
+        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        itemContentTextView.textColor = UIColor(named: "itemViewText")
+        UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
+          self.itemContentTextView.linkTextAttributes = [
+              NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
+              NSAttributedString.Key.underlineStyle: 0,
+          ]
+        }, completion: nil)
     }
     
     func setupViews() {
@@ -122,13 +139,16 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         guard let entryText = itemContentTextView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
+        // clear keywords highlight, while item embeddings and keywords are recalculating
+        itemContentTextView.clearTextStyles(originalText: entryText, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        itemContentTextView.textColor = UIColor(named: "itemViewText")
         
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
-            
-            let keywords = getKeywords(from: entryText, count: 7)
-            let keywordsEmbeddings = BERT().getKeywordsEmbeddings(keywords: keywords)
-            let itemEmbedding = BERT().getTextEmbedding(text: entryText)
+            let bert = BERT()
+            let keywords = getKeywords(from: entryText, count: 10)
+            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+            let itemEmbedding = bert.getTextEmbedding(text: entryText)
             
             self.selectedItem.content = entryText
             self.selectedItem.keywords = keywords
@@ -328,7 +348,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func closeEditMode() {
-        itemContentTextView.text = selectedItem.content!
+        if isItemChanged == false {
+            itemContentTextView.text = selectedItem.content!
+            itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+            itemContentTextView.textColor = UIColor(named: "itemViewText")
+        }
         tableView.show()
         doneButton.hide()
         plusButton.show()
