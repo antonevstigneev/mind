@@ -14,7 +14,7 @@ import Foundation
 import NaturalLanguage
 import Firebase
 
-class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate {
+class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
     
     // MARK: - Model
     let bert = BERT()
@@ -30,10 +30,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var item: Item!
     var keywordsCollection: [String] = []
     var mostFrequentKeywords: [String] = []
-    let selectedAllKeyword = (title: "all", path: 0)
-    var selectedKeyword: (title: String, path: Int)? = nil
+    var selectedKeyword: String = ""
     var keywordsClusters: [[String]] = []
-    var selectedClusterKeyword: String = ""
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
@@ -65,7 +63,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         showMoreButtonMenu()
     }
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
-        //        performSegue(withIdentifier: "toFilterViewController", sender: sender)
         showFilterMenu()
         Analytics.logEvent("filterButton_pressed", parameters: nil)
     }
@@ -115,6 +112,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func setupViews() {
         // navigationController initial setup
         navigationItem.searchController = searchController
+        searchController.delegate = self
         searchController.searchBar.delegate = self
         searchController.searchBar.sizeToFit()
         searchController.searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
@@ -342,7 +340,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
-
         let myTextView = sender.view as! UITextView
         let layoutManager = myTextView.layoutManager
 
@@ -358,9 +355,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let attributeName = NSAttributedString.Key.link
         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
         if let value = attributeValue {
-            print("You tapped on keyword and the value is: \(value)")
+            searchController.searchBar.text = "#\(value)"
+            reloadSearch()
         }
     }
+    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -373,7 +372,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Fetch items data
     @objc func fetchData() {
-        
         let request: NSFetchRequest = Item.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
@@ -434,11 +432,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         request.sortDescriptors = [sortDescriptor]
         do {
             self.tableView.hide()
-            self.showSpinner()
             var itemsWithSelectedKeyword: [Item] = []
             items = try context.fetch(request)
             for item in items {
-                if item.keywords!.contains(selectedKeyword!.title) {
+                if item.keywords!.contains(selectedKeyword) {
                     itemsWithSelectedKeyword.append(item)
                 }
             }
@@ -447,7 +444,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.tableView.reloadData()
                 self.scrollToTopTableView()
                 self.tableView.show()
-                self.removeSpinner()
             }
         } catch {
             print("Fetching failed")
@@ -502,7 +498,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Semantic search
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText != "" {
+        if searchText.count > 2 {
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(itemsViewController.reloadSearch), object: nil)
             self.perform(#selector(itemsViewController.reloadSearch), with: nil, afterDelay: 1.0)
         } else {
@@ -513,14 +509,19 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @objc func reloadSearch() {
         guard let searchText = searchController.searchBar.text else { return }
         if !searchText.isEmpty {
-            performSimilaritySearch(searchText)
+            if searchText.hasPrefix("#") {
+                selectedKeyword = String(searchController.searchBar.text!.dropFirst())
+                fetchDataForSelectedKeyword()
+            } else {
+                performSimilaritySearch(searchText)
+            }
         } else {
             fetchData()
         }
+        searchController.dismiss(animated: false)
     }
     
     func performSimilaritySearch(_ searchText: String) {
-        
         var similarItems: [Item] = []
         var suggestedKeywords: [String] = []
         

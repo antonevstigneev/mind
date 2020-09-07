@@ -109,8 +109,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         // itemView initial setup
         setDefaultItemTextStyle()
         itemContentTextView.isScrollEnabled = false
-        itemContentTextView.isEditable = true
         itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
+        itemContentTextView.isEditable = true
         itemContentTextView.sizeToFit()
         itemContentTextView.delegate = self
         
@@ -187,14 +187,19 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else {
             doneButton.hide()
         }
-//        let fixedWidth = textView.frame.size.width
-//        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-//        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-//        var newFrame = textView.frame
-//        newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
-//        textView.frame = newFrame
+        let fixedWidth = textView.frame.size.width
+        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        var newFrame = textView.frame
+        if textView.frame.size.height >= self.view.frame.height / 2 {
+            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: self.view.frame.height / 2)
+            itemContentTextView.isScrollEnabled = true
+        } else {
+            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
+            itemContentTextView.isScrollEnabled = false
+        }
         
-        // TODO: add max height and scroll if textHeight is greater than view.height/2 <--------------------------------- :TODO
+        textView.frame = newFrame
     }
     
     func isTextInputNotEmpty(textView: UITextView) -> Bool {
@@ -384,6 +389,10 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
               NSAttributedString.Key.underlineStyle: 0,
           ]
         }, completion: nil)
+        var frame = self.itemContentTextView.frame
+        frame.size.height = self.itemContentTextView.contentSize.height
+        self.itemContentTextView.frame = frame
+        itemContentTextView.sizeToFit()
         itemContentTextView.resignFirstResponder()
     }
     
