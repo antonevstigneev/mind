@@ -166,6 +166,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
     // Check if textInput is empty
     func textViewDidChange(_ textView: UITextView) {
         if isTextInputNotEmpty(textView: itemContentTextView) {
@@ -173,6 +174,12 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else {
             doneButton.hide()
         }
+        let fixedWidth = textView.frame.size.width
+        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        var newFrame = textView.frame
+        newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
+        textView.frame = newFrame
     }
     
     func isTextInputNotEmpty(textView: UITextView) -> Bool {
