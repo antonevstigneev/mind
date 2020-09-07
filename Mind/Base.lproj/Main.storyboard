@@ -11,7 +11,7 @@
         <!--Items View Controller-->
         <scene sceneID="fvA-3S-4DC">
             <objects>
-                <viewController modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="SGi-zd-M47" customClass="itemsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Main" modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="SGi-zd-M47" customClass="itemsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" autoresizesSubviews="NO" contentMode="scaleToFill" id="Xvu-An-mu8">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -256,7 +256,7 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="E7B-Zc-0Pr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <exit id="1at-Xk-qg4" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
-            <point key="canvasLocation" x="2533.3333333333335" y="134.59821428571428"/>
+            <point key="canvasLocation" x="2255" y="865"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="3vn-Cc-xb3">
@@ -423,14 +423,16 @@
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
                         <segue destination="SGi-zd-M47" kind="show" identifier="backToItems" id="h1N-3G-VOJ"/>
+                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewItem" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="Bw5-Cg-iRQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KPH-fj-1St" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1786.9565217391305" y="893.97321428571422"/>
+            <point key="canvasLocation" x="2713" y="134"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
+        <segue reference="WDj-KD-8Zi"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>

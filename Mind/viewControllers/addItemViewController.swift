@@ -14,8 +14,6 @@ import Firebase
 
 class addItemViewController: UIViewController, UITextViewDelegate {
     
-    let bert = BERT()
-
     // Reference to NSPersistent Container context
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -87,10 +85,10 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         }
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
-            
+            let bert = BERT()
             let keywords = getKeywords(from: entryText, count: 10)
-            let keywordsEmbeddings = self.bert.getKeywordsEmbeddings(keywords: keywords)
-            let itemEmbedding = self.bert.getTextEmbedding(text: entryText)
+            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+            let itemEmbedding = bert.getTextEmbedding(text: entryText)
 
             let newEntry = Item(context: self.context)
             newEntry.id = UUID()

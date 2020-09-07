@@ -33,6 +33,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     var deleteButton: UIBarButtonItem!
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
     var isItemChanged: Bool = false
+    var selectedKeyword: String = ""
     
     
     // MARK: - Outlets
@@ -300,23 +301,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func shareItem() {
-        //
+        
     }
     
-    
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        (view as! UITableViewHeaderFooterView).contentView.backgroundColor = UIColor(named: "background")
-        (view as! UITableViewHeaderFooterView).textLabel?.textColor = UIColor(named: "content")
-        (view as! UITableViewHeaderFooterView).textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .regular)
-    }
-    
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-            default: return ""
-        }
-    }
-    
+
+    // MARK: - Similar items
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return similarItems.count
     }
@@ -370,7 +359,23 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let attributeName = NSAttributedString.Key.link
         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
         if let value = attributeValue {
-            print("You tapped on keyword and the value is: \(value)")
+            self.selectedKeyword = "\(value)"
+//            performSegue(withIdentifier: "backToItems", sender: sender)
+            guard let destinationVC = self.navigationController?.viewControllers[0] as? itemsViewController else {
+                fatalError("Second VC in navigation stack is NOT a RestructureFormVC")
+            }
+            destinationVC.selectedKeyword = self.selectedKeyword
+            if let navController = self.navigationController {
+                for controller in navController.viewControllers {
+                    if controller is itemsViewController {
+                        navController.popToViewController(controller, animated: true)
+                        NotificationCenter.default.post(name:
+                        NSNotification.Name(rawValue: "itemKeywordClicked"),
+                                                        object: nil)
+                        break
+                    }
+                }
+            }
         }
     }
     

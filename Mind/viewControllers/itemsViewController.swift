@@ -83,10 +83,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     func setupNotifications() {
-        //        NotificationCenter.default.addObserver(self,
-        //        selector: #selector(hierarchicalClustering),
-        //        name: NSNotification.Name(rawValue: "itemsChanged"),
-        //        object: nil)
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(showItemsForSelectedKeyword),
+        name: NSNotification.Name(rawValue: "itemKeywordClicked"),
+        object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(updateEmptyView),
@@ -150,6 +150,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    @objc func showItemsForSelectedKeyword() {
+        searchController.searchBar.text = "#\(selectedKeyword)"
+        reloadSearch()
+    }
     
     @objc func pullToSearch(_ sender: AnyObject) {
         searchController.searchBar.becomeFirstResponder()
