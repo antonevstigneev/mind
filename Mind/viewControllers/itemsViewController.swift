@@ -556,6 +556,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func performSimilaritySearch(_ searchText: String) {
         var similarItems: [Item] = []
+        var suggestedKeywords: [String] = []
         
         tableView.hide()
         items = []
@@ -565,7 +566,38 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
             
-            similarItems = self.getSimilarItems(text: searchText)
+            suggestedKeywords = self.getKeywordSuggestions(for: searchText)
+            
+            var keywordsScores: [(item: Item, score: Int)] = []
+            var itemsWithMatchedKeywords: [(item: Item, matchedKeywords: [String])] = []
+            for item in self.items {
+                itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
+            }
+            
+            for keyword in suggestedKeywords {
+                for item in self.items {
+                    if item.keywords!.contains(keyword) {
+                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item.content! == item.content!}) {
+                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
+                        }
+                    }
+                }
+            }
+            
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
+            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
+            
+            for item in itemsWithMatchedKeywords {
+                var keywordsScore: [Int] = []
+                for keyword in item.matchedKeywords {
+                    let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
+                    keywordsScore.append(indexOfKeyword!)
+                }
+                keywordsScores.append((item: item.item, score: keywordsScore.min()!))
+            }
+            
+            keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
+            similarItems = keywordsScores.map { $0.item }
         
             DispatchQueue.main.async {
                 self.items = similarItems.slice(length: 10)
