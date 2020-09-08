@@ -462,17 +462,20 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
         
-        if sortedSimilarItems.count > 5 {
-            for i in 1...6 {
-                topSimilarItems.append(sortedSimilarItems[i])
+        if sortedSimilarItems != [] {
+            if sortedSimilarItems.count > 5 {
+                for i in 1...6 {
+                    topSimilarItems.append(sortedSimilarItems[i])
+                }
+            } else if sortedSimilarItems.count < 5 && sortedSimilarItems.count > 1 {
+                for i in 1...sortedSimilarItems.count-1 {
+                    topSimilarItems.append(sortedSimilarItems[i])
+                }
+            } else {
+                topSimilarItems = []
             }
-        } else if sortedSimilarItems.count < 5 {
-            for i in 1...sortedSimilarItems.count-1 {
-                topSimilarItems.append(sortedSimilarItems[i])
-            }
-        } else {
-            topSimilarItems = []
         }
+        
         
         return sortedSimilarItems
     }

@@ -36,6 +36,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
+    
     /// An authentication context stored at class scope so it's available for use during UI updates.
     var authContext = LAContext()
 
@@ -52,8 +53,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
         }
     }
-
-    
     
     // MARK: - Outlets
     @IBOutlet weak var mindLabel: UILabel!
@@ -99,7 +98,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         setupLabelTap()
     }
     
-    
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
         selector: #selector(showItemsForSelectedKeyword),
@@ -133,7 +131,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         state = .loggedout
         
         // navigationController initial setup
-        navigationItem.searchController = searchController
+        self.navigationItem.searchController = searchController
         searchController.delegate = self
         searchController.searchBar.delegate = self
         searchController.searchBar.sizeToFit()
@@ -190,8 +188,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         if items.count > 0 {
             tableView.isHidden = false
             emptyPlaceholderLabel.isHidden = true
+            searchController.searchBar.isHidden = false
         } else {
             tableView.isHidden = true
+            searchController.searchBar.isHidden = true
             emptyPlaceholderLabel.isHidden = false
             if selectedFilter == "Archived"  {
                 emptyPlaceholderLabel.text = "Archive is empty."
@@ -221,6 +221,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         self.item = self.items[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
+        var lockedImage: UIImage!
+        var lockedLabel: String!
         var archivedLabel: String!
         
         if item.favorited == true {
@@ -229,6 +231,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } else {
             favoriteLabel = "Favorite"
             favoriteImage = UIImage(systemName: "star")
+        }
+        if item.locked == true {
+            lockedLabel = "Unlock"
+            lockedImage = UIImage(systemName: "lock.slash")
+        } else {
+            lockedLabel = "Lock"
+            lockedImage = UIImage(systemName: "lock")
         }
         if item.archived == true {
             archivedLabel = "Unarchive"
@@ -239,7 +248,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
             self.favoriteItem(self.item)
         }
-        let lock = UIAction(title: "Lock", image: UIImage(systemName: "lock")) { _ in
+        let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
             self.lockItem(self.item, indexPath)
         }
         let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
@@ -268,15 +277,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func lockItem(_ item: Item, _ indexPath: IndexPath) {
-        let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-            self.item.locked = true
+        if item.locked == false {
+            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
+            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
+                self.item.locked = true
+                self.items.remove(at: indexPath.row)
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            }) { () -> Void in
+                print("Cancelled")
+            }
+        } else {
+            self.item.locked = false
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }) { () -> Void in
-            print("Cancelled")
         }
+        
     }
     
     func archiveItem(_ item: Item, _ indexPath: IndexPath) {
