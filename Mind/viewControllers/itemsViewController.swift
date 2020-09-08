@@ -12,6 +12,7 @@ import CloudKit
 import CoreML
 import Foundation
 import NaturalLanguage
+import LocalAuthentication
 import Firebase
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
@@ -21,7 +22,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Data
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
     
     
@@ -35,6 +36,23 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
+    /// An authentication context stored at class scope so it's available for use during UI updates.
+    var authContext = LAContext()
+
+    /// The available states of being logged in or not.
+    enum AuthenticationState {
+        case loggedin, loggedout
+    }
+
+    /// The current authentication state.
+    var state = AuthenticationState.loggedout {
+
+        // Update the UI on a change.
+        didSet {
+            
+        }
+    }
+
     
     
     // MARK: - Outlets
@@ -110,6 +128,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupViews() {
+        authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        // Set the initial app state. This impacts the initial state of the UI as well.
+        state = .loggedout
+        
         // navigationController initial setup
         navigationItem.searchController = searchController
         searchController.delegate = self
@@ -428,6 +450,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             }
             DispatchQueue.main.async {
                 self.items = itemsWithSelectedKeyword
+                self.items = self.items.filter {
+                    $0.locked == false &&
+                    $0.archived == false
+                }
                 self.tableView.reloadData()
                 self.scrollToTopTableView()
                 self.tableView.show()
@@ -727,7 +753,57 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         for title in titles {
             let actionAlert: UIAlertAction = UIAlertAction(title: title, style: .default) { action in
                 self.selectedFilter = title
-                self.fetchData()
+                if title == "Locked" {
+                    if self.state == .loggedin {
+
+                        // Log out immediately.
+                        self.state = .loggedout
+
+                    } else {
+
+                        // Get a fresh context for each login. If you use the same context on multiple attempts
+                        //  (by commenting out the next line), then a previously successful authentication
+                        //  causes the next policy evaluation to succeed without testing biometry again.
+                        //  That's usually not what you want.
+                        self.authContext = LAContext()
+                        self.authContext.localizedCancelTitle = "Enter Username/Password"
+                        
+                        // First check if we have the needed hardware support.
+                        var error: NSError?
+                        if self.authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                            
+                            let reason = "Log in to your account"
+                            self.authContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason ) { success, error in
+
+                                if success {
+
+                                    // Move to the main thread because a state update triggers UI changes.
+                                    DispatchQueue.main.async { [unowned self] in
+                                        self.state = .loggedin
+                                        self.tableView.show()
+                                        self.fetchData()
+                                    }
+
+                                } else {
+                                    print(error?.localizedDescription ?? "Failed to authenticate")
+
+                                    // Fall back to a asking for username and password.
+                                    // ...
+                                }
+                            }
+                        } else {
+                            print(error?.localizedDescription ?? "Can't evaluate policy")
+
+                            // Fall back to a asking for username and password.
+                            // ...
+                        }
+                    }
+                } else {
+                    self.state = .loggedout
+                    self.fetchData()
+                }
+                
+                
             }
             if title == selectedFilter {
                 actionAlert.setValue(UIImage(systemName: "checkmark"), forKey: "image")
