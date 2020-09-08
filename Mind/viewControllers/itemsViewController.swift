@@ -96,7 +96,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         setupNotifications()
         setupViews()
         setupLabelTap()
-        fetchData()
     }
     
     func setupNotifications() {
@@ -184,7 +183,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewWillAppear(_ animated: Bool) {
-//        fetchData()
+        fetchData()
+        reloadSearch()
     }
     
     @objc func updateEmptyView() {
@@ -806,50 +806,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             let actionAlert: UIAlertAction = UIAlertAction(title: title, style: .default) { action in
                 self.selectedFilter = title
                 if title == "Locked" {
-                    if self.state == .loggedin {
-
-                        // Log out immediately.
-                        self.state = .loggedout
-
-                    } else {
-
-                        // Get a fresh context for each login. If you use the same context on multiple attempts
-                        //  (by commenting out the next line), then a previously successful authentication
-                        //  causes the next policy evaluation to succeed without testing biometry again.
-                        //  That's usually not what you want.
-                        self.authContext = LAContext()
-                        self.authContext.localizedCancelTitle = "Enter Username/Password"
-                        
-                        // First check if we have the needed hardware support.
-                        var error: NSError?
-                        if self.authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-                            
-                            let reason = "Log in to your account"
-                            self.authContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason ) { success, error in
-
-                                if success {
-
-                                    // Move to the main thread because a state update triggers UI changes.
-                                    DispatchQueue.main.async { [unowned self] in
-                                        self.state = .loggedin
-                                        self.tableView.show()
-                                        self.fetchData()
-                                    }
-
-                                } else {
-                                    print(error?.localizedDescription ?? "Failed to authenticate")
-
-                                    // Fall back to a asking for username and password.
-                                    // ...
-                                }
-                            }
-                        } else {
-                            print(error?.localizedDescription ?? "Can't evaluate policy")
-
-                            // Fall back to a asking for username and password.
-                            // ...
-                        }
-                    }
+                    self.authenticateWithBiometrics()
                 } else {
                     self.state = .loggedout
                     self.fetchData()
@@ -866,6 +823,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         controller.view.tintColor = UIColor(named: "buttonBackground")!
         self.present(controller, animated: true, completion: nil)
     }
+    
     
     func showMoreButtonMenu() {
         DispatchQueue.main.async {
@@ -930,8 +888,96 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    func authenticateWithBiometrics() {
+        if self.state == .loggedin {
+
+            // Log out immediately.
+            self.state = .loggedout
+
+        } else {
+
+            // Get a fresh context for each login. If you use the same context on multiple attempts
+            //  (by commenting out the next line), then a previously successful authentication
+            //  causes the next policy evaluation to succeed without testing biometry again.
+            //  That's usually not what you want.
+            
+            self.authContext = LAContext()
+            self.authContext.localizedCancelTitle = ""
+            
+            // First check if we have the needed hardware support.
+            var error: NSError?
+            if self.authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                
+                let reason = "Log in to your account"
+                self.authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason ) { success, error in
+
+                    if success {
+
+                        // Move to the main thread because a state update triggers UI changes.
+                        DispatchQueue.main.async { [unowned self] in
+                            self.state = .loggedin
+                            self.tableView.show()
+                            self.fetchData()
+                        }
+
+                    } else {
+                        print(error?.localizedDescription ?? "Failed to authenticate")
+                        
+                        self.selectedFilter = "Recent"
+                        self.fetchData()
+                        // Fall back to a asking for username and password.
+                        // ...
+                    }
+                }
+            } else {
+                // User has denied the use of biometry for this app.
+                print(error?.localizedDescription ?? "Can't evaluate policy")
+                self.getBiometricsAccess()
+                
+                
+                // Fall back to a asking for username and password.
+                // ...
+            }
+        }
+    }
+    
+    func getBiometricsAccess() {
+        var biomertyType: String = ""
+        if authContext.biometryType == .faceID {
+            biomertyType = "FaceID"
+        } else {
+            biomertyType = "TouchID"
+        }
+                
+        let alertController = UIAlertController (title: "\(biomertyType) is disabled", message: "Go to Settings, to enable \(biomertyType).", preferredStyle: .alert)
+
+        let settingsAction = UIAlertAction(title: "Settings", style: .default) { (_) -> Void in
+
+            guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+                return
+            }
+            if UIApplication.shared.canOpenURL(settingsUrl) {
+                UIApplication.shared.open(settingsUrl, completionHandler: { (success) in
+                    print("Settings opened: \(success)") // Prints true
+                })
+            }
+        }
+        alertController.addAction(settingsAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { (UIAlertAction) in
+            print("Cancel was pressed")
+            self.selectedFilter = "Recent"
+            self.fetchData()
+        }
+        alertController.addAction(cancelAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+    
     
 }
+    
+    
 
 
 // MARK: - Extensions

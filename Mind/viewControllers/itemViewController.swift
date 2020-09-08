@@ -260,6 +260,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
             postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
                 self.selectedItem.locked = true
+                self.navigationController?.popViewController(animated: true)
             }) { () -> Void in
                 print("Cancelled")
             }
@@ -277,12 +278,12 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             let actionMessage = "This will be archived but can be found in the Archived folder"
             postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
                 self.selectedItem.archived = true
+                self.navigationController?.popViewController(animated: true)
             }) { () -> Void in
                 print("Cancelled")
             }
         }
         archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
-        navigationController?.popViewController(animated: true) // go back to previous viewController
         NotificationCenter.default.post(name:
         NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -460,14 +461,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Get similar items
     func getSimilarItems(item: Item) -> [Item] {
-        
+
         var selectedItemEmbedding: [Float] = []
         var similarItems: [Item] = []
         var scores: [Float] = []
         var topSimilarItems: [Item] = []
-        
         selectedItemEmbedding = self.selectedItem.embedding!
-        
+
         for item in self.items {
             if selectedItemEmbedding != item.embedding! {
                 let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
@@ -477,7 +477,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         
         let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
-        
+
         if sortedSimilarItems != [] {
             if sortedSimilarItems.count > 5 {
                 for i in 1...6 {
@@ -491,7 +491,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
                 topSimilarItems = []
             }
         }
-        
         
         return sortedSimilarItems
     }
