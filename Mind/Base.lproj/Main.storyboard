@@ -185,7 +185,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="o9Q-yK-GuB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1786.9565217391305" y="133.92857142857142"/>
+            <point key="canvasLocation" x="1786.4000000000001" y="133.74384236453201"/>
         </scene>
         <!--Add Item View Controller-->
         <scene sceneID="Z6z-r8-b2k">
@@ -261,7 +261,7 @@
         <!--Navigation Controller-->
         <scene sceneID="3vn-Cc-xb3">
             <objects>
-                <navigationController extendedLayoutIncludesOpaqueBars="YES" id="Ih5-gq-aI2" sceneMemberID="viewController">
+                <navigationController id="Ih5-gq-aI2" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translucent="NO" id="JRj-hr-lrp">
                         <rect key="frame" x="0.0" y="44" width="375" height="44"/>
@@ -408,7 +408,7 @@
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="45" id="fa9-aI-06Z"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
-                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="85" id="wTF-py-zfZ"/>
+                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="V0g-mJ-34J" secondAttribute="top" constant="129" id="wTF-py-zfZ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="8sT-4Q-JfK"/>
                     </view>
@@ -431,7 +431,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Bw5-Cg-iRQ"/>
+        <segue reference="1Zo-N0-bK6"/>
+        <segue reference="WDj-KD-8Zi"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>
@@ -458,7 +459,7 @@
             <color white="0.89999997615814209" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
         <namedColor name="content">
-            <color white="0.05000000074505806" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
         <namedColor name="content2">
             <color white="0.60000002384185791" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

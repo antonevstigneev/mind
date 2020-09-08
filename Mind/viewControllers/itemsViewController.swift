@@ -37,6 +37,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
     
+    
     /// An authentication context stored at class scope so it's available for use during UI updates.
     var authContext = LAContext()
 
@@ -61,8 +62,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var emptyPlaceholderLabel: UILabel!
-    
-    
+
     
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
@@ -96,6 +96,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         setupNotifications()
         setupViews()
         setupLabelTap()
+        fetchData()
     }
     
     func setupNotifications() {
@@ -132,6 +133,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         // navigationController initial setup
         self.navigationItem.searchController = searchController
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.definesPresentationContext = false
         searchController.delegate = self
         searchController.searchBar.delegate = self
         searchController.searchBar.sizeToFit()
@@ -153,7 +156,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
-        refreshControl.setValue(65, forKey: "_snappingHeight")
+        refreshControl.setValue(10, forKey: "_snappingHeight")
         refreshControl.alpha = 0
     }
     
@@ -181,7 +184,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        fetchData()
+//        fetchData()
     }
     
     @objc func updateEmptyView() {

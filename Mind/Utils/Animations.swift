@@ -53,20 +53,3 @@ public extension UITableView {
 }
 
 
-// MARK: - UICollectionView Show/Hide
-public extension UICollectionView {
-    
-    func show() {
-        self.alpha = 0
-        UIView.animate(withDuration: 0.35, delay: 0.1, options: [.curveEaseInOut], animations: {
-            self.alpha = 1
-        }, completion: nil)
-    }
-    
-    func hide() {
-        self.alpha = 1
-        UIView.animate(withDuration: 0.35, delay: 0, options: [.curveEaseInOut], animations: {
-            self.alpha = 0
-        }, completion: nil)
-    }
-}

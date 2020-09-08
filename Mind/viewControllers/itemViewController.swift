@@ -75,6 +75,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         setupNotifications()
         setupViews()
         fetchData()
+        showSimilarItems()
     }
     
     func setupNotifications() {
@@ -429,6 +430,21 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Fetch items data
     @objc func fetchData() {
+        let request: NSFetchRequest = Item.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
+        request.sortDescriptors = [sortDescriptor]
+        do {
+            items = try context.fetch(request)
+            items = items.filter {
+                $0.locked == false &&
+                $0.archived == false
+            }
+        } catch {
+            print("Fetching failed")
+        }
+    }
+    
+    @objc func showSimilarItems() {
         if selectedItem.locked || selectedItem.archived {
             similarItems = []
             tableView.isHidden = true
