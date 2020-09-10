@@ -115,6 +115,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         itemContentTextView.isEditable = true
         itemContentTextView.sizeToFit()
         itemContentTextView.delegate = self
+        itemContentTextView.textContainerInset = UIEdgeInsets(top: 0, left: 16, bottom: 20, right: 16)
         
         // tableView initial setup
         tableView.delegate = self
@@ -139,9 +140,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         guard let entryText = itemContentTextView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
-        // clear keywords highlight, while item embeddings and keywords are recalculating
-        itemContentTextView.clearTextStyles(originalText: entryText, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "itemViewText")
         
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
@@ -156,6 +154,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.selectedItem.embedding = itemEmbedding
         
             DispatchQueue.main.async {
+                self.tableView.reloadData()
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
             }
         }
@@ -179,6 +178,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.present(alert, animated: true)
         }
         return numberOfChars < 1500
+    }
+    
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        // clear keywords highlight, while item embeddings and keywords are recalculating
+        itemContentTextView.clearTextStyles(originalText: itemContentTextView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        itemContentTextView.textColor = UIColor(named: "itemViewText")
     }
     
     
@@ -398,7 +404,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
      
 
-    // MARK: - Similar items
+    // MARK: - TableView
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return similarItems.count
     }
@@ -585,7 +592,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            tableView.hide()
+//            tableView.hide()
             showItemCloseButton()
             UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
               self.itemContentTextView.linkTextAttributes = [

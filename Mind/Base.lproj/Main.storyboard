@@ -282,25 +282,23 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jDe-Mf-Usg">
-                                <rect key="frame" x="16" y="129" width="343" height="86"/>
-                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
-                                <color key="textColor" name="content"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
-                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                            </textView>
-                            <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" keyboardDismissMode="onDrag" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EZ7-7F-xXo">
-                                <rect key="frame" x="0.0" y="260" width="375" height="552"/>
+                            <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EZ7-7F-xXo">
+                                <rect key="frame" x="0.0" y="89" width="375" height="723"/>
                                 <color key="backgroundColor" name="background"/>
                                 <gestureRecognizers/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="552" id="hQJ-b8-80Y"/>
-                                </constraints>
                                 <color key="separatorColor" name="border"/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
+                                <textView key="tableHeaderView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" id="jDe-Mf-Usg">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="86"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
+                                    <color key="textColor" name="content"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="21"/>
+                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                </textView>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="x9w-TI-dVF" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="60.333332061767578"/>
+                                        <rect key="frame" x="0.0" y="114" width="375" height="60.333332061767578"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="x9w-TI-dVF" id="AoN-iy-Trn">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="60.333332061767578"/>
@@ -390,17 +388,14 @@
                         </subviews>
                         <color key="backgroundColor" name="background"/>
                         <constraints>
-                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" constant="16" id="9xR-Nb-iuz"/>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="b2f-Wb-2va" secondAttribute="trailing" constant="16" id="AC2-Yp-we5"/>
                             <constraint firstAttribute="bottom" secondItem="vly-rm-xhe" secondAttribute="bottom" constant="50" id="KUW-Sa-OJn"/>
                             <constraint firstAttribute="bottom" secondItem="b2f-Wb-2va" secondAttribute="bottom" id="L4J-yr-zgk"/>
                             <constraint firstAttribute="bottomMargin" secondItem="EZ7-7F-xXo" secondAttribute="bottom" constant="-34" id="Nec-0k-0Mw"/>
+                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="45" id="ZNU-lI-Xb7"/>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="vly-rm-xhe" secondAttribute="trailing" constant="16" id="a5h-Ve-wPK"/>
-                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="jDe-Mf-Usg" secondAttribute="trailing" constant="16" id="aeJ-Ej-nie"/>
-                            <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="jDe-Mf-Usg" secondAttribute="bottom" constant="45" id="fa9-aI-06Z"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
-                            <constraint firstItem="jDe-Mf-Usg" firstAttribute="top" secondItem="V0g-mJ-34J" secondAttribute="top" constant="129" id="wTF-py-zfZ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="8sT-4Q-JfK"/>
                     </view>
@@ -410,7 +405,7 @@
                     <connections>
                         <outlet property="doneButton" destination="b2f-Wb-2va" id="i1l-ag-Tag"/>
                         <outlet property="doneButtonBC" destination="L4J-yr-zgk" id="9zr-Zy-mJ8"/>
-                        <outlet property="itemContentTextView" destination="jDe-Mf-Usg" id="a17-7Y-Yaq"/>
+                        <outlet property="itemContentTextView" destination="jDe-Mf-Usg" id="g5u-sb-Lsh"/>
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
                         <segue destination="SGi-zd-M47" kind="show" identifier="backToItems" id="h1N-3G-VOJ"/>
