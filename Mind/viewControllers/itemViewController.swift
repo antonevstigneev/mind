@@ -115,7 +115,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         itemContentTextView.isEditable = true
         itemContentTextView.sizeToFit()
         itemContentTextView.delegate = self
-        itemContentTextView.textContainerInset = UIEdgeInsets(top: 0, left: 16, bottom: 20, right: 16)
+        itemContentTextView.textContainerInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         
         // tableView initial setup
         tableView.delegate = self
@@ -185,6 +185,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         // clear keywords highlight, while item embeddings and keywords are recalculating
         itemContentTextView.clearTextStyles(originalText: itemContentTextView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         itemContentTextView.textColor = UIColor(named: "itemViewText")
+        similarItems = []
+        tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
+        tableView.reloadData()
     }
     
     
@@ -495,6 +498,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             itemContentTextView.text = selectedItem.content!
             setDefaultItemTextStyle()
         }
+        itemContentTextView.sizeToFit()
+        showSimilarItems()
+        tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
         tableView.show()
         doneButton.hide()
         plusButton.show()
@@ -547,15 +553,15 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc func showSimilarItems() {
         if selectedItem.locked || selectedItem.archived {
             similarItems = []
-            tableView.isHidden = true
         } else {
             similarItems = getSimilarItems(item: self.selectedItem, length: 10)
         }
-        
+        if similarItems == [] {
+            tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
+        } else {
+            tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
+        }
         DispatchQueue.main.async() {
-            if self.similarItems == [] {
-                self.tableView.isHidden = true
-            }
             self.tableView.reloadData()
         }
     }
