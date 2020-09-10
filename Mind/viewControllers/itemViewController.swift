@@ -213,11 +213,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func showItemActionButtons() {
-        favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(favoriteItem))
-        lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(lockItem))
-        archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(archiveItem))
-        moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(shareItem))
-        deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(deleteItem))
+        favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(favoriteAction(_:)))
+        lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(lockAction(_:)))
+        archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(archiveAction(_:)))
+        moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(moreAction(_:)))
+        deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(deleteAction(_:)))
         deleteButton.tintColor = UIColor.systemRed
         
         favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
@@ -239,9 +239,100 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         animated: true)
     }
     
+    // MARK: - Context menu
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
+            return self.createContextMenu(indexPath: indexPath)
+        }
+    }
+    
+    func createContextMenu(indexPath: IndexPath) -> UIMenu {
+        let item = self.similarItems[indexPath.row]
+        var favoriteLabel: String!
+        var favoriteImage: UIImage!
+        var lockedImage: UIImage!
+        var lockedLabel: String!
+        var archivedLabel: String!
+        
+        if item.favorited == true {
+            favoriteLabel = "Unfavorite"
+            favoriteImage = UIImage(systemName: "star.slash")
+        } else {
+            favoriteLabel = "Favorite"
+            favoriteImage = UIImage(systemName: "star")
+        }
+        if item.locked == true {
+            lockedLabel = "Unlock"
+            lockedImage = UIImage(systemName: "lock.slash")
+        } else {
+            lockedLabel = "Lock"
+            lockedImage = UIImage(systemName: "lock")
+        }
+        if item.archived == true {
+            archivedLabel = "Unarchive"
+        } else {
+            archivedLabel = "Archive"
+        }
+
+        let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
+            self.favoriteItem(item, indexPath)
+        }
+        let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
+            self.lockItem(item, indexPath)
+        }
+        let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
+            self.archiveItem(item, indexPath)
+        }
+        
+        return UIMenu(title: "", children: [favorite, lock, archive])
+    }
+    
+    
+    func favoriteItem(_ item: Item, _ indexPath: IndexPath) {
+        if item.favorited == true {
+            item.favorited = false
+        } else {
+            item.favorited = true
+        }
+        self.tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.fade)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+    }
+    
+    func lockItem(_ item: Item, _ indexPath: IndexPath) {
+        if item.locked == false {
+            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
+            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
+                item.locked = true
+                self.similarItems.remove(at: indexPath.row)
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            }) { () -> Void in
+                print("Cancelled")
+            }
+        } else {
+            item.locked = false
+            self.similarItems.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        }
+    }
+    
+    func archiveItem(_ item: Item, _ indexPath: IndexPath) {
+        let actionMessage = "This will be archived but can be found in the Archived folder"
+        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+            item.archived = true
+            self.similarItems.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        }) { () -> Void in
+            print("Cancelled")
+        }
+    }
+    
+    
     
     // MARK: - Selected Item Actions
-    @objc func favoriteItem() {
+    @objc func favoriteAction(_ sender: UIBarButtonItem) {
         if selectedItem.favorited == true {
             selectedItem.favorited = false
         } else {
@@ -252,8 +343,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
-    
-    @objc func lockItem() {
+
+    @objc func lockAction(_ sender: UIBarButtonItem) {
         if selectedItem.locked {
             self.selectedItem.locked = false
         } else {
@@ -270,8 +361,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
-    
-    @objc func archiveItem() {
+
+    @objc func archiveAction(_ sender: UIBarButtonItem) {
         if selectedItem.archived {
             self.selectedItem.archived = false
         } else {
@@ -288,8 +379,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
-    
-    @objc func deleteItem() {
+
+    @objc func deleteAction(_ sender: UIBarButtonItem) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
             self.context.delete(self.selectedItem)
@@ -302,10 +393,10 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
-    @objc func shareItem() {
-        
+    @objc func moreAction(_ sender: UIBarButtonItem) {
+        //
     }
-    
+     
 
     // MARK: - Similar items
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -415,6 +506,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func setDefaultItemTextStyle() {
+        itemContentTextView.text = self.selectedItem.content!
         itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         itemContentTextView.textColor = UIColor(named: "itemViewText")
     }
@@ -450,55 +542,34 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             similarItems = []
             tableView.isHidden = true
         } else {
-            similarItems = getSimilarItems(item: self.selectedItem)
+            similarItems = getSimilarItems(item: self.selectedItem, length: 10)
         }
         
         DispatchQueue.main.async() {
+            if self.similarItems == [] {
+                self.tableView.isHidden = true
+            }
             self.tableView.reloadData()
         }
     }
     
     
     // MARK: - Get similar items
-    func getSimilarItems(item: Item) -> [Item] {
+    func getSimilarItems(item: Item, length: Int) -> [Item] {
 
-        var selectedItemEmbedding: [Float] = []
-        var similarItems: [Item] = []
-        var scores: [Float] = []
-        var topSimilarItems: [Item] = []
-        selectedItemEmbedding = self.selectedItem.embedding!
+        var similarItems: [(item: Item, score: Float)] = []
+        let selectedItemEmbedding = self.selectedItem.embedding!
 
         for item in self.items {
             if selectedItemEmbedding != item.embedding! {
                 let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
-                similarItems.append(item)
-                scores.append(distance)
+                similarItems.append((item: item, score: distance))
             }
         }
         
-        let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
-
-        if sortedSimilarItems != [] {
-            if sortedSimilarItems.count > 5 {
-                for i in 1...6 {
-                    topSimilarItems.append(sortedSimilarItems[i])
-                }
-            } else if sortedSimilarItems.count < 5 && sortedSimilarItems.count > 1 {
-                for i in 1...sortedSimilarItems.count-1 {
-                    topSimilarItems.append(sortedSimilarItems[i])
-                }
-            } else {
-                topSimilarItems = []
-            }
-        }
+        similarItems = similarItems.sorted { $0.score > $1.score }
         
-        return sortedSimilarItems
-    }
-    
-    
-    func sortSimilarItemsByScore(_ items: [Item], _ scores: [Float]) -> [Item] {
-        let sortedResults = zip(items, scores).sorted {$0.1 > $1.1}
-        return sortedResults.map {$0.0}
+        return similarItems.map({ $0.item }).slice(length: length)
     }
     
     func convertTimestamp(timestamp: Double) -> String {

@@ -36,6 +36,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var selectedFilter: String = "Recent"
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
+    var selectedInterfaceStyle: UIUserInterfaceStyle = .unspecified
     
     
     /// An authentication context stored at class scope so it's available for use during UI updates.
@@ -61,8 +62,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
-    @IBOutlet weak var emptyPlaceholderLabel: UILabel!
-
+    
     
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
@@ -105,11 +105,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         object: nil)
         
         NotificationCenter.default.addObserver(self,
-        selector: #selector(updateEmptyView),
-        name: NSNotification.Name(rawValue: "itemsLoaded"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
         selector: #selector(fetchData),
         name: NSNotification.Name(rawValue: "itemsChanged"),
         object: nil)
@@ -126,6 +121,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupViews() {
+        overrideUserInterfaceStyle = self.selectedInterfaceStyle
+        
         authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
         // Set the initial app state. This impacts the initial state of the UI as well.
         state = .loggedout
@@ -155,7 +152,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
-        refreshControl.setValue(10, forKey: "_snappingHeight")
         refreshControl.alpha = 0
     }
     
@@ -185,29 +181,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         reloadSearch()
+        overrideUserInterfaceStyle = self.selectedInterfaceStyle
     }
-    
-    @objc func updateEmptyView() {
-        if items.count > 0 {
-            tableView.isHidden = false
-            emptyPlaceholderLabel.isHidden = true
-            searchController.searchBar.isHidden = false
-        } else {
-            tableView.isHidden = true
-            searchController.searchBar.isHidden = true
-            emptyPlaceholderLabel.isHidden = false
-            if selectedFilter == "Archived"  {
-                emptyPlaceholderLabel.text = "Archive is empty."
-            }
-            if selectedFilter == "Locked" {
-                emptyPlaceholderLabel.text = "There is nothing locked."
-            }
-            if selectedFilter == "Favorite" {
-                emptyPlaceholderLabel.text = "No favorites."
-            }
-        }
-    }
-    
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -249,7 +224,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
 
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
-            self.favoriteItem(self.item)
+            self.favoriteItem(self.item, indexPath)
         }
         let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
             self.lockItem(self.item, indexPath)
@@ -268,18 +243,19 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    func favoriteItem(_ item: Item) {
+    public func favoriteItem(_ item: Item, _ indexPath: IndexPath) {
         if item.favorited == true {
             item.favorited = false
         } else {
             item.favorited = true
         }
+        self.tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.fade)
         NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
-    func lockItem(_ item: Item, _ indexPath: IndexPath) {
+    public func lockItem(_ item: Item, _ indexPath: IndexPath) {
         if item.locked == false {
             let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
             postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
@@ -299,7 +275,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
     }
     
-    func archiveItem(_ item: Item, _ indexPath: IndexPath) {
+    public func archiveItem(_ item: Item, _ indexPath: IndexPath) {
         let actionMessage = "This will be archived but can be found in the Archived folder"
         postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
             self.item.archived = true
@@ -311,7 +287,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
-    func deleteItem(_ item: Item, _ indexPath: IndexPath) {
+    public func deleteItem(_ item: Item, _ indexPath: IndexPath) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
             self.context.delete(item)
@@ -374,19 +350,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
         // location of tap in myTextView coordinates and taking the inset into account
         var location = sender.location(in: myTextView)
-        location.x -= myTextView.textContainerInset.left;
-        location.y -= myTextView.textContainerInset.top;
-
+        
+        location.x -= myTextView.textContainerInset.left
+        location.y -= myTextView.textContainerInset.top
+        
         // character index at tap location
-        let characterIndex = layoutManager.characterIndex(for: location, in: myTextView.textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+         let characterIndex = layoutManager.characterIndex(for: location, in: myTextView.textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
 
-       // check if the tap location has a certain attribute
-        let attributeName = NSAttributedString.Key.link
-        let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
-        if let clickedKeyword = attributeValue {
-            searchController.searchBar.text = "#\(clickedKeyword)"
-            reloadSearch()
-        }
+        // check if the tap location has a certain attribute
+         let attributeName = NSAttributedString.Key.link
+         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
+         if let clickedKeyword = attributeValue {
+             searchController.searchBar.text = "#\(clickedKeyword)"
+             reloadSearch()
+         }
+
     }
     
     
@@ -481,51 +459,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         } catch {
             print("Fetching failed")
         }
-    }
-    
-    
-    // MARK: - Get similar items
-    func getSimilarItems(item: Item? = nil, text: String = "") -> [Item] {
-        
-        var selectedItemEmbedding: [Float] = []
-        var similarItems: [Item] = []
-        var scores: [Float] = []
-        var topSimilarItems: [Item] = []
-        
-        if text != "" {
-            selectedItemEmbedding = self.bert.getTextEmbedding(text: text)
-        } else {
-            selectedItemEmbedding = item!.embedding!
-        }
-        
-        for item in items {
-            let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
-            similarItems.append(item)
-            scores.append(distance)
-        }
-        
-        let sortedSimilarItems = sortSimilarItemsByScore(similarItems, scores)
-        
-        if sortedSimilarItems.count > 5 {
-            for i in 1...6 {
-                topSimilarItems.append(sortedSimilarItems[i])
-            }
-        } else if sortedSimilarItems.count < 5 {
-            for i in 1...sortedSimilarItems.count-1 {
-                topSimilarItems.append(sortedSimilarItems[i])
-            }
-        } else {
-            topSimilarItems = []
-        }
-        
-        return sortedSimilarItems
-    }
-    
-    
-    func sortSimilarItemsByScore(_ items: [Item], _ scores: [Float]) -> [Item] {
-        let sortedResults = zip(items, scores).sorted {$0.1 > $1.1}
-        print(sortedResults.map {$0.0.content!}, sortedResults.map {$0.1})
-        return sortedResults.map {$0.0}
     }
     
     
@@ -629,7 +562,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         
         keywordsSimilarityScores = keywordsSimilarityScores.sorted { $0.1 > $1.1 }
-        let suggestedKeywords = keywordsSimilarityScores.prefix(11)
+        let suggestedKeywords = keywordsSimilarityScores.prefix(10)
         
         return suggestedKeywords.map { $0.keyword }
     }
@@ -717,6 +650,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
     }
     
+    
     func getItemsEmbeddings() -> [[Float]] {
         var itemsEmbeddings: [[Float]] = []
         for item in items {
@@ -724,24 +658,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         }
         return itemsEmbeddings
     }
-    
-    
-    func addPlaceholderLabel() {
-        let placeholderLabel = UILabel()
-        placeholderLabel.textAlignment = .center
-        
-        placeholderLabel.text = "What is on your mind?"
-        placeholderLabel.textColor = UIColor(named: "content2")
-        placeholderLabel.numberOfLines = 0
-        placeholderLabel.sizeToFit()
-        placeholderLabel.lineBreakMode = .byWordWrapping
-        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(placeholderLabel)
-        
-        placeholderLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        placeholderLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-    }
+
     
     func scrollToTopTableView() {
         if self.items.isEmpty == false {
@@ -811,8 +728,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     self.state = .loggedout
                     self.fetchData()
                 }
-                
-                
             }
             if title == selectedFilter {
                 actionAlert.setValue(UIImage(systemName: "checkmark"), forKey: "image")
@@ -842,24 +757,18 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let questionAction: UIAlertAction = UIAlertAction(title: "Ask a Question", style: .default)
             { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
+                let mailURL = URL(string: "mailto:contact@getmindapp.com")!
+                UIApplication.shared.open(mailURL, options: [:], completionHandler: nil)
             }
             questionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             questionAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
             
             let appearanceAction: UIAlertAction = UIAlertAction(title: "Appearance", style: .default)
             { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
+                self.performSegue(withIdentifier: "toAppearanceViewController", sender: (Any).self)
             }
             appearanceAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             appearanceAction.setValue(UIImage(systemName: "paintbrush"), forKey: "image")
-            
-            let privacyAction: UIAlertAction = UIAlertAction(title: "Privacy and Security", style: .default)
-            { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
-            }
-            privacyAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            privacyAction.setValue(UIImage(systemName: "lock"), forKey: "image")
             
             let syncAction: UIAlertAction = UIAlertAction(title: "Synchronization", style: .default)
             { _ in
@@ -878,7 +787,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             alertController.addAction(cancelAction)
             alertController.addAction(subscriptionAction)
             alertController.addAction(syncAction)
-            alertController.addAction(privacyAction)
             alertController.addAction(appearanceAction)
             alertController.addAction(questionAction)
             alertController.addAction(FAQAction)
@@ -1179,5 +1087,15 @@ extension UIViewController {
             
             self.present(alertController, animated: true, completion: nil)
         }
+    }
+}
+
+
+extension String {
+
+    func widthOfString(usingFont font: UIFont) -> CGFloat {
+        let fontAttributes = [NSAttributedString.Key.font: font]
+        let size = self.size(withAttributes: fontAttributes)
+        return size.width
     }
 }
