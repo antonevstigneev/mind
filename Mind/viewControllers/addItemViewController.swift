@@ -56,7 +56,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         // textInput initial setup
         textInputView.text = UserDefaults.standard.value(forKey: "Draft") as? String
         textInputView.delegate = self
-        textInputView.tintColor = UIColor(named: "content")
+        textInputView.tintColor = UIColor(named: "text")
         
         // sendButton initial setup
         sendButton.layer.cornerRadius = sendButton.frame.size.height / 2.0

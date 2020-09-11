@@ -127,6 +127,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         // plusButton initial setup
         plusButton.layer.masksToBounds = true
         plusButton.layer.cornerRadius = plusButton.frame.size.height / 2
+        plusButton.backgroundColor = UIColor(named: "button")
+        plusButton.tintColor = UIColor(named: "background")
         
         // sendButton initial setup
         doneButton.layer.cornerRadius = doneButton.frame.size.height / 2.0
@@ -135,6 +137,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         doneButton.isHidden = false
         doneButton.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
     }
+    
     
     func updateItemData() {
         guard let entryText = itemContentTextView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
@@ -184,7 +187,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     func textViewDidBeginEditing(_ textView: UITextView) {
         // clear keywords highlight, while item embeddings and keywords are recalculating
         itemContentTextView.clearTextStyles(originalText: itemContentTextView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "itemViewText")
+        itemContentTextView.textColor = UIColor(named: "title")
         similarItems = []
         tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         tableView.reloadData()
@@ -202,8 +205,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
         let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
         var newFrame = textView.frame
-        if textView.frame.size.height >= self.view.frame.height / 2 {
-            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: self.view.frame.height / 2)
+        if newSize.height > self.view.bounds.height / 2.2 {
+            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: self.view.bounds.height / 2.2)
             itemContentTextView.isScrollEnabled = true
         } else {
             newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
@@ -420,7 +423,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let content = item.content!
         
         cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-        cell.itemContentText.textColor = UIColor(named: "content")!
+        cell.itemContentText.textColor = UIColor(named: "text")
         
         if item.favorited {
             cell.favoritedButton.isHidden = false
@@ -521,7 +524,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     func setDefaultItemTextStyle() {
         itemContentTextView.text = self.selectedItem.content!
         itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "itemViewText")
+        itemContentTextView.textColor = UIColor(named: "title")
     }
     
     
@@ -598,11 +601,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-//            tableView.hide()
             showItemCloseButton()
+            plusButton.hide()
             UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
               self.itemContentTextView.linkTextAttributes = [
-                  NSAttributedString.Key.foregroundColor: UIColor(named: "itemViewText")!,
+                  NSAttributedString.Key.foregroundColor: UIColor(named: "title")!,
                   NSAttributedString.Key.underlineStyle: 0,
               ]
             }, completion: nil)
@@ -614,6 +617,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
             showItemActionButtons()
+            setDefaultItemTextStyle()
             doneButtonBC.constant = -keyboardFrame.height - 18
         }
     }
@@ -635,53 +639,6 @@ extension UIButton {
     }
 }
 
-
-extension UIView {
-    
-    enum SeparatorPosition {
-        case top
-        case bottom
-        case left
-        case right
-    }
-
-    @discardableResult
-    func addSeparator(at position: SeparatorPosition, color: UIColor, weight: CGFloat = 1.0 / UIScreen.main.scale, insets: UIEdgeInsets = .zero) -> UIView {
-        let view = UIView()
-        view.backgroundColor = color
-        view.translatesAutoresizingMaskIntoConstraints = false
-        self.addSubview(view)
-        
-        switch position {
-        case .top:
-            view.topAnchor.constraint(equalTo: self.topAnchor, constant: insets.top).isActive = true
-            view.leftAnchor.constraint(equalTo: self.leftAnchor, constant: insets.left).isActive = true
-            view.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -insets.right).isActive = true
-            view.heightAnchor.constraint(equalToConstant: weight).isActive = true
-            
-        case .bottom:
-            view.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -insets.bottom).isActive = true
-            view.leftAnchor.constraint(equalTo: self.leftAnchor, constant: insets.left).isActive = true
-            view.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -insets.right).isActive = true
-            view.heightAnchor.constraint(equalToConstant: weight).isActive = true
-            
-        case .left:
-            view.topAnchor.constraint(equalTo: self.topAnchor, constant: insets.top).isActive = true
-            view.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -insets.bottom).isActive = true
-            view.leftAnchor.constraint(equalTo: self.leftAnchor, constant: insets.left).isActive = true
-            view.widthAnchor.constraint(equalToConstant: weight).isActive = true
-            
-        case .right:
-            view.topAnchor.constraint(equalTo: self.topAnchor, constant: insets.top).isActive = true
-            view.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -insets.bottom).isActive = true
-            view.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -insets.right).isActive = true
-            view.widthAnchor.constraint(equalToConstant: weight).isActive = true
-        }
-        
-        return view
-    }
-    
-}
 
 
 extension UIBarButtonItem {

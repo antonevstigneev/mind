@@ -121,8 +121,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func setupViews() {
-        overrideUserInterfaceStyle = self.selectedInterfaceStyle
-        
         authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
         // Set the initial app state. This impacts the initial state of the UI as well.
         state = .loggedout
@@ -181,7 +179,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         reloadSearch()
-        overrideUserInterfaceStyle = self.selectedInterfaceStyle
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -276,14 +273,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     public func archiveItem(_ item: Item, _ indexPath: IndexPath) {
-        let actionMessage = "This will be archived but can be found in the Archived folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-            self.item.archived = true
+        if item.archived == false {
+            let actionMessage = "This will be archived but can be found in the Archived folder"
+            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
+                self.item.archived = true
+                self.items.remove(at: indexPath.row)
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            }) { () -> Void in
+                print("Cancelled")
+            }
+        } else {
+            self.item.archived = false
             self.items.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }) { () -> Void in
-            print("Cancelled")
         }
     }
     
@@ -315,7 +319,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         cell.itemContentText.delegate = self
         cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-        cell.itemContentText.textColor = UIColor(named: "content")!
+        cell.itemContentText.textColor = UIColor(named: "text")
         
         if item.favorited {
             cell.favoritedButton.isHidden = false
@@ -340,7 +344,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        searchController.searchBar.searchTextField.backgroundColor = UIColor(named: "buttonBackground")!
+        searchController.searchBar.searchTextField.backgroundColor = UIColor(named: "button")!
             .withAlphaComponent(-scrollView.contentOffset.y / 100)
     }
     
@@ -735,7 +739,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             controller.addAction(actionAlert)
         }
         controller.addAction(UIAlertAction.init(title: "Cancel", style: .cancel, handler: nil))
-        controller.view.tintColor = UIColor(named: "buttonBackground")!
+        controller.view.tintColor = UIColor(named: "button")
         self.present(controller, animated: true, completion: nil)
     }
     
@@ -763,35 +767,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             questionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             questionAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
             
-            let appearanceAction: UIAlertAction = UIAlertAction(title: "Appearance", style: .default)
-            { _ in
-                self.performSegue(withIdentifier: "toAppearanceViewController", sender: (Any).self)
-            }
-            appearanceAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            appearanceAction.setValue(UIImage(systemName: "paintbrush"), forKey: "image")
-            
-            let syncAction: UIAlertAction = UIAlertAction(title: "Synchronization", style: .default)
-            { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
-            }
-            syncAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            syncAction.setValue(UIImage(systemName: "icloud"), forKey: "image")
-            
-            let subscriptionAction: UIAlertAction = UIAlertAction(title: "Subscription", style: .default)
-            { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
-            }
-            subscriptionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            subscriptionAction.setValue(UIImage(systemName: "goforward"), forKey: "image")
-            
             alertController.addAction(cancelAction)
-            alertController.addAction(subscriptionAction)
-            alertController.addAction(syncAction)
-            alertController.addAction(appearanceAction)
             alertController.addAction(questionAction)
             alertController.addAction(FAQAction)
             
-            alertController.view.tintColor = UIColor(named: "buttonBackground")!
+            alertController.view.tintColor = UIColor(named: "button")
             self.present(alertController, animated: true, completion: nil)
         }
     }
@@ -968,7 +948,7 @@ extension UIView {
 extension UISearchBar {
     func setPlaceholderTextColorTo(color: UIColor) {
         let textFieldInsideSearchBar = self.value(forKey: "searchField") as? UITextField
-        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(named: "content")!]
+        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(named: "text")!]
         let textFieldInsideSearchBarLabel = textFieldInsideSearchBar!.value(forKey: "placeholderLabel") as? UILabel
         textFieldInsideSearchBarLabel?.textColor = color
         
