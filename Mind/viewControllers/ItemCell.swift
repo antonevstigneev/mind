@@ -9,7 +9,9 @@
 import UIKit
 
 
-class ItemCell: UITableViewCell, UITextViewDelegate {
+class ItemCell: UITableViewCell {
     
-    
+    @IBOutlet weak var itemContentTextView: UITextView!
 }
+
+

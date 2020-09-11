@@ -284,23 +284,42 @@
                                 <color key="backgroundColor" name="background"/>
                                 <gestureRecognizers/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
-                                <textView key="tableHeaderView" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" id="jDe-Mf-Usg">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="86"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
-                                    <color key="textColor" name="content"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="21"/>
-                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                </textView>
                                 <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="ItemCell" rowHeight="150" id="4VR-VJ-Mkl" customClass="ItemCell" customModule="Mind" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="150"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="4VR-VJ-Mkl" id="jOL-vt-69T">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="150"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" delaysContentTouches="NO" canCancelContentTouches="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="f8v-F2-0Gv">
+                                                    <rect key="frame" x="16" y="0.0" width="343" height="106"/>
+                                                    <color key="backgroundColor" name="background"/>
+                                                    <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
+                                                    <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                </textView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="f8v-F2-0Gv" secondAttribute="trailing" constant="16" id="53X-nV-Up9"/>
+                                                <constraint firstItem="f8v-F2-0Gv" firstAttribute="top" secondItem="jOL-vt-69T" secondAttribute="top" id="R2q-UW-OuN"/>
+                                                <constraint firstAttribute="bottom" secondItem="f8v-F2-0Gv" secondAttribute="bottom" constant="44" id="jIG-Ta-6bI"/>
+                                                <constraint firstItem="f8v-F2-0Gv" firstAttribute="leading" secondItem="jOL-vt-69T" secondAttribute="leading" constant="16" id="uAg-UM-zKA"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="itemContentTextView" destination="f8v-F2-0Gv" id="s7Q-jN-BRS"/>
+                                        </connections>
+                                    </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="x9w-TI-dVF" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="114" width="375" height="60.333332061767578"/>
+                                        <rect key="frame" x="0.0" y="178" width="375" height="60.333332061767578"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="x9w-TI-dVF" id="AoN-iy-Trn">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="60.333332061767578"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="661-tl-rqp" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
+                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Similar item" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="661-tl-rqp" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="16" y="12" width="343" height="36.333333333333336"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <accessibility key="accessibilityConfiguration">
@@ -400,7 +419,6 @@
                     <connections>
                         <outlet property="doneButton" destination="b2f-Wb-2va" id="i1l-ag-Tag"/>
                         <outlet property="doneButtonBC" destination="L4J-yr-zgk" id="9zr-Zy-mJ8"/>
-                        <outlet property="itemContentTextView" destination="jDe-Mf-Usg" id="g5u-sb-Lsh"/>
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
                         <segue destination="SGi-zd-M47" kind="show" identifier="backToItems" id="h1N-3G-VOJ"/>
@@ -409,11 +427,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KPH-fj-1St" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2713" y="134"/>
+            <point key="canvasLocation" x="2712.8000000000002" y="133.74384236453201"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Bw5-Cg-iRQ"/>
+        <segue reference="1Zo-N0-bK6"/>
+        <segue reference="WDj-KD-8Zi"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>
@@ -435,9 +454,6 @@
         </namedColor>
         <namedColor name="buttonIcon">
             <color white="0.89999997615814209" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </namedColor>
-        <namedColor name="content">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
         <namedColor name="content2">
             <color white="0.60000002384185791" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

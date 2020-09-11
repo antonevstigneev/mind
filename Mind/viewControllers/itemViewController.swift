@@ -34,10 +34,10 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
     var isItemChanged: Bool = false
     var selectedKeyword: String = ""
+    let expandingIndexRow = 0
     
     
     // MARK: - Outlets
-    @IBOutlet weak var itemContentTextView: UITextView!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var doneButton: UIButton!
@@ -57,7 +57,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         plusButton.animateButtonUp()
     }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
-        updateItemData()
+//        updateItemData()
         self.isItemChanged = true
         closeEditMode()
     }
@@ -96,26 +96,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func updateItemView() {
-        setDefaultItemTextStyle()
-        UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
-          self.itemContentTextView.linkTextAttributes = [
-              NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
-              NSAttributedString.Key.underlineStyle: 0,
-          ]
-        }, completion: nil)
+        
     }
     
     func setupViews() {
         showItemActionButtons()
-        
-        // itemView initial setup
-        setDefaultItemTextStyle()
-        itemContentTextView.isScrollEnabled = false
-        itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
-        itemContentTextView.isEditable = true
-        itemContentTextView.sizeToFit()
-        itemContentTextView.delegate = self
-        itemContentTextView.textContainerInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         
         // tableView initial setup
         tableView.delegate = self
@@ -140,9 +125,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func updateItemData() {
-        guard let entryText = itemContentTextView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
-            return
-        }
+        let entryText = selectedItem.content!.trimmingCharacters(in: .whitespacesAndNewlines)
         
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
@@ -167,62 +150,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             object: nil)
         }
     }
-    
-    
-    // Check for text limit
-    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        let newText = (itemContentTextView!.text as NSString).replacingCharacters(in: range, with: text)
-        let numberOfChars = newText.count
-        if numberOfChars > 1499 {
-            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-
-            self.present(alert, animated: true)
-        }
-        return numberOfChars < 1500
-    }
-    
-    
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        // clear keywords highlight, while item embeddings and keywords are recalculating
-        itemContentTextView.clearTextStyles(originalText: itemContentTextView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "title")
-        similarItems = []
-        tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
-        tableView.reloadData()
-    }
-    
-    
-    // Check if textInput is empty
-    func textViewDidChange(_ textView: UITextView) {
-        if isTextInputNotEmpty(textView: itemContentTextView) {
-            doneButton.show()
-        } else {
-            doneButton.hide()
-        }
-        let fixedWidth = textView.frame.size.width
-        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
-        var newFrame = textView.frame
-        if newSize.height > self.view.bounds.height / 2.2 {
-            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: self.view.bounds.height / 2.2)
-            itemContentTextView.isScrollEnabled = true
-        } else {
-            newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
-            itemContentTextView.isScrollEnabled = false
-        }
-        
-        textView.frame = newFrame
-    }
-    
-    func isTextInputNotEmpty(textView: UITextView) -> Bool {
-        guard let text = textView.text,
-            !text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty else {
-            return false
-        }
-        return true
-    }
     
     func showItemActionButtons() {
         favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(favoriteAction(_:)))
@@ -252,11 +180,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // MARK: - Context menu
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
-            return self.createContextMenu(indexPath: indexPath)
-        }
-    }
+//    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+//        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { _ in
+//            return self.createContextMenu(indexPath: indexPath)
+//        }
+//    }
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
         let item = self.similarItems[indexPath.row]
@@ -416,42 +344,125 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         return similarItems.count
     }
     
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
-                
-        let item = similarItems[indexPath.row]
-        let content = item.content!
         
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-        cell.itemContentText.textColor = UIColor(named: "text")
-        
-        if item.favorited {
-            cell.favoritedButton.isHidden = false
-            cell.itemContentTextRC.constant = 35
+        if indexPath.row == expandingIndexRow {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
+            
+            cell.itemContentTextView.addHyperLinksToText(originalText: selectedItem.content!, hyperLinks: selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+            cell.itemContentTextView.textColor = UIColor(named: "title")
+            
+            cell.itemContentTextView.isEditable = true
+            cell.itemContentTextView.isSelectable = true
+            cell.itemContentTextView.isScrollEnabled = false
+            cell.itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
+            cell.itemContentTextView.sizeToFit()
+            cell.itemContentTextView.delegate = self
+            
+            return cell
             
         } else {
-            cell.favoritedButton.isHidden = true
-            cell.itemContentTextRC.constant = 16
-        }
-        
-        let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
-        tap.delegate = self
-        cell.itemContentText.addGestureRecognizer(tap)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
+                    
+            let item = similarItems[indexPath.row]
+            let content = item.content!
+            
+            cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+            cell.itemContentText.textColor = UIColor(named: "text")
+            
+            if item.favorited {
+                cell.favoritedButton.isHidden = false
+                cell.itemContentTextRC.constant = 35
+                
+            } else {
+                cell.favoritedButton.isHidden = true
+                cell.itemContentTextRC.constant = 16
+            }
+            
+            let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
+            tap.delegate = self
+            cell.itemContentText.addGestureRecognizer(tap)
 
-        return cell
+            return cell
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        print(self.similarItems[indexPath.row].content!)
-        selectedItem = self.similarItems[indexPath.row]
-        self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
+        if indexPath.row != 0 {
+            tableView.deselectRow(at: indexPath, animated: true)
+            selectedItem = self.similarItems[indexPath.row]
+            self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
+        }
     }
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
         self.selectedKeyword = "\(URL.absoluteString)"
         performKeywordSearch()
         return false
+    }
+    
+        
+    // Check for text limit
+//    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+//        let indexPath = IndexPath(row: expandingIndexRow, section: 0)
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
+//        let itemTextView = cell.itemContentTextView!
+//
+//        let newText = (itemTextView.text as NSString).replacingCharacters(in: range, with: text)
+//        let numberOfChars = newText.count
+//        if numberOfChars > 1499 {
+//            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
+//
+//            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//
+//            self.present(alert, animated: true)
+//        }
+//        return numberOfChars < 1500
+//    }
+    
+    
+    // Check if textInput is empty
+    func textViewDidChange(_ textView: UITextView) {
+  
+        let indexPath = IndexPath(row: expandingIndexRow, section: 0)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
+        
+        let itemTextView = cell.itemContentTextView!
+        if isTextInputNotEmpty(textView: itemTextView) {
+            doneButton.show()
+        } else {
+            doneButton.hide()
+        }
+        
+        let fixedWidth = textView.frame.size.width
+        textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        let newSize = textView.sizeThatFits(CGSize(width: fixedWidth, height: CGFloat.greatestFiniteMagnitude))
+        var newFrame = textView.frame
+        newFrame.size = CGSize(width: max(newSize.width, fixedWidth), height: newSize.height)
+        
+        textView.frame = newFrame
+        
+        UIView.setAnimationsEnabled(false)
+        /* These will causes table cell heights to be recaluclated,
+         without reloading the entire cell */
+        tableView.beginUpdates()
+        tableView.endUpdates()
+        // Re-enable animations
+        UIView.setAnimationsEnabled(true)
+    }
+    
+    func isTextInputNotEmpty(textView: UITextView) -> Bool {
+        guard let text = textView.text,
+            !text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        return true
+    }
+    
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        showItemCloseButton()
     }
     
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
@@ -497,36 +508,45 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func closeEditMode() {
-        if isItemChanged == false {
-            itemContentTextView.text = selectedItem.content!
-            setDefaultItemTextStyle()
-        }
-        itemContentTextView.sizeToFit()
+        
         showSimilarItems()
         tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
         tableView.show()
         doneButton.hide()
         plusButton.show()
         showItemActionButtons()
-        UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
-          self.itemContentTextView.linkTextAttributes = [
+//        itemContentTextView.resignFirstResponder()
+    }
+    
+    func setDefaultItemTextStyle(_ textView: UITextView) {
+        textView.text = self.selectedItem.content!
+        textView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        textView.textColor = UIColor(named: "title")
+    }
+    
+    func setEditItemTextStyle(_ textView: UITextView) {
+        textView.text = self.selectedItem.content!
+        textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+        textView.textColor = UIColor(named: "title")
+    }
+    
+    func highlightHyperlinks(_ textView: UITextView) {
+        UIView.transition(with: textView, duration: 0.35, options: .transitionCrossDissolve, animations: {
+          textView.linkTextAttributes = [
               NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
               NSAttributedString.Key.underlineStyle: 0,
           ]
         }, completion: nil)
-        var frame = self.itemContentTextView.frame
-        frame.size.height = self.itemContentTextView.contentSize.height
-        self.itemContentTextView.frame = frame
-        itemContentTextView.sizeToFit()
-        itemContentTextView.resignFirstResponder()
     }
     
-    func setDefaultItemTextStyle() {
-        itemContentTextView.text = self.selectedItem.content!
-        itemContentTextView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        itemContentTextView.textColor = UIColor(named: "title")
+    func unhighlightHyperlinks(_ textView: UITextView) {
+        UIView.transition(with: textView, duration: 0.35, options: .transitionCrossDissolve, animations: {
+          textView.linkTextAttributes = [
+              NSAttributedString.Key.foregroundColor: UIColor(named: "title")!,
+              NSAttributedString.Key.underlineStyle: 0,
+          ]
+        }, completion: nil)
     }
-    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -601,14 +621,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            showItemCloseButton()
-            plusButton.hide()
-            UIView.transition(with: self.itemContentTextView, duration: 0.35, options: .transitionCrossDissolve, animations: {
-              self.itemContentTextView.linkTextAttributes = [
-                  NSAttributedString.Key.foregroundColor: UIColor(named: "title")!,
-                  NSAttributedString.Key.underlineStyle: 0,
-              ]
-            }, completion: nil)
             doneButtonBC.constant = keyboardFrame.height + 18
         }
     }
@@ -616,8 +628,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func handle(keyboardHideNotification notification: Notification) {
         if let userInfo = notification.userInfo,
             let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-            showItemActionButtons()
-            setDefaultItemTextStyle()
             doneButtonBC.constant = -keyboardFrame.height - 18
         }
     }
@@ -652,3 +662,25 @@ extension UIBarButtonItem {
         }
     }
 }
+
+
+
+//extension itemViewController: ExpandingCellDelegate {
+//
+//    func updated(height: CGFloat) {
+//        expandingCellHeight = height
+//
+//        // Disabling animations gives us our desired behaviour
+//        UIView.setAnimationsEnabled(false)
+//        /* These will causes table cell heights to be recaluclated,
+//         without reloading the entire cell */
+//        tableView.beginUpdates()
+//        tableView.endUpdates()
+//        // Re-enable animations
+//        UIView.setAnimationsEnabled(true)
+//
+//        let indexPath = IndexPath(row: expandingIndexRow, section: 0)
+//
+//        tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+//    }
+//}
