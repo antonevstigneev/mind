@@ -198,7 +198,7 @@
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FB5-Fj-2I2">
                                 <rect key="frame" x="16" y="66" width="343" height="692"/>
                                 <color key="backgroundColor" name="background"/>
-                                <color key="tintColor" name="button"/>
+                                <color key="tintColor" name="icon"/>
                                 <color key="textColor" name="text"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -282,6 +282,7 @@
                             <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EZ7-7F-xXo">
                                 <rect key="frame" x="0.0" y="89" width="375" height="723"/>
                                 <color key="backgroundColor" name="background"/>
+                                <color key="tintColor" name="icon"/>
                                 <gestureRecognizers/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
                                 <prototypes>
@@ -292,7 +293,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="150"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" delaysContentTouches="NO" canCancelContentTouches="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="f8v-F2-0Gv">
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" delaysContentTouches="NO" canCancelContentTouches="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="f8v-F2-0Gv">
                                                     <rect key="frame" x="16" y="0.0" width="343" height="106"/>
                                                     <color key="backgroundColor" name="background"/>
                                                     <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
@@ -431,8 +432,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="1Zo-N0-bK6"/>
-        <segue reference="WDj-KD-8Zi"/>
+        <segue reference="Bw5-Cg-iRQ"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>

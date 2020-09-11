@@ -34,6 +34,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
     var isItemChanged: Bool = false
     var selectedKeyword: String = ""
+    var selectedItemText: String = ""
     let expandingIndexRow = 0
     
     
@@ -57,9 +58,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         plusButton.animateButtonUp()
     }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
-//        updateItemData()
         self.isItemChanged = true
         closeEditMode()
+        updateItemData()
     }
     @IBAction func editButtonTouchDown(_ sender: UIButton) {
         doneButton.animateButtonDown()
@@ -88,16 +89,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         selector: #selector(handle(keyboardHideNotification:)),
         name: UIResponder.keyboardWillHideNotification,
         object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(updateItemView),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
-        object: nil)
     }
     
-    @objc func updateItemView() {
-        
-    }
     
     func setupViews() {
         showItemActionButtons()
@@ -125,7 +118,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func updateItemData() {
-        let entryText = selectedItem.content!.trimmingCharacters(in: .whitespacesAndNewlines)
+        let entryText = getSelectedItemText()
         
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
@@ -140,7 +133,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.selectedItem.embedding = itemEmbedding
         
             DispatchQueue.main.async {
-                self.tableView.reloadData()
+//                self.tableView.reloadData()
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
             }
         }
@@ -149,6 +142,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
+    }
+    
+    func getSelectedItemText() -> String {
+        let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! ItemCell
+        let cellText = cell.itemContentTextView.text!.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        return cellText
     }
 
     
@@ -172,6 +172,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             animated: true)
         }
     }
+    
     
     func showItemCloseButton() {
         let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeEditMode))
@@ -238,6 +239,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
     
+    
     func lockItem(_ item: Item, _ indexPath: IndexPath) {
         if item.locked == false {
             let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
@@ -256,6 +258,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }
     }
+    
     
     func archiveItem(_ item: Item, _ indexPath: IndexPath) {
         let actionMessage = "This will be archived but can be found in the Archived folder"
@@ -284,6 +287,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
 
+    
     @objc func lockAction(_ sender: UIBarButtonItem) {
         if selectedItem.locked {
             self.selectedItem.locked = false
@@ -302,6 +306,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
 
+    
     @objc func archiveAction(_ sender: UIBarButtonItem) {
         if selectedItem.archived {
             self.selectedItem.archived = false
@@ -319,6 +324,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         NSNotification.Name(rawValue: "itemsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
     }
+    
 
     @objc func deleteAction(_ sender: UIBarButtonItem) {
         let actionTitle = "Are you sure you want to delete this?"
@@ -332,6 +338,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             print("Cancelled")
         }
     }
+    
     
     @objc func moreAction(_ sender: UIBarButtonItem) {
         //
@@ -388,6 +395,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row != 0 {
             tableView.deselectRow(at: indexPath, animated: true)
@@ -395,6 +403,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
         }
     }
+    
     
     func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
         self.selectedKeyword = "\(URL.absoluteString)"
@@ -429,6 +438,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
         
         let itemTextView = cell.itemContentTextView!
+        
         if isTextInputNotEmpty(textView: itemTextView) {
             doneButton.show()
         } else {
@@ -452,6 +462,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         UIView.setAnimationsEnabled(true)
     }
     
+    
     func isTextInputNotEmpty(textView: UITextView) -> Bool {
         guard let text = textView.text,
             !text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty else {
@@ -465,8 +476,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         showItemCloseButton()
     }
     
+    
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
-
         let myTextView = sender.view as! UITextView
         let layoutManager = myTextView.layoutManager
 
@@ -488,6 +499,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
     func performKeywordSearch() {
         guard let destinationVC = self.navigationController?.viewControllers[0] as? itemsViewController else {
             fatalError("Second VC in navigation stack is not an itemsViewController")
@@ -507,16 +519,17 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
     @objc func closeEditMode() {
-        
-        showSimilarItems()
-        tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
-        tableView.show()
+        self.view.endEditing(true)
+        if isItemChanged == false {
+            tableView.reloadData()
+        }
         doneButton.hide()
         plusButton.show()
         showItemActionButtons()
-//        itemContentTextView.resignFirstResponder()
     }
+    
     
     func setDefaultItemTextStyle(_ textView: UITextView) {
         textView.text = self.selectedItem.content!
@@ -524,11 +537,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         textView.textColor = UIColor(named: "title")
     }
     
+    
     func setEditItemTextStyle(_ textView: UITextView) {
         textView.text = self.selectedItem.content!
         textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
     }
+    
     
     func highlightHyperlinks(_ textView: UITextView) {
         UIView.transition(with: textView, duration: 0.35, options: .transitionCrossDissolve, animations: {
@@ -538,6 +553,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
           ]
         }, completion: nil)
     }
+    
     
     func unhighlightHyperlinks(_ textView: UITextView) {
         UIView.transition(with: textView, duration: 0.35, options: .transitionCrossDissolve, animations: {
