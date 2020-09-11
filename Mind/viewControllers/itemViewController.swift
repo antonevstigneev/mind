@@ -474,6 +474,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func textViewDidBeginEditing(_ textView: UITextView) {
         showItemCloseButton()
+        setEditItemTextStyle(textView)
     }
     
     
@@ -535,6 +536,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         textView.text = self.selectedItem.content!
         textView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
+        highlightHyperlinks(textView)
     }
     
     
@@ -542,6 +544,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         textView.text = self.selectedItem.content!
         textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
+        unhighlightHyperlinks(textView)
     }
     
     
