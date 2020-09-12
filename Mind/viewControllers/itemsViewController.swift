@@ -13,7 +13,6 @@ import CoreML
 import Foundation
 import NaturalLanguage
 import LocalAuthentication
-import Firebase
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
     
@@ -68,7 +67,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
         performSegue(withIdentifier: "toAddItemViewController", sender: sender)
-        Analytics.logEvent("plusButton_pressed", parameters: nil)
     }
     @IBAction func plusButtonTouchDown(_ sender: UIButton) {
         plusButton.animateButtonDown()
@@ -81,7 +79,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
         showFilterMenu()
-        Analytics.logEvent("filterButton_pressed", parameters: nil)
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
@@ -180,6 +177,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         fetchData()
         reloadSearch()
     }
+    
+//    func recalculateAllEmbeddings() {
+//        for item in items {
+//            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: item.keywords!)
+//            item.keywordsEmbeddings = keywordsEmbeddings
+//            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+//        }
+//    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -318,6 +323,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let content = item.value(forKey: "content") as! String
         
         cell.itemContentText.delegate = self
+        
         cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
         cell.itemContentText.textColor = UIColor(named: "text")
         
@@ -542,7 +548,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.tableView.show()
                 self.scrollToTopTableView()
                 self.removeSpinner()
-                Analytics.logEvent("search_completed", parameters: nil)
             }
         }
     }
@@ -926,7 +931,6 @@ public extension UIImage {
         
         return image;
     }
-    
 }
 
 
@@ -1007,26 +1011,30 @@ extension UITextView {
         style.alignment = .left
         style.lineSpacing = lineSpacing
         
-        let attributedOriginalText = NSMutableAttributedString(string: originalText)
-        for hyperLink in hyperLinks {
-            let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
-            let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: hyperLink, range: linkRange)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
-        }
-        
-        if hyperLinks.count == 0 {
-            clearTextStyles(originalText: originalText, fontSize: fontSize, fontWeight: fontWeight, lineSpacing: lineSpacing)
-        } else {
+        if hyperLinks.count > 0 {
+            let attributedOriginalText = NSMutableAttributedString(string: originalText)
+            for hyperLink in hyperLinks {
+                let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
+                let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
+                attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: hyperLink, range: linkRange)
+                attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
+                attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
+            }
             self.linkTextAttributes = [
                 NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
                 NSAttributedString.Key.underlineStyle: 0,
             ]
             
             self.attributedText = attributedOriginalText
+        } else {
+            let attributes: [NSAttributedString.Key : Any] = [
+                NSAttributedString.Key.paragraphStyle: style,
+                NSAttributedString.Key.font: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight)
+            ]
+            let attributedOriginalText = NSMutableAttributedString(string: originalText, attributes: attributes)
+            
+            self.attributedText = attributedOriginalText
         }
-        
     }
     
     func clearTextStyles(originalText: String, fontSize: Int = 21, fontWeight: UIFont.Weight = .regular, lineSpacing: CGFloat) {

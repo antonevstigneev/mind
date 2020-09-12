@@ -11,8 +11,6 @@ import CoreData
 import CloudKit
 import Foundation
 import NaturalLanguage
-import Firebase
-
 
 class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
@@ -49,7 +47,6 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBAction func plusButtonTouchUpInside(_ sender: Any) {
         plusButton.animateButtonUp()
         performSegue(withIdentifier: "addNewItem", sender: sender)
-        Analytics.logEvent("plusButton_pressed", parameters: nil)
     }
     @IBAction func plusButtonTouchDown(_ sender: UIButton) {
         plusButton.animateButtonDown()
@@ -523,9 +520,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     @objc func closeEditMode() {
         self.view.endEditing(true)
-        if isItemChanged == false {
-            tableView.reloadData()
-        }
+//        if isItemChanged == false {
+//            tableView.reloadData()
+//        }
         doneButton.hide()
         plusButton.show()
         showItemActionButtons()
@@ -533,15 +530,15 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func setDefaultItemTextStyle(_ textView: UITextView) {
-        textView.text = self.selectedItem.content!
-        textView.addHyperLinksToText(originalText: self.selectedItem.content!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+//        textView.text = self.selectedItem.content!
+        textView.addHyperLinksToText(originalText: textView.text!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
         highlightHyperlinks(textView)
     }
     
     
     func setEditItemTextStyle(_ textView: UITextView) {
-        textView.text = self.selectedItem.content!
+//        textView.text = self.selectedItem.content!
         textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
         unhighlightHyperlinks(textView)
@@ -566,6 +563,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
           ]
         }, completion: nil)
     }
+    
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -669,7 +667,6 @@ extension UIButton {
 }
 
 
-
 extension UIBarButtonItem {
 
     func applyButtonIconStyle(_ iconName: String, _ bool: Bool) {
@@ -681,25 +678,3 @@ extension UIBarButtonItem {
         }
     }
 }
-
-
-
-//extension itemViewController: ExpandingCellDelegate {
-//
-//    func updated(height: CGFloat) {
-//        expandingCellHeight = height
-//
-//        // Disabling animations gives us our desired behaviour
-//        UIView.setAnimationsEnabled(false)
-//        /* These will causes table cell heights to be recaluclated,
-//         without reloading the entire cell */
-//        tableView.beginUpdates()
-//        tableView.endUpdates()
-//        // Re-enable animations
-//        UIView.setAnimationsEnabled(true)
-//
-//        let indexPath = IndexPath(row: expandingIndexRow, section: 0)
-//
-//        tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
-//    }
-//}

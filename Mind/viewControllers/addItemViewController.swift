@@ -10,7 +10,6 @@ import UIKit
 import CoreData
 import CloudKit
 import NaturalLanguage
-import Firebase
 
 class addItemViewController: UIViewController, UITextViewDelegate {
     
@@ -29,7 +28,6 @@ class addItemViewController: UIViewController, UITextViewDelegate {
     @IBAction func sendButtonTouchDownInside(_ sender: Any) {
         saveNewItem()
         emptyDraftData()
-        Analytics.logEvent("sendButton_pressed", parameters: nil)
     }
     @IBAction func sendButtonTouchDown(_ sender: UIButton) {
         sender.animateButtonDown()

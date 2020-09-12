@@ -112,6 +112,7 @@
                                                 <constraint firstItem="Cag-xX-4c0" firstAttribute="centerY" secondItem="rF4-xP-943" secondAttribute="centerY" id="szn-p7-qIR"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <color key="backgroundColor" name="background"/>
                                         <connections>
                                             <outlet property="favoritedButton" destination="Cag-xX-4c0" id="N2Z-II-sex"/>
                                             <outlet property="itemContentText" destination="rF4-xP-943" id="Tnf-PO-fcL"/>
@@ -302,6 +303,7 @@
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
                                             </subviews>
+                                            <color key="backgroundColor" name="background"/>
                                             <constraints>
                                                 <constraint firstAttribute="trailing" secondItem="f8v-F2-0Gv" secondAttribute="trailing" constant="16" id="53X-nV-Up9"/>
                                                 <constraint firstItem="f8v-F2-0Gv" firstAttribute="top" secondItem="jOL-vt-69T" secondAttribute="top" id="R2q-UW-OuN"/>
@@ -322,6 +324,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Similar item" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="661-tl-rqp" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="16" y="12" width="343" height="36.333333333333336"/>
+                                                    <color key="backgroundColor" name="background"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <accessibility key="accessibilityConfiguration">
                                                         <accessibilityTraits key="traits" notEnabled="YES"/>
@@ -352,6 +355,7 @@
                                                 <constraint firstAttribute="trailingMargin" secondItem="YN1-as-lws" secondAttribute="trailing" constant="-8" id="u9O-Yj-uEu"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <color key="backgroundColor" name="background"/>
                                         <connections>
                                             <outlet property="favoritedButton" destination="YN1-as-lws" id="z0p-ZA-t0U"/>
                                             <outlet property="itemContentText" destination="661-tl-rqp" id="VcN-PK-cRN"/>
