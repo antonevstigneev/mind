@@ -75,11 +75,11 @@ class Distance {
         return dist[a.count, b.count]
     }
     
-    class func cosine(A: [Float], B: [Float]) -> Float {
+    class func cosine(A: [Double], B: [Double]) -> Double {
 
         // Dot Product
-        func dot(A: [Float], B: [Float]) -> Float {
-            var x: Float = 0
+        func dot(A: [Double], B: [Double]) -> Double {
+            var x: Double = 0
             for i in 0...A.count-1 {
                 x += A[i] * B[i]
             }
@@ -87,8 +87,8 @@ class Distance {
         }
 
         // Vector Magnitude
-        func magnitude(A: [Float]) -> Float {
-            var x: Float = 0
+        func magnitude(A: [Double]) -> Double {
+            var x: Double = 0
             for elt in A {
                 x += elt * elt
             }
@@ -96,15 +96,15 @@ class Distance {
         }
 
         // Cosine similarity
-        func cosineSimilarity(A: [Float], B: [Float]) -> Float {
+        func cosineSimilarity(A: [Double], B: [Double]) -> Double {
             return dot(A: A, B: B) / (magnitude(A: A) * magnitude(A: B))
         }
         
         return cosineSimilarity(A: A, B: B)
     }
     
-    class func euclidean(A: [Float], B: [Float]) -> Float {
-        var sum: Float = 0
+    class func euclidean(A: [Double], B: [Double]) -> Double {
+        var sum: Double = 0
         let sA = A.std()
         let sB = B.std()
         

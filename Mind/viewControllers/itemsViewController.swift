@@ -8,16 +8,12 @@
 
 import UIKit
 import CoreData
-import CloudKit
 import CoreML
 import Foundation
 import NaturalLanguage
 import LocalAuthentication
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
-    
-    // MARK: - Model
-    let bert = BERT()
     
     
     // MARK: - Data
@@ -48,11 +44,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     /// The current authentication state.
     var state = AuthenticationState.loggedout {
-
         // Update the UI on a change.
-        didSet {
-            
-        }
+        didSet {}
     }
     
     // MARK: - Outlets
@@ -176,15 +169,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         reloadSearch()
+        for item in items {
+            print(item.embedding)
+            print(item.keywords)
+        }
     }
-    
-//    func recalculateAllEmbeddings() {
-//        for item in items {
-//            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: item.keywords!)
-//            item.keywordsEmbeddings = keywordsEmbeddings
-//            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-//        }
-//    }
+
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -561,9 +551,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Keywords suggestions
     func getKeywordSuggestions(for text: String) -> [String] {
-        var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
+        var keywordsSimilarityScores: [(keyword: String, score: Double)] = []
         let keywordsEmbeddings = getAllKeywordsEmbeddings()
-        let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
+//        let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
+        let forKeywordEmbedding = keywordsEmbeddings[0].value // <--------------------------------------------- change
         
         for keywordEmbedding in keywordsEmbeddings {
             let score = Distance.cosine(A: forKeywordEmbedding, B: keywordEmbedding.value)
@@ -577,8 +568,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Float])] {
-        var keywordsEmbeddings: [(keyword: String, value: [Float])] = []
+    func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Double])] {
+        var keywordsEmbeddings: [(keyword: String, value: [Double])] = []
         for item in items {
             for keyword in item.keywords! {
                 if !keywordsEmbeddings.map({$0.0}).contains(keyword) {
@@ -630,14 +621,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func getItemsSimilarityScores() {
         var itemsPairs: [[Item]] = []
-        var itemsPairsScores: [Float] = []
-        var itemsTotalScores: [(itemContent: String, score: Float)] = []
+        var itemsPairsScores: [Double] = []
+        var itemsTotalScores: [(itemContent: String, score: Double)] = []
         
         let itemsEmbeddings = getItemsEmbeddings()
         
         for item in items {
             let currentItemEmbedding = item.embedding!
-            var itemTotalScore: Float = 0
+            var itemTotalScore: Double = 0
             for index in 0..<items.count {
                 let otherItemEmbedding = itemsEmbeddings[index]
                 if item != items[index] {
@@ -660,8 +651,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func getItemsEmbeddings() -> [[Float]] {
-        var itemsEmbeddings: [[Float]] = []
+    func getItemsEmbeddings() -> [[Double]] {
+        var itemsEmbeddings: [[Double]] = []
         for item in items {
             itemsEmbeddings.append(item.embedding!)
         }
@@ -676,8 +667,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
-        var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
+    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Double])] {
+        var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
         
         for item in self.items {
             for (index, keyword) in item.keywords!.enumerated() {
@@ -692,8 +683,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func getItemsEmbeddingsTest() -> [(item: String, embedding: [Float])] {
-        var itemsEmbeddings: [(item: String, embedding: [Float])] = []
+    func getItemsEmbeddingsTest() -> [(item: String, embedding: [Double])] {
+        var itemsEmbeddings: [(item: String, embedding: [Double])] = []
         
         for item in self.items {
             itemsEmbeddings.append((item: item.content!, embedding: item.embedding!))
@@ -757,24 +748,32 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
             
-            let FAQAction: UIAlertAction = UIAlertAction(title: "Mind FAQ", style: .default)
+            let aboutAction: UIAlertAction = UIAlertAction(title: "About", style: .default)
             { _ in
                 //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
-            FAQAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            FAQAction.setValue(UIImage(systemName: "questionmark.circle"), forKey: "image")
+            aboutAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            aboutAction.setValue(UIImage(systemName: "info.circle"), forKey: "image")
             
-            let questionAction: UIAlertAction = UIAlertAction(title: "Ask a Question", style: .default)
+            let supportAction: UIAlertAction = UIAlertAction(title: "Support", style: .default)
             { _ in
                 let mailURL = URL(string: "mailto:contact@getmindapp.com")!
                 UIApplication.shared.open(mailURL, options: [:], completionHandler: nil)
             }
-            questionAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            questionAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
+            supportAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            supportAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
+            
+            let mindCloudAction: UIAlertAction = UIAlertAction(title: "Mind Cloud", style: .default)
+            { _ in
+                self.performSegue(withIdentifier: "toCloudViewController", sender: (Any).self)
+            }
+            mindCloudAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
+            mindCloudAction.setValue(UIImage(systemName: "cloud"), forKey: "image")
             
             alertController.addAction(cancelAction)
-            alertController.addAction(questionAction)
-            alertController.addAction(FAQAction)
+            alertController.addAction(mindCloudAction)
+            alertController.addAction(supportAction)
+            alertController.addAction(aboutAction)
             
             alertController.view.tintColor = UIColor(named: "button")
             self.present(alertController, animated: true, completion: nil)

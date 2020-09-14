@@ -8,10 +8,13 @@
 
 import UIKit
 import CoreData
-import CloudKit
 import NaturalLanguage
+import Alamofire
+
 
 class addItemViewController: UIViewController, UITextViewDelegate {
+    
+    let isAuthorized = UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
     
     // Reference to NSPersistent Container context
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -83,29 +86,47 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         }
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
-            let bert = BERT()
-            let keywords = getKeywords(from: entryText, count: 10)
-            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
-            let itemEmbedding = bert.getTextEmbedding(text: entryText)
-
-            let newEntry = Item(context: self.context)
-            newEntry.id = UUID()
-            newEntry.content = entryText
-            newEntry.timestamp = Date().current
-            newEntry.keywords = keywords
-            newEntry.keywordsEmbeddings = keywordsEmbeddings
-            newEntry.embedding = itemEmbedding
             
-            DispatchQueue.main.async {
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            var embedding: [Double] = []
+            var keywords: [String] = []
+            var keywordsEmbeddings: [[Double]] = []
+            
+            if self.isAuthorized == false {
+                CloudManager().processItemContent(content: entryText) { (response, success) in
+                    if (success) {
+                        print("Item data processed.")
+                        embedding = response!["embedding"] as! [Double]
+                        keywords = response!["keywords"] as! [String]
+                        keywordsEmbeddings = response!["keywordsEmbeddings"] as! [[Double]]
+                        let newEntry = Item(context: self.context)
+                        newEntry.id = UUID()
+                        newEntry.content = entryText
+                        newEntry.timestamp = Date().current
+                        newEntry.keywords = keywords
+                        newEntry.keywordsEmbeddings = keywordsEmbeddings
+                        newEntry.embedding = embedding
+
+                        DispatchQueue.main.async {
+                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                        }
+                        itemCreation.notify(queue: .main) {
+                            NotificationCenter.default.post(name:
+                            NSNotification.Name(rawValue: "itemsChanged"),
+                            object: nil)
+                        }
+                    } else {
+                        print("Error processing item data")
+                    }
+                }
+            } else {
+                // for authorized requests <<<<<<<<<
             }
+            
+            
         }
-        itemCreation.notify(queue: .main) {
-            NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"),
-            object: nil)
-        }
+        
     }
+    
     
     // Handle keyboard appearence
     @objc private func handle(keyboardShowNotification notification: Notification) {

@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreData
-import CloudKit
 import Foundation
 import NaturalLanguage
 
@@ -119,15 +118,15 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         let itemEditing = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
-            let bert = BERT()
-            let keywords = getKeywords(from: entryText, count: 10)
-            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
-            let itemEmbedding = bert.getTextEmbedding(text: entryText)
-            
-            self.selectedItem.content = entryText
-            self.selectedItem.keywords = keywords
-            self.selectedItem.keywordsEmbeddings = keywordsEmbeddings
-            self.selectedItem.embedding = itemEmbedding
+
+//            let keywords = getKeywords(from: entryText, count: 10)
+//            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+//            let itemEmbedding = bert.getTextEmbedding(text: entryText)
+//
+//            self.selectedItem.content = entryText
+//            self.selectedItem.keywords = keywords
+//            self.selectedItem.keywordsEmbeddings = keywordsEmbeddings
+//            self.selectedItem.embedding = itemEmbedding
         
             DispatchQueue.main.async {
 //                self.tableView.reloadData()
@@ -610,7 +609,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - Get similar items
     func getSimilarItems(item: Item, length: Int) -> [Item] {
 
-        var similarItems: [(item: Item, score: Float)] = []
+        var similarItems: [(item: Item, score: Double)] = []
         let selectedItemEmbedding = self.selectedItem.embedding!
 
         for item in self.items {

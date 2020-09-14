@@ -3,11 +3,11 @@
     <entity name="Item" representedClassName=".Item" syncable="YES" codeGenerationType="class">
         <attribute name="archived" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="content" attributeType="String" defaultValueString="Item Content"/>
-        <attribute name="embedding" optional="YES" attributeType="Transformable" valueTransformerName="" customClassName="[Float]"/>
+        <attribute name="embedding" optional="YES" attributeType="Transformable" valueTransformerName="" customClassName="[Double]"/>
         <attribute name="favorited" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="keywords" optional="YES" attributeType="Transformable" customClassName="[String]"/>
-        <attribute name="keywordsEmbeddings" optional="YES" attributeType="Transformable" customClassName="[[Float]]"/>
+        <attribute name="keywordsEmbeddings" optional="YES" attributeType="Transformable" customClassName="[[Double]]"/>
         <attribute name="locked" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="timestamp" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
