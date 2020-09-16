@@ -14,8 +14,6 @@ import Alamofire
 
 class addItemViewController: UIViewController, UITextViewDelegate {
     
-    let isAuthorized = UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
-    
     // Reference to NSPersistent Container context
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -84,41 +82,41 @@ class addItemViewController: UIViewController, UITextViewDelegate {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
+        
+        let newItem = Item(context: self.context)
+        newItem.id = UUID()
+        newItem.content = entryText
+        newItem.timestamp = Date().current
+        
+        DispatchQueue.main.async {
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "itemsChanged"),
+            object: nil)
+        }
+        
         let itemCreation = DispatchGroup()
         DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
             
-            var embedding: [Double] = []
-            var keywords: [String] = []
-            var keywordsEmbeddings: [[Double]] = []
-            
-            if self.isAuthorized == false {
-                CloudManager().processItemContent(content: entryText) { (response, success) in
+            if Cloud.isUserAuthorized == false {
+                Cloud.processItemContent(content: entryText) { (responseData, success) in
                     if (success) {
-                        print("Item data processed.")
-                        embedding = response!["embedding"] as! [Double]
-                        keywords = response!["keywords"] as! [String]
-                        keywordsEmbeddings = response!["keywordsEmbeddings"] as! [[Double]]
-                        let newEntry = Item(context: self.context)
-                        newEntry.id = UUID()
-                        newEntry.content = entryText
-                        newEntry.timestamp = Date().current
-                        newEntry.keywords = keywords
-                        newEntry.keywordsEmbeddings = keywordsEmbeddings
-                        newEntry.embedding = embedding
+                        print("Server processed item data successfully.")
+                        
+                        newItem.keywords = responseData?.keywords
+                        newItem.keywordsEmbeddings = responseData?.keywordsEmbedding
+                        newItem.embedding = responseData?.embedding
 
                         DispatchQueue.main.async {
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
-                        itemCreation.notify(queue: .main) {
-                            NotificationCenter.default.post(name:
-                            NSNotification.Name(rawValue: "itemsChanged"),
-                            object: nil)
-                        }
                     } else {
-                        print("Error processing item data")
+                        print("Error occurred while processing item data")
+                        
                     }
                 }
             } else {
+                
                 // for authorized requests <<<<<<<<<
             }
             

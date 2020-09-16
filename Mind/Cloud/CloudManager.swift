@@ -9,28 +9,45 @@
 import Foundation
 import Alamofire
 
-class CloudManager {
+let sessionManager = Session()
+let requestRetrier = NetworkRequestRetrier()
 
-    func processItemContent(content: String, completion: @escaping ([String: Any]?, Bool) -> Void) {
+class Cloud {
+    
+    class var isUserAuthorized: Bool {
+        return UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
+    }
+    
+    // for authorized request
+    static let token = UserDefaults.standard.object(forKey: "privateKey") as! [UInt8]
+    static let headers = ["Authorization": "Bearer \(token)"]
+    
+    static func processItemContent(content: String, completion: @escaping (ItemData?, Bool) -> Void) {
+        
         let parameters: [String: Any] = [
             "content": content,
         ]
-
-        AF.request("http://3.130.38.239:8080/api/data", method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: nil).responseJSON {
+        
+        let request = AF.request("http://3.130.38.239:8080/api/data", method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: nil)
+        
+        request.responseJSON {
             response in
             switch response.result {
-                case .success:
-                    let itemData = response.value as! [String: Any]
+            case .success:
+                guard let data = response.data else { return }
+                do {
+                    let itemData = try JSONDecoder().decode(ItemData.self, from: data)
                     completion(itemData, true)
-                    break
-                case .failure(let error):
-                    print(error)
-                    completion([:], false)
+                } catch {
+                    completion(nil, false)
+                }
+            case .failure:
+                print("❗️ERROR")
             }
         }
     }
     
-    func createAccout(email: String, password: String, publicKey: String, encryptedPrivateKey: String, iv: String) {
+    static func createAccout(email: String, password: String, publicKey: String, encryptedPrivateKey: String, iv: String) {
         let parameters: [String: Any] = [
             "email": email,
             "password": password,
@@ -63,7 +80,7 @@ class CloudManager {
         }
     )}
     
-    func getAuthorizationToken(email: String, password: String, completion: @escaping (String, Bool) -> Void) {
+    static func getAuthorizationToken(email: String, password: String, completion: @escaping (String, Bool) -> Void) {
         var token: String = ""
         let parameters: [String: Any] = [
             "email": email,

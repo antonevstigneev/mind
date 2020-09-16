@@ -9,10 +9,9 @@
 import UIKit
 import CoreData
 import Foundation
-import NaturalLanguage
+import Alamofire
 
 class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
-    
     
     // MARK: - Data
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -113,12 +112,12 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    func updateItemData() {
-        let entryText = getSelectedItemText()
-        
-        let itemEditing = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
-
+//    func updateItemData() {
+//        let entryText = getSelectedItemText()
+//
+//        let itemEditing = DispatchGroup()
+//        DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
+//
 //            let keywords = getKeywords(from: entryText, count: 10)
 //            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
 //            let itemEmbedding = bert.getTextEmbedding(text: entryText)
@@ -127,18 +126,64 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            self.selectedItem.keywords = keywords
 //            self.selectedItem.keywordsEmbeddings = keywordsEmbeddings
 //            self.selectedItem.embedding = itemEmbedding
+//
+//            DispatchQueue.main.async {
+////                self.tableView.reloadData()
+//                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+//            }
+//        }
+//        itemEditing.notify(queue: .main) {
+//            NotificationCenter.default.post(name:
+//            NSNotification.Name(rawValue: "itemsChanged"),
+//            object: nil)
+//        }
+//    }
+    
+    func updateItemData() {
+        let entryText = getSelectedItemText()
         
-            DispatchQueue.main.async {
-//                self.tableView.reloadData()
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            }
-        }
-        itemEditing.notify(queue: .main) {
+        DispatchQueue.main.async {
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
             NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "itemsChanged"),
             object: nil)
         }
+        
+        let itemCreation = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
+            
+            if Cloud.isUserAuthorized == false {
+                Cloud.processItemContent(content: entryText) { (responseData, success) in
+                    if (success) {
+                        print("Server processed item data successfully.")
+                        
+                        self.selectedItem.content = entryText
+                        self.selectedItem.keywords = responseData?.keywords
+                        self.selectedItem.keywordsEmbeddings = responseData?.keywordsEmbedding
+                        self.selectedItem.embedding = responseData?.embedding
+
+                        DispatchQueue.main.async {
+                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                        }
+                    } else {
+                        print("Error occurred while processing item data")
+                        
+                    }
+                }
+            } else {
+                
+                // for authorized requests <<<<<<<<<
+            }
+        }
+        
+        itemCreation.notify(queue: .main) {
+            NotificationCenter.default.post(name:
+                NSNotification.Name(rawValue: "itemsLoaded"),
+                                            object: nil)
+        }
     }
+    
+    
     
     func getSelectedItemText() -> String {
         let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! ItemCell
@@ -589,13 +634,17 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    
     @objc func showSimilarItems() {
         if selectedItem.locked || selectedItem.archived {
             similarItems = []
         } else {
-            similarItems = getSimilarItems(item: self.selectedItem, length: 10)
+            if selectedItem.embedding != nil {
+                similarItems = getSimilarItems(item: self.selectedItem, length: 10)
+            }
         }
         if similarItems == [] {
+            self.showSpinner()
             tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         } else {
             tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
@@ -611,11 +660,13 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
 
         var similarItems: [(item: Item, score: Double)] = []
         let selectedItemEmbedding = self.selectedItem.embedding!
-
+        
         for item in self.items {
-            if selectedItemEmbedding != item.embedding! {
-                let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
-                similarItems.append((item: item, score: distance))
+            if item.embedding != nil {
+                if selectedItemEmbedding != item.embedding! {
+                    let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
+                    similarItems.append((item: item, score: distance))
+                }
             }
         }
         
@@ -623,6 +674,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         return similarItems.map({ $0.item }).slice(length: length)
     }
+    
     
     func convertTimestamp(timestamp: Double) -> String {
         let x = timestamp / 1000
@@ -633,6 +685,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         return formatter.string(from: date as Date)
     }
     
+    
     // Handle keyboard appearence
     @objc private func handle(keyboardShowNotification notification: Notification) {
         if let userInfo = notification.userInfo,
@@ -640,6 +693,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
             doneButtonBC.constant = keyboardFrame.height + 18
         }
     }
+    
 
     @objc private func handle(keyboardHideNotification notification: Notification) {
         if let userInfo = notification.userInfo,

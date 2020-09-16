@@ -12,6 +12,7 @@ import CoreML
 import Foundation
 import NaturalLanguage
 import LocalAuthentication
+import Alamofire
 
 class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
     
@@ -122,7 +123,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         searchController.delegate = self
         searchController.searchBar.delegate = self
         searchController.searchBar.sizeToFit()
-        searchController.searchBar.setImage(UIImage(systemName: "xmark"), for: .clear, state: .normal)
+        searchController.searchBar.setImage(SFSymbols.close, for: .clear, state: .normal)
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
         searchController.searchBar.showsCancelButton = false
         
@@ -169,9 +170,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         reloadSearch()
-        for item in items {
-            print(item.embedding)
-            print(item.keywords)
+        
+        if Connectivity.isConnectedToInternet {
+            print("✅ Internet is available.")
+        } else {
+            print("⚠️ Internet is not available")
         }
     }
 
@@ -197,17 +200,17 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         if item.favorited == true {
             favoriteLabel = "Unfavorite"
-            favoriteImage = UIImage(systemName: "star.slash")
+            favoriteImage = SFSymbols.unfavorite
         } else {
             favoriteLabel = "Favorite"
-            favoriteImage = UIImage(systemName: "star")
+            favoriteImage = SFSymbols.favorive
         }
         if item.locked == true {
             lockedLabel = "Unlock"
-            lockedImage = UIImage(systemName: "lock.slash")
+            lockedImage = SFSymbols.unlocked
         } else {
             lockedLabel = "Lock"
-            lockedImage = UIImage(systemName: "lock")
+            lockedImage = SFSymbols.locked
         }
         if item.archived == true {
             archivedLabel = "Unarchive"
@@ -221,10 +224,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
             self.lockItem(self.item, indexPath)
         }
-        let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
+        let archive = UIAction(title: archivedLabel, image: SFSymbols.archive) { _ in
             self.archiveItem(self.item, indexPath)
         }
-        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+        let delete = UIAction(title: "Delete", image: SFSymbols.trash, attributes: .destructive) { _ in
             self.deleteItem(self.item, indexPath)
         }
         
@@ -310,11 +313,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
         
         let item = items[indexPath.row]
-        let content = item.value(forKey: "content") as! String
+        let content = item.content!
         
         cell.itemContentText.delegate = self
         
-        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+        cell.itemContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+//        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0) // ! Thread 1: Fatal error: Unexpectedly found nil while unwrapping an Optional value
         cell.itemContentText.textColor = UIColor(named: "text")
         
         if item.favorited {
@@ -730,7 +734,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 }
             }
             if title == selectedFilter {
-                actionAlert.setValue(UIImage(systemName: "checkmark"), forKey: "image")
+                actionAlert.setValue(SFSymbols.checkmark, forKey: "image")
             }
             controller.addAction(actionAlert)
         }
@@ -753,7 +757,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 //                self.performSegue(withIdentifier: "", sender: (Any).self)
             }
             aboutAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            aboutAction.setValue(UIImage(systemName: "info.circle"), forKey: "image")
+            aboutAction.setValue(SFSymbols.info, forKey: "image")
             
             let supportAction: UIAlertAction = UIAlertAction(title: "Support", style: .default)
             { _ in
@@ -761,14 +765,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 UIApplication.shared.open(mailURL, options: [:], completionHandler: nil)
             }
             supportAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            supportAction.setValue(UIImage(systemName: "text.bubble"), forKey: "image")
+            supportAction.setValue(SFSymbols.text, forKey: "image")
             
             let mindCloudAction: UIAlertAction = UIAlertAction(title: "Mind Cloud", style: .default)
             { _ in
                 self.performSegue(withIdentifier: "toCloudViewController", sender: (Any).self)
             }
             mindCloudAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            mindCloudAction.setValue(UIImage(systemName: "cloud"), forKey: "image")
+            mindCloudAction.setValue(SFSymbols.cloud, forKey: "image")
             
             alertController.addAction(cancelAction)
             alertController.addAction(mindCloudAction)

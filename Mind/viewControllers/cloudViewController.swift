@@ -56,7 +56,7 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
                 UserDefaults.standard.set(UInt8PrivateKey, forKey: "privateKey") // save privateKey on device
                 print(UserDefaults.standard.object(forKey: "privateKey") as! [UInt8])
                 let encryptedPrivateKey = encryptPrivateKey(email: email, password: password, privateKey: UInt8PrivateKey)
-                CloudManager().createAccout(email: email, password: password, publicKey: UInt8PublicKey.data.hexa, encryptedPrivateKey: encryptedPrivateKey!.encryptedPrivateKey.data.hexa, iv: encryptedPrivateKey!.iv.data.hexa)
+                Cloud.createAccout(email: email, password: password, publicKey: UInt8PublicKey.data.hexa, encryptedPrivateKey: encryptedPrivateKey!.encryptedPrivateKey.data.hexa, iv: encryptedPrivateKey!.iv.data.hexa)
                 
             } catch {
                 print("Error")
@@ -64,7 +64,7 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
         } else {
             self.showSpinner()
             print("Authorizing...")
-            CloudManager().getAuthorizationToken(email: email, password: password) { (token, success) in
+            Cloud.getAuthorizationToken(email: email, password: password) { (token, success) in
                 if (success) {
                     self.removeSpinner()
                     self.setupAuthorizedView()
@@ -79,7 +79,7 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if isAuthorized == false {
+        if Cloud.isUserAuthorized == false {
             setupAuthorizationView()
         } else {
             setupAuthorizedView()
