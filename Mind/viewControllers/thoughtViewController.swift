@@ -1,5 +1,5 @@
 //
-//  itemViewController.swift
+//  thoughtVC.swift
 //  Mind
 //
 //  Created by Anton Evstigneev on 31.08.2020.
@@ -11,7 +11,7 @@ import CoreData
 import Foundation
 import Alamofire
 
-class itemViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
+class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
     // MARK: - Data
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -19,18 +19,17 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     // MARK: - Variables
-    var items: [Item] = []
-    var similarItems: [Item] = []
-    var selectedItem: Item!
+    var thoughts: [Thought] = []
+    var similarThoughts: [Thought] = []
+    var selectedThought: Thought!
     var favoriteButton: UIBarButtonItem!
     var lockButton: UIBarButtonItem!
     var archiveButton: UIBarButtonItem!
     var moreButton: UIBarButtonItem!
     var deleteButton: UIBarButtonItem!
     let iconConfig = UIImage.SymbolConfiguration(weight: .medium)
-    var isItemChanged: Bool = false
     var selectedKeyword: String = ""
-    var selectedItemText: String = ""
+    var selectedThoughtText: String = ""
     let expandingIndexRow = 0
     
     
@@ -53,9 +52,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         plusButton.animateButtonUp()
     }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
-        self.isItemChanged = true
         closeEditMode()
-        updateItemData()
+        updateThoughtData()
     }
     @IBAction func editButtonTouchDown(_ sender: UIButton) {
         doneButton.animateButtonDown()
@@ -71,8 +69,10 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         setupNotifications()
         setupViews()
         fetchData()
-        showSimilarItems()
+        showSimilarThoughts()
+        print(selectedThought.content!)
     }
+    
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
@@ -88,7 +88,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func setupViews() {
-        showItemActionButtons()
+        showThoughtActionButtons()
         
         // tableView initial setup
         tableView.delegate = self
@@ -112,88 +112,78 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-//    func updateItemData() {
-//        let entryText = getSelectedItemText()
-//
-//        let itemEditing = DispatchGroup()
-//        DispatchQueue.global(qos: .userInitiated).async(group: itemEditing) {
-//
-//            let keywords = getKeywords(from: entryText, count: 10)
-//            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
-//            let itemEmbedding = bert.getTextEmbedding(text: entryText)
-//
-//            self.selectedItem.content = entryText
-//            self.selectedItem.keywords = keywords
-//            self.selectedItem.keywordsEmbeddings = keywordsEmbeddings
-//            self.selectedItem.embedding = itemEmbedding
-//
-//            DispatchQueue.main.async {
-////                self.tableView.reloadData()
-//                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-//            }
-//        }
-//        itemEditing.notify(queue: .main) {
-//            NotificationCenter.default.post(name:
-//            NSNotification.Name(rawValue: "itemsChanged"),
-//            object: nil)
-//        }
-//    }
-    
-    func updateItemData() {
-        let entryText = getSelectedItemText()
+    func updateThoughtData() {
+        let entryText = getselectedThoughtText()
         
         DispatchQueue.main.async {
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"),
+            NSNotification.Name(rawValue: "thoughtsChanged"),
             object: nil)
         }
         
-        let itemCreation = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
+        let thoughtUpdate = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: thoughtUpdate) {
             
-            if Cloud.isUserAuthorized == false {
-                Cloud.processItemContent(content: entryText) { (responseData, success) in
+            if MindCloud.isUserAuthorized == false {
+                MindCloud.processThought(content: entryText) { (responseData, success) in
+                    
                     if (success) {
-                        print("Server processed item data successfully.")
+                        print("Server processed thought data successfully.")
                         
-                        self.selectedItem.content = entryText
-                        self.selectedItem.keywords = responseData?.keywords
-                        self.selectedItem.keywordsEmbeddings = responseData?.keywordsEmbedding
-                        self.selectedItem.embedding = responseData?.embedding
+                        self.selectedThought.content = entryText
+                        self.selectedThought.keywords = responseData?.keywords
+                        self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                        self.selectedThought.embedding = responseData?.embedding
 
                         DispatchQueue.main.async {
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing item data")
+                        print("Error occurred while processing thought data")
                         
                     }
                 }
             } else {
-                
-                // for authorized requests <<<<<<<<<
+                MindCloud.updateThought(id: self.selectedThought.id!, upd: ["content": entryText]) { (responseData, success) in
+//
+                    if (success) {
+                        print("✅ 🔐 Authorized patch thought successfully.")
+                        
+                        self.selectedThought.keywords = responseData?.keywords
+                        self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                        self.selectedThought.embedding = responseData?.embedding
+//                        self.selectedThought.timestamp = responseData?.timestamp! as! Int64
+                        self.selectedThought.id = responseData?.id
+
+                        DispatchQueue.main.async {
+                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                        }
+                    } else {
+                        print("Error occurred while processing thought data")
+                    }
+                }
             }
         }
         
-        itemCreation.notify(queue: .main) {
+        thoughtUpdate.notify(queue: .main) {
             NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "itemsLoaded"),
+                NSNotification.Name(rawValue: "thoughtsLoaded"),
                                             object: nil)
         }
     }
     
     
     
-    func getSelectedItemText() -> String {
-        let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! ItemCell
-        let cellText = cell.itemContentTextView.text!.trimmingCharacters(in: .whitespacesAndNewlines)
+    func getselectedThoughtText() -> String {
+        let cell = self.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! ThoughtTableViewCell
+        let cellText = cell.thoughtContentTextView.text!.trimmingCharacters(in: .whitespacesAndNewlines)
         
         return cellText
     }
 
     
-    func showItemActionButtons() {
+    func showThoughtActionButtons() {
         favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(favoriteAction(_:)))
         lockButton = UIBarButtonItem(image: UIImage(systemName: "lock", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(lockAction(_:)))
         archiveButton = UIBarButtonItem(image: UIImage(systemName: "archivebox", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(archiveAction(_:)))
@@ -201,11 +191,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
         deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(deleteAction(_:)))
         deleteButton.tintColor = UIColor.systemRed
         
-        favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
-        lockButton.applyButtonIconStyle("lock", self.selectedItem.locked)
-        archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
+        favoriteButton.applyButtonIconStyle("star", self.selectedThought.favorited)
+        lockButton.applyButtonIconStyle("lock", self.selectedThought.locked)
+        archiveButton.applyButtonIconStyle("archivebox", self.selectedThought.archived)
         
-        if selectedItem.archived {
+        if selectedThought.archived {
             navigationItem.setRightBarButtonItems([deleteButton, archiveButton, lockButton, favoriteButton],
             animated: true)
         } else {
@@ -215,7 +205,7 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    func showItemCloseButton() {
+    func showThoughtCloseButton() {
         let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark", withConfiguration: iconConfig), style: .plain, target: self, action: #selector(closeEditMode))
         navigationItem.setRightBarButtonItems([closeButton],
         animated: true)
@@ -229,152 +219,92 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
 //    }
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
-        let item = self.similarItems[indexPath.row]
+        let thought = self.similarThoughts[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
         var lockedImage: UIImage!
         var lockedLabel: String!
         var archivedLabel: String!
         
-        if item.favorited == true {
+        if thought.favorited == true {
             favoriteLabel = "Unfavorite"
             favoriteImage = UIImage(systemName: "star.slash")
         } else {
             favoriteLabel = "Favorite"
             favoriteImage = UIImage(systemName: "star")
         }
-        if item.locked == true {
+        if thought.locked == true {
             lockedLabel = "Unlock"
             lockedImage = UIImage(systemName: "lock.slash")
         } else {
             lockedLabel = "Lock"
             lockedImage = UIImage(systemName: "lock")
         }
-        if item.archived == true {
+        if thought.archived == true {
             archivedLabel = "Unarchive"
         } else {
             archivedLabel = "Archive"
         }
 
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
-            self.favoriteItem(item, indexPath)
+            self.favoriteThought(thought, indexPath)
         }
         let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
-            self.lockItem(item, indexPath)
+            self.lockThought(thought, indexPath)
         }
         let archive = UIAction(title: archivedLabel, image: UIImage(systemName: "archivebox")) { _ in
-            self.archiveItem(item, indexPath)
+            self.archiveThought(thought, indexPath)
         }
         
         return UIMenu(title: "", children: [favorite, lock, archive])
     }
     
     
-    func favoriteItem(_ item: Item, _ indexPath: IndexPath) {
-        if item.favorited == true {
-            item.favorited = false
-        } else {
-            item.favorited = true
-        }
-        self.tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.fade)
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+    func favoriteThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.favorited)
+        self.tableView.reloadRows(at: [indexPath], with: .none)
     }
     
     
-    func lockItem(_ item: Item, _ indexPath: IndexPath) {
-        if item.locked == false {
-            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
-            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-                item.locked = true
-                self.similarItems.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .fade)
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            }) { () -> Void in
-                print("Cancelled")
-            }
-        } else {
-            item.locked = false
-            self.similarItems.remove(at: indexPath.row)
-            self.tableView.deleteRows(at: [indexPath], with: .fade)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }
+    func lockThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.locked)
+        self.thoughts.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .fade)
     }
     
     
-    func archiveItem(_ item: Item, _ indexPath: IndexPath) {
-        let actionMessage = "This will be archived but can be found in the Archived folder"
-        postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-            item.archived = true
-            self.similarItems.remove(at: indexPath.row)
-            self.tableView.deleteRows(at: [indexPath], with: .fade)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }) { () -> Void in
-            print("Cancelled")
-        }
+    func archiveThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.archived)
+        self.thoughts.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .fade)
     }
     
     
     
-    // MARK: - Selected Item Actions
+    // MARK: - Selected Thought Actions
     @objc func favoriteAction(_ sender: UIBarButtonItem) {
-        if selectedItem.favorited == true {
-            selectedItem.favorited = false
-        } else {
-            selectedItem.favorited = true
-        }
-        favoriteButton.applyButtonIconStyle("star", self.selectedItem.favorited)
-        NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        selectedThought.toggleState(.favorited)
+        favoriteButton.applyButtonIconStyle("star", self.selectedThought.favorited)
     }
 
     
     @objc func lockAction(_ sender: UIBarButtonItem) {
-        if selectedItem.locked {
-            self.selectedItem.locked = false
-        } else {
-            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
-            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-                self.selectedItem.locked = true
-                self.navigationController?.popViewController(animated: true)
-            }) { () -> Void in
-                print("Cancelled")
-            }
-        }
-        lockButton.applyButtonIconStyle("lock", self.selectedItem.locked)
-        NotificationCenter.default.post(name:
-        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        selectedThought.toggleState(.locked)
+        lockButton.applyButtonIconStyle("lock", self.selectedThought.locked)
     }
 
     
     @objc func archiveAction(_ sender: UIBarButtonItem) {
-        if selectedItem.archived {
-            self.selectedItem.archived = false
-        } else {
-            let actionMessage = "This will be archived but can be found in the Archived folder"
-            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-                self.selectedItem.archived = true
-                self.navigationController?.popViewController(animated: true)
-            }) { () -> Void in
-                print("Cancelled")
-            }
-        }
-        archiveButton.applyButtonIconStyle("archivebox", self.selectedItem.archived)
-        NotificationCenter.default.post(name:
-        NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        selectedThought.toggleState(.archived)
+        archiveButton.applyButtonIconStyle("archivebox", self.selectedThought.archived)
     }
     
 
     @objc func deleteAction(_ sender: UIBarButtonItem) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
-            self.context.delete(self.selectedItem)
+            self.selectedThought.delete()
             self.navigationController?.popViewController(animated: true)
-            NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
         }) { () -> Void in
             print("Cancelled")
         }
@@ -389,48 +319,50 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - TableView
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return similarItems.count
+        return similarThoughts.count
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if indexPath.row == expandingIndexRow {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ThoughtCell", for: indexPath) as! ThoughtTableViewCell
             
-            cell.itemContentTextView.addHyperLinksToText(originalText: selectedItem.content!, hyperLinks: selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-            cell.itemContentTextView.textColor = UIColor(named: "title")
+            cell.thoughtContentTextView.clearTextStyles(originalText: selectedThought.content!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+//            cell.thoughtContentTextView.addHyperLinksToText(originalText: selectedThought.content!, hyperLinks: selectedThought.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+            cell.thoughtContentTextView.textColor = UIColor(named: "title")
             
-            cell.itemContentTextView.isEditable = true
-            cell.itemContentTextView.isSelectable = true
-            cell.itemContentTextView.isScrollEnabled = false
-            cell.itemContentTextView.translatesAutoresizingMaskIntoConstraints = true
-            cell.itemContentTextView.sizeToFit()
-            cell.itemContentTextView.delegate = self
+            cell.thoughtContentTextView.isEditable = true
+            cell.thoughtContentTextView.isSelectable = true
+            cell.thoughtContentTextView.isScrollEnabled = false
+            cell.thoughtContentTextView.translatesAutoresizingMaskIntoConstraints = true
+            cell.thoughtContentTextView.sizeToFit()
+            cell.thoughtContentTextView.delegate = self
             
             return cell
             
         } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ThoughtsCell", for: indexPath) as! ThoughtsTableViewCell
                     
-            let item = similarItems[indexPath.row]
-            let content = item.content!
+            let thought = similarThoughts[indexPath.row]
+            let content = thought.content!
             
-            cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-            cell.itemContentText.textColor = UIColor(named: "text")
+            cell.thoughtContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+//            cell.thoughtContentText.addHyperLinksToText(originalText: content, hyperLinks: thought.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+            cell.thoughtContentText.textColor = UIColor(named: "text")
             
-            if item.favorited {
+            if thought.favorited {
                 cell.favoritedButton.isHidden = false
-                cell.itemContentTextRC.constant = 35
+                cell.thoughtContentTextRC.constant = 35
                 
             } else {
                 cell.favoritedButton.isHidden = true
-                cell.itemContentTextRC.constant = 16
+                cell.thoughtContentTextRC.constant = 16
             }
             
             let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
             tap.delegate = self
-            cell.itemContentText.addGestureRecognizer(tap)
+            cell.thoughtContentText.addGestureRecognizer(tap)
 
             return cell
         }
@@ -440,8 +372,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row != 0 {
             tableView.deselectRow(at: indexPath, animated: true)
-            selectedItem = self.similarItems[indexPath.row]
-            self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
+            selectedThought = self.similarThoughts[indexPath.row]
+            self.performSegue(withIdentifier: "toThoughtVC", sender: (Any).self)
         }
     }
     
@@ -457,9 +389,9 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
 //    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
 //        let indexPath = IndexPath(row: expandingIndexRow, section: 0)
 //        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
-//        let itemTextView = cell.itemContentTextView!
+//        let thoughtTextView = cell.thoughtContentTextView!
 //
-//        let newText = (itemTextView.text as NSString).replacingCharacters(in: range, with: text)
+//        let newText = (thoughtTextView.text as NSString).replacingCharacters(in: range, with: text)
 //        let numberOfChars = newText.count
 //        if numberOfChars > 1499 {
 //            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
@@ -476,11 +408,11 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     func textViewDidChange(_ textView: UITextView) {
   
         let indexPath = IndexPath(row: expandingIndexRow, section: 0)
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ThoughtCell", for: indexPath) as! ThoughtTableViewCell
         
-        let itemTextView = cell.itemContentTextView!
+        let thoughtTextView = cell.thoughtContentTextView!
         
-        if isTextInputNotEmpty(textView: itemTextView) {
+        if isTextInputNotEmpty(textView: thoughtTextView) {
             doneButton.show()
         } else {
             doneButton.hide()
@@ -514,8 +446,8 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func textViewDidBeginEditing(_ textView: UITextView) {
-        showItemCloseButton()
-        setEditItemTextStyle(textView)
+        showThoughtCloseButton()
+        setEditThoughtTextStyle(textView)
     }
     
     
@@ -543,17 +475,17 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     func performKeywordSearch() {
-        guard let destinationVC = self.navigationController?.viewControllers[0] as? itemsViewController else {
+        guard let destinationVC = self.navigationController?.viewControllers[0] as? thoughtsViewController else {
             fatalError("Second VC in navigation stack is not an itemsViewController")
         }
         destinationVC.selectedKeyword = self.selectedKeyword
         
         if let navController = self.navigationController {
             for controller in navController.viewControllers {
-                if controller is itemsViewController {
+                if controller is thoughtsViewController {
                     navController.popToViewController(controller, animated: true)
                     NotificationCenter.default.post(name:
-                    NSNotification.Name(rawValue: "itemKeywordClicked"),
+                    NSNotification.Name(rawValue: "thoughtKeywordClicked"),
                                                     object: nil)
                     break
                 }
@@ -564,25 +496,22 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     @objc func closeEditMode() {
         self.view.endEditing(true)
-//        if isItemChanged == false {
-//            tableView.reloadData()
-//        }
         doneButton.hide()
         plusButton.show()
-        showItemActionButtons()
+        showThoughtActionButtons()
     }
     
     
-    func setDefaultItemTextStyle(_ textView: UITextView) {
-//        textView.text = self.selectedItem.content!
-        textView.addHyperLinksToText(originalText: textView.text!, hyperLinks: self.selectedItem.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+    func setDefaultThoughtTextStyle(_ textView: UITextView) {
+//        textView.text = self.selectedThought.content!
+        textView.addHyperLinksToText(originalText: textView.text!, hyperLinks: self.selectedThought.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
         highlightHyperlinks(textView)
     }
     
     
-    func setEditItemTextStyle(_ textView: UITextView) {
-//        textView.text = self.selectedItem.content!
+    func setEditThoughtTextStyle(_ textView: UITextView) {
+//        textView.text = self.selectedThought.content!
         textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
         textView.textColor = UIColor(named: "title")
         unhighlightHyperlinks(textView)
@@ -611,21 +540,21 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destinationVC = segue.destination as? itemViewController {
-            destinationVC.selectedItem = self.selectedItem
-            destinationVC.items = self.items
+        if let destinationVC = segue.destination as? thoughtViewController {
+            destinationVC.selectedThought = self.selectedThought
+            destinationVC.thoughts = self.thoughts
         }
     }
         
     
-    // MARK: - Fetch items data
+    // MARK: - Fetch thoughts data
     @objc func fetchData() {
-        let request: NSFetchRequest = Item.fetchRequest()
+        let request: NSFetchRequest = Thought.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         do {
-            items = try context.fetch(request)
-            items = items.filter {
+            thoughts = try context.fetch(request)
+            thoughts = thoughts.filter {
                 $0.locked == false &&
                 $0.archived == false
             }
@@ -635,15 +564,15 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    @objc func showSimilarItems() {
-        if selectedItem.locked || selectedItem.archived {
-            similarItems = []
+    @objc func showSimilarThoughts() {
+        if selectedThought.locked || selectedThought.archived {
+            similarThoughts = []
         } else {
-            if selectedItem.embedding != nil {
-                similarItems = getSimilarItems(item: self.selectedItem, length: 10)
+            if selectedThought.embedding != nil {
+                similarThoughts = getSimilarThoughts(thought: self.selectedThought, length: 10)
             }
         }
-        if similarItems == [] {
+        if similarThoughts == [] {
             self.showSpinner()
             tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         } else {
@@ -655,24 +584,24 @@ class itemViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     
-    // MARK: - Get similar items
-    func getSimilarItems(item: Item, length: Int) -> [Item] {
+    // MARK: - Get similar thoughts
+    func getSimilarThoughts(thought: Thought, length: Int) -> [Thought] {
 
-        var similarItems: [(item: Item, score: Double)] = []
-        let selectedItemEmbedding = self.selectedItem.embedding!
+        var similarThoughts: [(thought: Thought, score: Double)] = []
+        let selectedThoughtEmbedding = self.selectedThought.embedding!
         
-        for item in self.items {
-            if item.embedding != nil {
-                if selectedItemEmbedding != item.embedding! {
-                    let distance = Distance.cosine(A: selectedItemEmbedding, B: item.embedding!)
-                    similarItems.append((item: item, score: distance))
+        for thought in self.thoughts {
+            if thought.embedding != nil {
+                if selectedThoughtEmbedding != thought.embedding! {
+                    let distance = Distance.cosine(A: selectedThoughtEmbedding, B: thought.embedding!)
+                    similarThoughts.append((thought: thought, score: distance))
                 }
             }
         }
         
-        similarItems = similarItems.sorted { $0.score > $1.score }
+        similarThoughts = similarThoughts.sorted { $0.score > $1.score }
         
-        return similarItems.map({ $0.item }).slice(length: length)
+        return similarThoughts.map({ $0.thought }).slice(length: length)
     }
     
     

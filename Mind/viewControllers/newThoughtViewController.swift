@@ -1,5 +1,5 @@
 //
-//  addItemViewController.swift
+//  newThoughtVC.swift
 //  Mind
 //
 //  Created by Anton Evstigneev on 24.04.2020.
@@ -12,7 +12,7 @@ import NaturalLanguage
 import Alamofire
 
 
-class addItemViewController: UIViewController, UITextViewDelegate {
+class newThoughtViewController: UIViewController, UITextViewDelegate {
     
     // Reference to NSPersistent Container context
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -27,7 +27,7 @@ class addItemViewController: UIViewController, UITextViewDelegate {
     
     // Actions
     @IBAction func sendButtonTouchDownInside(_ sender: Any) {
-        saveNewItem()
+        saveNewThought()
         emptyDraftData()
     }
     @IBAction func sendButtonTouchDown(_ sender: UIButton) {
@@ -70,59 +70,70 @@ class addItemViewController: UIViewController, UITextViewDelegate {
     
     // This function is called before the segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let itemsViewController = segue.destination as! itemsViewController
+        let destinationVC = segue.destination as! thoughtsViewController
         let indexPath = IndexPath(row: 0, section: 0)
-        if itemsViewController.items.isEmpty == false {
-            itemsViewController.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+        if destinationVC.thoughts.isEmpty == false {
+            destinationVC.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
         }
     }
     
     
-    @objc func saveNewItem() {
+    @objc func saveNewThought() {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
         
-        let newItem = Item(context: self.context)
-        newItem.id = UUID()
-        newItem.content = entryText
-        newItem.timestamp = Date().current
+        let newThought = Thought(context: self.context)
+        newThought.content = entryText
+        let timestamp = Date().current()
         
         DispatchQueue.main.async {
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
             NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"),
+            NSNotification.Name(rawValue: "thoughtsChanged"),
             object: nil)
         }
         
-        let itemCreation = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: itemCreation) {
+        let thoughtCreation = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: thoughtCreation) {
             
-            if Cloud.isUserAuthorized == false {
-                Cloud.processItemContent(content: entryText) { (responseData, success) in
+            if MindCloud.isUserAuthorized == false {
+                MindCloud.processThought(content: entryText) { (responseData, success) in
                     if (success) {
-                        print("Server processed item data successfully.")
+                        print("Server processed thought data successfully.")
                         
-                        newItem.keywords = responseData?.keywords
-                        newItem.keywordsEmbeddings = responseData?.keywordsEmbedding
-                        newItem.embedding = responseData?.embedding
+                        newThought.keywords = responseData?.keywords
+                        newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                        newThought.embedding = responseData?.embedding
+                        newThought.timestamp = Date().current()
 
                         DispatchQueue.main.async {
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing item data")
-                        
+                        print("Error occurred while processing thought data")
                     }
                 }
             } else {
-                
-                // for authorized requests <<<<<<<<<
+                MindCloud.postThought(content: entryText, timestamp: timestamp) { (responseData, success) in
+                    if (success) {
+                        print("✅ 🔐 Authorized post thought successfully.")
+                        
+                        newThought.keywords = responseData?.keywords
+                        newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                        newThought.embedding = responseData?.embedding
+                        newThought.timestamp = timestamp
+                        newThought.id = responseData?.id
+                        print(responseData)
+                        DispatchQueue.main.async {
+                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                        }
+                    } else {
+                        print("Error occurred while processing thought data")
+                    }
+                }
             }
-            
-            
         }
-        
     }
     
     

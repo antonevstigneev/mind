@@ -1,5 +1,5 @@
 //
-//  ItemCell.swift
+//  ThoughtCell.swift
 //  Mind
 //
 //  Created by Anton Evstigneev on 11.09.2020.
@@ -9,9 +9,9 @@
 import UIKit
 
 
-class ItemCell: UITableViewCell {
+class ThoughtTableViewCell: UITableViewCell {
     
-    @IBOutlet weak var itemContentTextView: UITextView!
+    @IBOutlet weak var thoughtContentTextView: UITextView!
 }
 
 

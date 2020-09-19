@@ -8,14 +8,18 @@
 
 import Foundation
 
-struct ItemData: Decodable {
+struct ThoughtData: Decodable {
     var embedding: [Double]?
     var keywords: [String]?
-    var keywordsEmbedding: [[Double]]?
+    var keywordsEmbeddings: [[Double]]?
+    var timestamp: Int64?
+    var id: String?
     
     enum CodingKeys: String, CodingKey {
         case embedding = "embedding"
         case keywords = "keywords"
-        case keywordsEmbedding = "keywordsEmbedding"
+        case keywordsEmbeddings = "keywordsEmbeddings"
+        case timestamp = "timestamp"
+        case id = "_id"
     }
 }

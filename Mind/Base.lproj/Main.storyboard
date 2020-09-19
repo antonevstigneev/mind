@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ih5-gq-aI2">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Ih5-gq-aI2">
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Items View Controller-->
+        <!--Thoughts View Controller-->
         <scene sceneID="fvA-3S-4DC">
             <objects>
-                <viewController storyboardIdentifier="Main" modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="SGi-zd-M47" customClass="itemsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Main" modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="SGi-zd-M47" customClass="thoughtsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" autoresizesSubviews="NO" contentMode="scaleToFill" id="Xvu-An-mu8">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -73,14 +75,14 @@
                                 <gestureRecognizers/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" translatesAutoresizingMaskIntoConstraints="NO" id="eh3-OJ-aoT" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ThoughtsCell" translatesAutoresizingMaskIntoConstraints="NO" id="eh3-OJ-aoT" customClass="ThoughtsTableViewCell" customModule="Mind" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="375" height="60.333332061767578"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="eh3-OJ-aoT" id="VLQ-gI-o7I">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="60.333332061767578"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
+                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Thought content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943" customClass="ThoughtContentText" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="16" y="12" width="343" height="36.333333333333336"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <accessibility key="accessibilityConfiguration">
@@ -115,8 +117,8 @@
                                         <color key="backgroundColor" name="background"/>
                                         <connections>
                                             <outlet property="favoritedButton" destination="Cag-xX-4c0" id="N2Z-II-sex"/>
-                                            <outlet property="itemContentText" destination="rF4-xP-943" id="Tnf-PO-fcL"/>
-                                            <outlet property="itemContentTextRC" destination="Lk4-bi-Ws1" id="H7P-uq-Vd5"/>
+                                            <outlet property="thoughtContentText" destination="rF4-xP-943" id="5Xf-ck-Ask"/>
+                                            <outlet property="thoughtContentTextRC" destination="Lk4-bi-Ws1" id="tn6-uz-zq8"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -146,6 +148,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="tzA-qp-255"/>
                         <color key="backgroundColor" name="background"/>
                         <constraints>
                             <constraint firstItem="kZQ-Zu-1em" firstAttribute="top" secondItem="SHC-ME-RJP" secondAttribute="bottom" id="2p8-xB-81C"/>
@@ -158,7 +161,6 @@
                             <constraint firstItem="SHC-ME-RJP" firstAttribute="leading" secondItem="tzA-qp-255" secondAttribute="leading" id="tcg-FA-fvY"/>
                             <constraint firstAttribute="bottom" secondItem="kZQ-Zu-1em" secondAttribute="bottom" id="vtV-rb-gnd"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="tzA-qp-255"/>
                     </view>
                     <navigationItem key="navigationItem" id="WLs-fa-dBc">
                         <barButtonItem key="backBarButtonItem" title=" " id="gwe-fy-cNT"/>
@@ -169,19 +171,19 @@
                         <outlet property="plusButton" destination="H1s-10-s5C" id="Egw-i5-9xV"/>
                         <outlet property="tableView" destination="kZQ-Zu-1em" id="YMd-D0-7by"/>
                         <outlet property="tableViewBC" destination="vtV-rb-gnd" id="Q0O-gp-z6l"/>
-                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="toAddItemViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="WDj-KD-8Zi"/>
-                        <segue destination="nrd-Tn-dn2" kind="show" identifier="toItemViewController" id="1Zo-N0-bK6"/>
-                        <segue destination="f5O-y0-lan" kind="presentation" identifier="toCloudViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="jJ6-dy-Gct"/>
+                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="toNewThoughtViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="WDj-KD-8Zi"/>
+                        <segue destination="nrd-Tn-dn2" kind="show" identifier="toThoughtViewController" id="1Zo-N0-bK6"/>
+                        <segue destination="f5O-y0-lan" kind="presentation" identifier="toMindCloudVC" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="jJ6-dy-Gct"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="o9Q-yK-GuB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1786.4000000000001" y="133.74384236453201"/>
         </scene>
-        <!--Add Item View Controller-->
+        <!--New Thought View Controller-->
         <scene sceneID="Z6z-r8-b2k">
             <objects>
-                <viewController modalPresentationStyle="pageSheet" id="NfF-hC-bU7" customClass="addItemViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController modalPresentationStyle="pageSheet" id="NfF-hC-bU7" customClass="newThoughtViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="t0N-Bu-Y5f">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="758"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -222,6 +224,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="RnX-Ty-drF"/>
                         <color key="backgroundColor" name="background"/>
                         <color key="tintColor" name="button"/>
                         <constraints>
@@ -234,7 +237,6 @@
                             <constraint firstAttribute="trailing" secondItem="k5n-TB-LHv" secondAttribute="trailing" constant="24" id="ppF-yg-YHy"/>
                             <constraint firstItem="XQq-nb-Svp" firstAttribute="bottom" secondItem="FB5-Fj-2I2" secondAttribute="top" constant="-14" id="v4L-pb-4Qw"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="RnX-Ty-drF"/>
                     </view>
                     <navigationItem key="navigationItem" id="JOO-oB-Y4e"/>
                     <connections>
@@ -273,10 +275,10 @@
             </objects>
             <point key="canvasLocation" x="876.81159420289862" y="133.92857142857142"/>
         </scene>
-        <!--Item View Controller-->
+        <!--Thought View Controller-->
         <scene sceneID="vww-CX-ktB">
             <objects>
-                <viewController modalPresentationStyle="fullScreen" id="nrd-Tn-dn2" customClass="itemViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController modalPresentationStyle="fullScreen" id="nrd-Tn-dn2" customClass="thoughtViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="V0g-mJ-34J">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -288,7 +290,7 @@
                                 <gestureRecognizers/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="ItemCell" rowHeight="150" id="4VR-VJ-Mkl" customClass="ItemCell" customModule="Mind" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="ThoughtCell" rowHeight="150" id="4VR-VJ-Mkl" customClass="ThoughtTableViewCell" customModule="Mind" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="375" height="150"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="4VR-VJ-Mkl" id="jOL-vt-69T">
@@ -299,7 +301,7 @@
                                                     <rect key="frame" x="16" y="0.0" width="343" height="106"/>
                                                     <color key="backgroundColor" name="background"/>
                                                     <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </string>
-                                                    <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <color key="textColor" systemColor="labelColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                 </textView>
@@ -312,18 +314,19 @@
                                                 <constraint firstItem="f8v-F2-0Gv" firstAttribute="leading" secondItem="jOL-vt-69T" secondAttribute="leading" constant="16" id="uAg-UM-zKA"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <color key="backgroundColor" name="background"/>
                                         <connections>
-                                            <outlet property="itemContentTextView" destination="f8v-F2-0Gv" id="s7Q-jN-BRS"/>
+                                            <outlet property="thoughtContentTextView" destination="f8v-F2-0Gv" id="au5-dW-J1P"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="x9w-TI-dVF" customClass="ItemsCell" customModule="Mind" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ThoughtsCell" id="x9w-TI-dVF" customClass="ThoughtsTableViewCell" customModule="Mind" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="178" width="375" height="60.333332061767578"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="x9w-TI-dVF" id="AoN-iy-Trn">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="60.333332061767578"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Similar item" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="661-tl-rqp" customClass="ItemContentText" customModule="Mind" customModuleProvider="target">
+                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Similar thought" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="661-tl-rqp" customClass="ThoughtContentText" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="16" y="12" width="343" height="36.333333333333336"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <accessibility key="accessibilityConfiguration">
@@ -357,10 +360,10 @@
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" name="background"/>
                                         <connections>
-                                            <outlet property="favoritedButton" destination="YN1-as-lws" id="z0p-ZA-t0U"/>
-                                            <outlet property="itemContentText" destination="661-tl-rqp" id="VcN-PK-cRN"/>
-                                            <outlet property="itemContentTextRC" destination="Vqt-EX-vuL" id="z75-VJ-Pd2"/>
-                                            <segue destination="nrd-Tn-dn2" kind="show" identifier="toItemViewController" trigger="accessoryAction" id="cXa-2G-XEb"/>
+                                            <outlet property="favoritedButton" destination="YN1-as-lws" id="s0g-Cv-4kp"/>
+                                            <outlet property="thoughtContentText" destination="661-tl-rqp" id="Ilh-kl-IEN"/>
+                                            <outlet property="thoughtContentTextRC" destination="Vqt-EX-vuL" id="ET7-4R-GxL"/>
+                                            <segue destination="nrd-Tn-dn2" kind="show" identifier="toThoughtVC" trigger="accessoryAction" id="cXa-2G-XEb"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -405,6 +408,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="8sT-4Q-JfK"/>
                         <color key="backgroundColor" name="background"/>
                         <constraints>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="b2f-Wb-2va" secondAttribute="trailing" constant="16" id="AC2-Yp-we5"/>
@@ -416,7 +420,6 @@
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="8sT-4Q-JfK"/>
                     </view>
                     <navigationItem key="navigationItem" id="b0b-5A-vvg">
                         <barButtonItem key="backBarButtonItem" title=" " id="ZTv-0u-7Mo"/>
@@ -426,23 +429,23 @@
                         <outlet property="doneButtonBC" destination="L4J-yr-zgk" id="9zr-Zy-mJ8"/>
                         <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
-                        <segue destination="SGi-zd-M47" kind="show" identifier="backToItems" id="h1N-3G-VOJ"/>
-                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewItem" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="Bw5-Cg-iRQ"/>
+                        <segue destination="SGi-zd-M47" kind="show" identifier="backToThoughtsVC" id="h1N-3G-VOJ"/>
+                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewThought" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="Bw5-Cg-iRQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KPH-fj-1St" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2712.8000000000002" y="133.74384236453201"/>
         </scene>
-        <!--Cloud View Controller-->
+        <!--Mind Cloud View Controller-->
         <scene sceneID="Fo8-7K-UeE">
             <objects>
-                <viewController id="f5O-y0-lan" customClass="cloudViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="f5O-y0-lan" customClass="mindCloudViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="930-w8-p85">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="758"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qVd-Fm-154">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qVd-Fm-154">
                                 <rect key="frame" x="16" y="84" width="343" height="42"/>
                                 <color key="backgroundColor" name="button"/>
                                 <constraints>
@@ -455,7 +458,7 @@
                                     <action selector="createAccountAction:" destination="f5O-y0-lan" eventType="touchUpInside" id="BPv-KT-Gba"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z4G-dk-gtk">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z4G-dk-gtk">
                                 <rect key="frame" x="16" y="142" width="343" height="42"/>
                                 <color key="backgroundColor" name="button"/>
                                 <constraints>
@@ -510,7 +513,7 @@
                                         <color key="textColor" name="title"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7es-t0-eer">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7es-t0-eer">
                                         <rect key="frame" x="0.0" y="218" width="343" height="42"/>
                                         <color key="backgroundColor" name="button"/>
                                         <constraints>
@@ -524,7 +527,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="29d-8E-FNX" firstAttribute="top" secondItem="6w2-HQ-te8" secondAttribute="bottom" constant="8" id="1p8-xj-oCf"/>
                                     <constraint firstItem="6w2-HQ-te8" firstAttribute="trailing" secondItem="29d-8E-FNX" secondAttribute="trailing" id="4Xd-ig-K77"/>
@@ -549,7 +552,7 @@
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PgB-op-fZK">
                                 <rect key="frame" x="16" y="84" width="343" height="247"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kB0-Jk-oE0">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kB0-Jk-oE0">
                                         <rect key="frame" x="0.0" y="197" width="343" height="42"/>
                                         <color key="backgroundColor" name="button"/>
                                         <constraints>
@@ -563,7 +566,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="me@example.com" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oXp-Yf-yqe">
-                                        <rect key="frame" x="101" y="151" width="141" height="21"/>
+                                        <rect key="frame" x="101.66666666666669" y="151" width="140" height="21"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -577,7 +580,7 @@
                                         </constraints>
                                     </imageView>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="kB0-Jk-oE0" firstAttribute="top" secondItem="oXp-Yf-yqe" secondAttribute="bottom" constant="25" id="JKA-la-0Y4"/>
                                     <constraint firstAttribute="height" constant="247" id="OE4-YC-T8U"/>
@@ -590,7 +593,8 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="kCX-ul-Jg5"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="CqB-26-wMs" firstAttribute="top" secondItem="kCX-ul-Jg5" secondAttribute="top" constant="14" id="9Vm-fw-gf6"/>
                             <constraint firstItem="kCX-ul-Jg5" firstAttribute="trailing" secondItem="CqB-26-wMs" secondAttribute="trailing" constant="16" id="BdR-Gk-VJO"/>
@@ -610,7 +614,6 @@
                             <constraint firstItem="qVd-Fm-154" firstAttribute="centerX" secondItem="930-w8-p85" secondAttribute="centerX" id="zea-xf-ElK"/>
                             <constraint firstItem="z4G-dk-gtk" firstAttribute="top" secondItem="qVd-Fm-154" secondAttribute="bottom" constant="16" id="zm6-Ip-E6S"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="kCX-ul-Jg5"/>
                     </view>
                     <connections>
                         <outlet property="accountCredentialsView" destination="jaV-89-SPy" id="qZc-7U-9m1"/>
@@ -666,5 +669,11 @@
         <namedColor name="title">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
+        <systemColor name="labelColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

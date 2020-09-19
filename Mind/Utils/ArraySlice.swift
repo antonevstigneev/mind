@@ -1,3 +1,10 @@
+//
+//  ArraySlice.swift
+//  Mind
+//
+//  Created by Anton Evstigneev on 17.09.2020.
+//  Copyright © 2020 Anton Evstigneev. All rights reserved.
+//
 
 import Foundation
 

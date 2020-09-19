@@ -9,7 +9,7 @@
 import UIKit
 
 enum SFSymbols {
-    static let favorive = UIImage(systemName: "star")
+    static let favorite = UIImage(systemName: "star")
     static let unfavorite = UIImage(systemName: "star.slash")
     static let locked = UIImage(systemName: "lock")
     static let unlocked = UIImage(systemName: "lock.slash")

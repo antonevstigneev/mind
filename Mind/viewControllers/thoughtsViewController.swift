@@ -1,5 +1,5 @@
 //
-//  itemsViewController.swift
+//  thoughtsVC.swift
 //  Mind
 //
 //  Created by Anton Evstigneev on 06.04.2020.
@@ -14,7 +14,7 @@ import NaturalLanguage
 import LocalAuthentication
 import Alamofire
 
-class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
+class thoughtsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
     
     
     // MARK: - Data
@@ -23,8 +23,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     
     // MARK: - Variables
-    var items: [Item] = []
-    var item: Item!
+    var thoughts: [Thought] = []
+    var thought: Thought!
     var keywordsCollection: [String] = []
     var mostFrequentKeywords: [String] = []
     var selectedKeyword: String = ""
@@ -60,7 +60,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: Any) {
         plusButton.animateButtonUp()
-        performSegue(withIdentifier: "toAddItemViewController", sender: sender)
+        performSegue(withIdentifier: "toNewThoughtViewController", sender: sender)
     }
     @IBAction func plusButtonTouchDown(_ sender: UIButton) {
         plusButton.animateButtonDown()
@@ -91,13 +91,13 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func setupNotifications() {
         NotificationCenter.default.addObserver(self,
-        selector: #selector(showItemsForSelectedKeyword),
-        name: NSNotification.Name(rawValue: "itemKeywordClicked"),
+        selector: #selector(showThoughtsForSelectedKeyword),
+        name: NSNotification.Name(rawValue: "thoughtKeywordClicked"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
         selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "itemsChanged"),
+        name: NSNotification.Name(rawValue: "thoughtsChanged"),
         object: nil)
         
         NotificationCenter.default.addObserver(self,
@@ -152,12 +152,12 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @objc func mindTapped(_ sender: UITapGestureRecognizer) {
         let indexPath = IndexPath(row: 0, section: 0)
-        if self.items.isEmpty == false {
+        if self.thoughts.isEmpty == false {
             self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
         }
     }
     
-    @objc func showItemsForSelectedKeyword() {
+    @objc func showThoughtsForSelectedKeyword() {
         searchController.searchBar.text = "#\(selectedKeyword)"
         reloadSearch()
     }
@@ -177,7 +177,6 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             print("⚠️ Internet is not available")
         }
     }
-
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -191,156 +190,122 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
-        self.item = self.items[indexPath.row]
+        self.thought = self.thoughts[indexPath.row]
         var favoriteLabel: String!
         var favoriteImage: UIImage!
         var lockedImage: UIImage!
         var lockedLabel: String!
         var archivedLabel: String!
         
-        if item.favorited == true {
+        if thought.favorited == true {
             favoriteLabel = "Unfavorite"
             favoriteImage = SFSymbols.unfavorite
         } else {
             favoriteLabel = "Favorite"
-            favoriteImage = SFSymbols.favorive
+            favoriteImage = SFSymbols.favorite
         }
-        if item.locked == true {
+        if thought.locked == true {
             lockedLabel = "Unlock"
             lockedImage = SFSymbols.unlocked
         } else {
             lockedLabel = "Lock"
             lockedImage = SFSymbols.locked
         }
-        if item.archived == true {
+        if thought.archived == true {
             archivedLabel = "Unarchive"
         } else {
             archivedLabel = "Archive"
         }
 
         let favorite = UIAction(title: favoriteLabel, image: favoriteImage) { _ in
-            self.favoriteItem(self.item, indexPath)
+            self.favoriteThought(self.thought, indexPath)
         }
         let lock = UIAction(title: lockedLabel, image: lockedImage) { _ in
-            self.lockItem(self.item, indexPath)
+            self.lockThought(self.thought, indexPath)
         }
         let archive = UIAction(title: archivedLabel, image: SFSymbols.archive) { _ in
-            self.archiveItem(self.item, indexPath)
+            self.archiveThought(self.thought, indexPath)
         }
         let delete = UIAction(title: "Delete", image: SFSymbols.trash, attributes: .destructive) { _ in
-            self.deleteItem(self.item, indexPath)
+            self.deleteThought(self.thought, indexPath)
         }
         
-        if self.item.archived == true {
+        if self.thought.archived == true {
             return UIMenu(title: "", children: [favorite, lock, archive, delete])
         } else {
             return UIMenu(title: "", children: [favorite, lock, archive])
         }
     }
     
-    public func favoriteItem(_ item: Item, _ indexPath: IndexPath) {
-        if item.favorited == true {
-            item.favorited = false
-        } else {
-            item.favorited = true
-        }
-        self.tableView.reloadRows(at: [indexPath], with: UITableView.RowAnimation.fade)
-        NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+    public func favoriteThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.favorited)
+        self.tableView.reloadRows(at: [indexPath], with: .none)
     }
     
-    public func lockItem(_ item: Item, _ indexPath: IndexPath) {
-        if item.locked == false {
-            let actionMessage = "This will be hidded from all places but can be found in the Locked folder"
-            postActionSheet(title: "", message: actionMessage, confirmation: "Lock", success: { () -> Void in
-                self.item.locked = true
-                self.items.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .fade)
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            }) { () -> Void in
-                print("Cancelled")
-            }
-        } else {
-            self.item.locked = false
-            self.items.remove(at: indexPath.row)
-            self.tableView.deleteRows(at: [indexPath], with: .fade)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }
-        
+    public func lockThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.locked)
+        self.thoughts.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .fade)
     }
-    
-    public func archiveItem(_ item: Item, _ indexPath: IndexPath) {
-        if item.archived == false {
-            let actionMessage = "This will be archived but can be found in the Archived folder"
-            postActionSheet(title: "", message: actionMessage, confirmation: "Archive", success: { () -> Void in
-                self.item.archived = true
-                self.items.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .fade)
-                (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            }) { () -> Void in
-                print("Cancelled")
-            }
-        } else {
-            self.item.archived = false
-            self.items.remove(at: indexPath.row)
-            self.tableView.deleteRows(at: [indexPath], with: .fade)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        }
+
+    public func archiveThought(_ thought: Thought, _ indexPath: IndexPath) {
+        thought.toggleState(.archived)
+        self.thoughts.remove(at: indexPath.row)
+        self.tableView.deleteRows(at: [indexPath], with: .fade)
     }
-    
-    public func deleteItem(_ item: Item, _ indexPath: IndexPath) {
+
+    public func deleteThought(_ thought: Thought, _ indexPath: IndexPath) {
         let actionTitle = "Are you sure you want to delete this?"
         postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
-            self.context.delete(item)
-            self.items.remove(at: indexPath.row)
+            thought.delete()
+            self.thoughts.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
-            NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "itemsChanged"), object: nil)
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            
         }) { () -> Void in
             print("Cancelled")
         }
     }
     
+ 
+    
     
     // MARK: - Table View
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
+        return thoughts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ItemsCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ThoughtsCell", for: indexPath) as! ThoughtsTableViewCell
         
-        let item = items[indexPath.row]
-        let content = item.content!
+        let thought = thoughts[indexPath.row]
+        let content = thought.content!
         
-        cell.itemContentText.delegate = self
+        cell.thoughtContentText.delegate = self
         
-        cell.itemContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-//        cell.itemContentText.addHyperLinksToText(originalText: content, hyperLinks: item.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0) // ! Thread 1: Fatal error: Unexpectedly found nil while unwrapping an Optional value
-        cell.itemContentText.textColor = UIColor(named: "text")
+        cell.thoughtContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+//        cell.thoughtContentText.addHyperLinksToText(originalText: content, hyperLinks: thought.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0) // ! Thread 1: Fatal error: Unexpectedly found nil while unwrapping an Optional value
+        cell.thoughtContentText.textColor = UIColor(named: "text")
         
-        if item.favorited {
+        if thought.favorited {
             cell.favoritedButton.isHidden = false
-            cell.itemContentTextRC.constant = 35
+            cell.thoughtContentTextRC.constant = 35
             
         } else {
             cell.favoritedButton.isHidden = true
-            cell.itemContentTextRC.constant = 16
+            cell.thoughtContentTextRC.constant = 16
         }
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
         tap.delegate = self
-        cell.itemContentText.addGestureRecognizer(tap)
+        cell.thoughtContentText.addGestureRecognizer(tap)
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        self.item = self.items[indexPath.row]
-        self.performSegue(withIdentifier: "toItemViewController", sender: (Any).self)
+        self.thought = self.thoughts[indexPath.row]
+        self.performSegue(withIdentifier: "toThoughtViewController", sender: (Any).self)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -374,62 +339,62 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     // MARK: - Prepare for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let destinationVC = segue.destination as? itemViewController {
-            destinationVC.selectedItem = self.item
-            destinationVC.items = self.items
+        if let destinationVC = segue.destination as? thoughtViewController {
+            destinationVC.selectedThought = self.thought
+            destinationVC.thoughts = self.thoughts
         }
     }
     
     
-    // MARK: - Fetch items data
+    // MARK: - Fetch thoughts data
     @objc func fetchData() {
-        let request: NSFetchRequest = Item.fetchRequest()
+        let request: NSFetchRequest = Thought.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         do {
-            items = try context.fetch(request)
+            thoughts = try context.fetch(request)
             switch selectedFilter {
             case "Recent":
-                items = items.filter {
+                thoughts = thoughts.filter {
                     $0.locked == false &&
                     $0.archived == false
                 }
             case "Favorite":
-                items = items.filter {
+                thoughts = thoughts.filter {
                     $0.favorited == true &&
                     $0.locked == false &&
                     $0.archived == false
                 }
             case "Random":
-                items = items.shuffled()
-                items = items.filter {
+                thoughts = thoughts.shuffled()
+                thoughts = thoughts.filter {
                     $0.locked == false &&
                     $0.archived == false
                 }
             case "Locked":
-                items = items.filter {
+                thoughts = thoughts.filter {
                     $0.locked == true &&
                     $0.archived == false
                 }
             case "Archived":
-                items = items.filter {
+                thoughts = thoughts.filter {
                     $0.locked == false &&
                     $0.archived == true
                 }
             default:
-                items = items.filter {
+                thoughts = thoughts.filter {
                     $0.locked == false &&
                     $0.archived == false
                 }
             }
             
-            let itemsLoading = DispatchGroup()
-            DispatchQueue.main.async(group: itemsLoading) {
+            let thoughtsLoading = DispatchGroup()
+            DispatchQueue.main.async(group: thoughtsLoading) {
                 self.tableView.reloadData()
             }
-            itemsLoading.notify(queue: .main) {
+            thoughtsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
-                    NSNotification.Name(rawValue: "itemsLoaded"),
+                    NSNotification.Name(rawValue: "thoughtsLoaded"),
                                                 object: nil)
             }
         } catch {
@@ -438,21 +403,21 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @objc func fetchDataForSelectedKeyword() {
-        let request: NSFetchRequest = Item.fetchRequest()
+        let request: NSFetchRequest = Thought.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         do {
             self.tableView.hide()
-            var itemsWithSelectedKeyword: [Item] = []
-            items = try context.fetch(request)
-            for item in items {
-                if item.keywords!.contains(selectedKeyword) {
-                    itemsWithSelectedKeyword.append(item)
+            var thoughtsWithSelectedKeyword: [Thought] = []
+            thoughts = try context.fetch(request)
+            for thought in thoughts {
+                if thought.keywords!.contains(selectedKeyword) {
+                    thoughtsWithSelectedKeyword.append(thought)
                 }
             }
             DispatchQueue.main.async {
-                self.items = itemsWithSelectedKeyword
-                self.items = self.items.filter {
+                self.thoughts = thoughtsWithSelectedKeyword
+                self.thoughts = self.thoughts.filter {
                     $0.locked == false &&
                     $0.archived == false
                 }
@@ -469,8 +434,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     // MARK: - Semantic search
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.count > 2 {
-            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(itemsViewController.reloadSearch), object: nil)
-            self.perform(#selector(itemsViewController.reloadSearch), with: nil, afterDelay: 1.0)
+            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(thoughtsViewController.reloadSearch), object: nil)
+            self.perform(#selector(thoughtsViewController.reloadSearch), with: nil, afterDelay: 1.0)
         } else {
             fetchData()
         }
@@ -492,11 +457,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func performSimilaritySearch(_ searchText: String) {
-        var similarItems: [Item] = []
+        var similarThoughts: [Thought] = []
         var suggestedKeywords: [String] = []
         
         tableView.hide()
-        items = []
+        thoughts = []
         tableView.reloadData()
         fetchData()
         
@@ -505,39 +470,39 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             suggestedKeywords = self.getKeywordSuggestions(for: searchText)
             
-            var keywordsScores: [(item: Item, score: Int)] = []
-            var itemsWithMatchedKeywords: [(item: Item, matchedKeywords: [String])] = []
-            for item in self.items {
-                itemsWithMatchedKeywords.append((item: item, matchedKeywords: []))
+            var keywordsScores: [(thought: Thought, score: Int)] = []
+            var thoughtsWithMatchedKeywords: [(thought: Thought, matchedKeywords: [String])] = []
+            for thought in self.thoughts {
+                thoughtsWithMatchedKeywords.append((thought: thought, matchedKeywords: []))
             }
             
             for keyword in suggestedKeywords {
-                for item in self.items {
-                    if item.keywords!.contains(keyword) {
-                        if let index = itemsWithMatchedKeywords.firstIndex(where: {$0.item.content! == item.content!}) {
-                            itemsWithMatchedKeywords[index].matchedKeywords.append(keyword)
+                for thought in self.thoughts {
+                    if thought.keywords!.contains(keyword) {
+                        if let index = thoughtsWithMatchedKeywords.firstIndex(where: {$0.thought.content! == thought.content!}) {
+                            thoughtsWithMatchedKeywords[index].matchedKeywords.append(keyword)
                         }
                     }
                 }
             }
             
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
-            itemsWithMatchedKeywords = itemsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
+            thoughtsWithMatchedKeywords = thoughtsWithMatchedKeywords.filter { $0.matchedKeywords != [] }
+            thoughtsWithMatchedKeywords = thoughtsWithMatchedKeywords.sorted {$0.1.count > $1.1.count}
             
-            for item in itemsWithMatchedKeywords {
+            for thought in thoughtsWithMatchedKeywords {
                 var keywordsScore: [Int] = []
-                for keyword in item.matchedKeywords {
+                for keyword in thought.matchedKeywords {
                     let indexOfKeyword = suggestedKeywords.firstIndex(of: keyword)
                     keywordsScore.append(indexOfKeyword!)
                 }
-                keywordsScores.append((item: item.item, score: keywordsScore.min()!))
+                keywordsScores.append((thought: thought.thought, score: keywordsScore.min()!))
             }
             
             keywordsScores = keywordsScores.sorted { $0.1 < $1.1 }
-            similarItems = keywordsScores.map { $0.item }
+            similarThoughts = keywordsScores.map { $0.thought }
         
             DispatchQueue.main.async {
-                self.items = similarItems.slice(length: 10)
+                self.thoughts = similarThoughts.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
                 self.scrollToTopTableView()
@@ -547,8 +512,8 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func findSimilarItems(for item: Item!) {
-        searchController.searchBar.text = item.content!
+    func findSimilarThoughts(for thought: Thought!) {
+        searchController.searchBar.text = thought.content!
         performSimilaritySearch(searchController.searchBar.text!)
     }
     
@@ -574,11 +539,11 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Double])] {
         var keywordsEmbeddings: [(keyword: String, value: [Double])] = []
-        for item in items {
-            for keyword in item.keywords! {
+        for thought in thoughts {
+            for keyword in thought.keywords! {
                 if !keywordsEmbeddings.map({$0.0}).contains(keyword) {
-                    let keywordIndex = item.keywords!.firstIndex(of: keyword)!
-                    let keywordEmbedding = item.keywordsEmbeddings![keywordIndex]
+                    let keywordIndex = thought.keywords!.firstIndex(of: keyword)!
+                    let keywordEmbedding = thought.keywordsEmbeddings![keywordIndex]
                     keywordsEmbeddings.append((keyword: keyword, value: keywordEmbedding))
                 }
             }
@@ -590,9 +555,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func getMostFrequentKeywords() -> [String] {
         var allKeywords: [String] = []
         
-        for item in items {
-            if item.keywords != nil {
-                for keyword in item.keywords! {
+        for thought in thoughts {
+            if thought.keywords != nil {
+                for keyword in thought.keywords! {
                     allKeywords.append(keyword)
                 }
             }
@@ -609,9 +574,9 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func getRandomKeywords() -> [String] {
         var allKeywords: [String] = []
         
-        for item in items {
-            if item.keywords != nil {
-                for keyword in item.keywords! {
+        for thought in thoughts {
+            if thought.keywords != nil {
+                for keyword in thought.keywords! {
                     allKeywords.append(keyword)
                 }
             }
@@ -623,49 +588,49 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return topShuffledKeywords
     }
     
-    func getItemsSimilarityScores() {
-        var itemsPairs: [[Item]] = []
-        var itemsPairsScores: [Double] = []
-        var itemsTotalScores: [(itemContent: String, score: Double)] = []
+    func getThoughtsSimilarityScores() {
+        var thoughtsPairs: [[Thought]] = []
+        var thoughtsPairsScores: [Double] = []
+        var thoughtsTotalScores: [(thoughtContent: String, score: Double)] = []
         
-        let itemsEmbeddings = getItemsEmbeddings()
+        let thoughtsEmbeddings = getThoughtsEmbeddings()
         
-        for item in items {
-            let currentItemEmbedding = item.embedding!
-            var itemTotalScore: Double = 0
-            for index in 0..<items.count {
-                let otherItemEmbedding = itemsEmbeddings[index]
-                if item != items[index] {
-                    itemsPairs.append([item, items[index]])
-                    let score = Distance.cosine(A: currentItemEmbedding, B: otherItemEmbedding)
-                    itemTotalScore += score
-                    itemsPairsScores.append(score)
+        for thought in thoughts {
+            let currentThoughtEmbedding = thought.embedding!
+            var thoughtTotalScore: Double = 0
+            for index in 0..<thoughts.count {
+                let otherThoughtEmbedding = thoughtsEmbeddings[index]
+                if thought != thoughts[index] {
+                    thoughtsPairs.append([thought, thoughts[index]])
+                    let score = Distance.cosine(A: currentThoughtEmbedding, B: otherThoughtEmbedding)
+                    thoughtTotalScore += score
+                    thoughtsPairsScores.append(score)
                 }
             }
-            itemsTotalScores.append((item.content!, itemTotalScore))
+            thoughtsTotalScores.append((thought.content!, thoughtTotalScore))
         }
-        itemsTotalScores = itemsTotalScores.sorted { $0.1 > $1.1 }
-        print("Items similarity matrix:")
+        thoughtsTotalScores = thoughtsTotalScores.sorted { $0.1 > $1.1 }
+        print("Thoughts similarity matrix:")
         print("\n")
-        for i in itemsTotalScores {
-            print(i.itemContent)
+        for i in thoughtsTotalScores {
+            print(i.thoughtContent)
             print(i.score)
             print("\n")
         }
     }
     
     
-    func getItemsEmbeddings() -> [[Double]] {
-        var itemsEmbeddings: [[Double]] = []
-        for item in items {
-            itemsEmbeddings.append(item.embedding!)
+    func getThoughtsEmbeddings() -> [[Double]] {
+        var thoughtsEmbeddings: [[Double]] = []
+        for thought in thoughts {
+            thoughtsEmbeddings.append(thought.embedding!)
         }
-        return itemsEmbeddings
+        return thoughtsEmbeddings
     }
 
     
     func scrollToTopTableView() {
-        if self.items.isEmpty == false {
+        if self.thoughts.isEmpty == false {
             self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         }
     }
@@ -674,10 +639,10 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Double])] {
         var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
         
-        for item in self.items {
-            for (index, keyword) in item.keywords!.enumerated() {
+        for thought in self.thoughts {
+            for (index, keyword) in thought.keywords!.enumerated() {
                 if !keywordsWithEmbeddings.map({$0.keyword}).contains(keyword) {
-                    let keywordEmbedding = item.keywordsEmbeddings![index]
+                    let keywordEmbedding = thought.keywordsEmbeddings![index]
                     keywordsWithEmbeddings.append((keyword: keyword, embedding: keywordEmbedding))
                 }
             }
@@ -687,14 +652,14 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     
-    func getItemsEmbeddingsTest() -> [(item: String, embedding: [Double])] {
-        var itemsEmbeddings: [(item: String, embedding: [Double])] = []
+    func getThoughtsEmbeddingsTest() -> [(thought: String, embedding: [Double])] {
+        var thoughtsEmbeddings: [(thought: String, embedding: [Double])] = []
         
-        for item in self.items {
-            itemsEmbeddings.append((item: item.content!, embedding: item.embedding!))
+        for thought in self.thoughts {
+            thoughtsEmbeddings.append((thought: thought.content!, embedding: thought.embedding!))
         }
         
-        return itemsEmbeddings
+        return thoughtsEmbeddings
     }
     
     
@@ -769,7 +734,7 @@ class itemsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             
             let mindCloudAction: UIAlertAction = UIAlertAction(title: "Mind Cloud", style: .default)
             { _ in
-                self.performSegue(withIdentifier: "toCloudViewController", sender: (Any).self)
+                self.performSegue(withIdentifier: "toMindCloudVC", sender: (Any).self)
             }
             mindCloudAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
             mindCloudAction.setValue(SFSymbols.cloud, forKey: "image")
@@ -887,11 +852,10 @@ extension Array where Element: Hashable {
 }
 
 extension Date {
-    var current: Double {
-        return Double((self.timeIntervalSince1970 * 1000.0).rounded())
-    }
-    var ticks: UInt64 {
-        return UInt64((self.timeIntervalSince1970 * 1000.0).rounded())
+    func current() -> Int64 {
+        let currentDate = Date()
+        let timeInterval = currentDate.timeIntervalSince1970
+        return Int64(timeInterval)
     }
 }
 
@@ -997,7 +961,7 @@ extension Array where Element:Equatable {
 }
 
 
-extension itemsViewController {
+extension thoughtsViewController {
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 300
     }

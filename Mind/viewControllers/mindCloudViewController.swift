@@ -11,7 +11,7 @@ import CryptoSwift
 import SwiftyRSA
 import Alamofire
 
-class cloudViewController: UIViewController, UITextFieldDelegate {
+class mindCloudViewController: UIViewController, UITextFieldDelegate {
     
     let isAuthorized = UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
     
@@ -47,6 +47,8 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
         let password = passwordField.text!
         
         if submitButton.currentTitle == "Create Account" {
+            self.showSpinner()
+            print("Creating New Account...")
             do {
                 let keyPair = try SwiftyRSA.generateRSAKeyPair(sizeInBits: 1024)
                 let privateKey = keyPair.privateKey
@@ -56,15 +58,16 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
                 UserDefaults.standard.set(UInt8PrivateKey, forKey: "privateKey") // save privateKey on device
                 print(UserDefaults.standard.object(forKey: "privateKey") as! [UInt8])
                 let encryptedPrivateKey = encryptPrivateKey(email: email, password: password, privateKey: UInt8PrivateKey)
-                Cloud.createAccout(email: email, password: password, publicKey: UInt8PublicKey.data.hexa, encryptedPrivateKey: encryptedPrivateKey!.encryptedPrivateKey.data.hexa, iv: encryptedPrivateKey!.iv.data.hexa)
-                
+                MindCloud.createAccout(email: email, password: password, publicKey: UInt8PublicKey.data.hexa, encryptedPrivateKey: encryptedPrivateKey!.encryptedPrivateKey.data.hexa, iv: encryptedPrivateKey!.iv.data.hexa)
+                self.removeSpinner()
+                self.setupAuthorizedView()
             } catch {
                 print("Error")
             }
         } else {
             self.showSpinner()
             print("Authorizing...")
-            Cloud.getAuthorizationToken(email: email, password: password) { (token, success) in
+            MindCloud.getAuthorizationToken(email: email, password: password) { (token, success) in
                 if (success) {
                     self.removeSpinner()
                     self.setupAuthorizedView()
@@ -79,7 +82,7 @@ class cloudViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if Cloud.isUserAuthorized == false {
+        if MindCloud.isUserAuthorized == false {
             setupAuthorizationView()
         } else {
             setupAuthorizedView()
