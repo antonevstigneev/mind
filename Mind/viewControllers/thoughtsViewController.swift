@@ -171,11 +171,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         fetchData()
         reloadSearch()
         
-        if Connectivity.isConnectedToInternet {
-            print("✅ Internet is available.")
-        } else {
-            print("⚠️ Internet is not available")
-        }
+//        thoughts.forEach({print($0.embedding, $0.content)})
     }
     
     override func viewWillDisappear(_ animated: Bool) {

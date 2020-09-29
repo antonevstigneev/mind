@@ -6,13 +6,12 @@
 //  Copyright © 2020 Anton Evstigneev. All rights reserved.
 //
 
+import Foundation
 import Alamofire
 
 
+
 class NetworkRequestRetrier: RequestRetrier {
-    
-    private let retryLimit = 3
-    private let timeDelay = 1.0
     
     func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> Void) {
         
@@ -29,5 +28,4 @@ class NetworkRequestRetrier: RequestRetrier {
         }
     }
 }
-
 

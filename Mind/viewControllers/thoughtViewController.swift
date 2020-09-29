@@ -34,22 +34,11 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var doneButton: UIButton!
     @IBOutlet weak var doneButtonBC: NSLayoutConstraint!
     
     
     // MARK: - Actions
-    @IBAction func plusButtonTouchUpInside(_ sender: Any) {
-        plusButton.animateButtonUp()
-        performSegue(withIdentifier: "addNewItem", sender: sender)
-    }
-    @IBAction func plusButtonTouchDown(_ sender: UIButton) {
-        plusButton.animateButtonDown()
-    }
-    @IBAction func plusButtonTouchUpOutside(_ sender: UIButton) {
-        plusButton.animateButtonUp()
-    }
     @IBAction func doneButtonTouchDownInside(_ sender: Any) {
         closeEditMode()
         updateThoughtData()
@@ -68,7 +57,7 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         setupNotifications()
         setupViews()
         fetchData()
-//        showSimilarThoughts()
+        showSimilarThoughts()
     }
     
     
@@ -95,12 +84,6 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.allowsSelection = true
         tableView.isEditing = false
         
-        // plusButton initial setup
-        plusButton.layer.masksToBounds = true
-        plusButton.layer.cornerRadius = plusButton.frame.size.height / 2
-        plusButton.backgroundColor = UIColor(named: "button")
-        plusButton.tintColor = UIColor(named: "background")
-        
         // sendButton initial setup
         doneButton.layer.cornerRadius = doneButton.frame.size.height / 2.0
         doneButton.clipsToBounds = true
@@ -124,40 +107,36 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         DispatchQueue.global(qos: .userInitiated).async(group: thoughtUpdate) {
             
             if MindCloud.isUserAuthorized == false {
-                MindCloud.processThought(content: entryText) { (responseData, success) in
-                    
+                MindCloud.processThought(content: entryText) {
+                    (responseData, success) in
                     if (success) {
-                        print("Server processed thought data successfully.")
-                        
-                        self.selectedThought.content = entryText
-                        self.selectedThought.keywords = responseData?.keywords
-                        self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                        self.selectedThought.embedding = responseData?.embedding
-
+                        print("✅ Server processed thought data successfully.")
                         DispatchQueue.main.async {
+                            self.selectedThought.content = entryText
+                            self.selectedThought.keywords = responseData?.keywords
+                            self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                            self.selectedThought.embedding = responseData?.embedding
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing thought data")
+                        print("⚠️ Error occurred while processing thought data")
                     }
                 }
             } else {
-                MindCloud.updateThought(id: self.selectedThought.id!, upd: ["content": entryText]) { (responseData, success) in
-//
+                MindCloud.updateThought(id: self.selectedThought.id!, upd: ["content": entryText]) {
+                    (responseData, success) in
                     if (success) {
                         print("✅ 🔐 Authorized patch thought successfully.")
-                        
-                        self.selectedThought.keywords = responseData?.keywords
-                        self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                        self.selectedThought.embedding = responseData?.embedding
-//                        self.selectedThought.timestamp = responseData?.timestamp! as! Int64
-                        self.selectedThought.id = responseData?.id
-
                         DispatchQueue.main.async {
+                            self.selectedThought.keywords = responseData?.keywords
+                            self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                            self.selectedThought.embedding = responseData?.embedding
+    //                        self.selectedThought.timestamp = responseData?.timestamp! as! Int64
+                            self.selectedThought.id = responseData?.id
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing thought data")
+                        print("⚠️ Error occurred while processing thought data")
                     }
                 }
             }
@@ -316,7 +295,7 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - TableView
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return similarThoughts.count + 1
+        return similarThoughts.count
     }
     
     
@@ -495,7 +474,6 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     @objc func closeEditMode() {
         self.view.endEditing(true)
         doneButton.hide()
-        plusButton.show()
         showThoughtActionButtons()
     }
     

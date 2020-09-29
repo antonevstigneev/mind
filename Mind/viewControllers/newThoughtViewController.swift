@@ -98,38 +98,37 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
         DispatchQueue.global(qos: .userInitiated).async(group: thoughtCreation) {
             
             if MindCloud.isUserAuthorized == false {
-                MindCloud.processThought(content: entryText) { (responseData, success) in
+                MindCloud.processThought(content: entryText) {
+                    (responseData, success) in
                     if (success) {
-                        print("Server processed thought data successfully.")
-                        
-                        newThought.keywords = responseData?.keywords
-                        newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                        newThought.embedding = responseData?.embedding
-                        newThought.timestamp = Date().current()
-
+                        print("✅ Server processed thought data successfully.")
                         DispatchQueue.main.async {
+                            newThought.keywords = responseData?.keywords
+                            newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                            newThought.embedding = responseData?.embedding
+                            newThought.timestamp = Date().current()
+                            print(responseData as Any)
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing thought data")
+                        print("⚠️ Error occurred while processing thought data")
                     }
                 }
             } else {
-                MindCloud.postThought(content: entryText, timestamp: timestamp) { (responseData, success) in
+                MindCloud.postThought(content: entryText, timestamp: timestamp) {
+                    (responseData, success) in
                     if (success) {
                         print("✅ 🔐 Authorized post thought successfully.")
-                        
-                        newThought.keywords = responseData?.keywords
-                        newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                        newThought.embedding = responseData?.embedding
-                        newThought.timestamp = timestamp
-                        newThought.id = responseData?.id
-                        print(responseData)
                         DispatchQueue.main.async {
+                            newThought.keywords = responseData?.keywords
+                            newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
+                            newThought.embedding = responseData?.embedding
+                            newThought.timestamp = timestamp
+                            newThought.id = responseData?.id
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
-                        print("Error occurred while processing thought data")
+                        print("⚠️ Error occurred while processing thought data")
                     }
                 }
             }
@@ -158,7 +157,9 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
         let newText = (textInputView!.text as NSString).replacingCharacters(in: range, with: text)
         let numberOfChars = newText.count
         if numberOfChars > 1499 {
-            let alert = UIAlertController(title: "Text is too long", message: "It's recommended to input text that is less than 1500 characters.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Text is too long",
+                                          message: "It's recommended to input text that is less than 1500 characters.",
+                                          preferredStyle: .alert)
 
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
 

@@ -15,11 +15,11 @@
             <objects>
                 <viewController storyboardIdentifier="Main" modalTransitionStyle="crossDissolve" modalPresentationStyle="fullScreen" id="SGi-zd-M47" customClass="thoughtsViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" autoresizesSubviews="NO" contentMode="scaleToFill" id="Xvu-An-mu8">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SHC-ME-RJP" userLabel="Header View">
-                                <rect key="frame" x="0.0" y="54" width="375" height="80"/>
+                                <rect key="frame" x="0.0" y="10" width="375" height="80"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mind" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xub-cW-3kM">
                                         <rect key="frame" x="20.999999999999996" y="19.999999999999996" width="63.666666666666657" height="33.666666666666657"/>
@@ -70,7 +70,7 @@
                                 </constraints>
                             </view>
                             <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" keyboardDismissMode="onDrag" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kZQ-Zu-1em">
-                                <rect key="frame" x="0.0" y="134" width="375" height="678"/>
+                                <rect key="frame" x="0.0" y="90" width="375" height="634"/>
                                 <color key="backgroundColor" name="background"/>
                                 <gestureRecognizers/>
                                 <inset key="separatorInset" minX="21" minY="0.0" maxX="21" maxY="0.0"/>
@@ -128,7 +128,7 @@
                                 </connections>
                             </tableView>
                             <button clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H1s-10-s5C">
-                                <rect key="frame" x="311" y="713" width="48" height="49"/>
+                                <rect key="frame" x="311" y="625" width="48" height="49"/>
                                 <color key="backgroundColor" name="button"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="48" id="BR4-gM-hZ0"/>
@@ -280,11 +280,11 @@
             <objects>
                 <viewController modalPresentationStyle="fullScreen" id="nrd-Tn-dn2" customClass="thoughtViewController" customModule="Mind" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="V0g-mJ-34J">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" estimatedSectionFooterHeight="-1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EZ7-7F-xXo">
-                                <rect key="frame" x="0.0" y="89" width="375" height="723"/>
+                                <rect key="frame" x="0.0" y="45" width="375" height="679"/>
                                 <color key="backgroundColor" name="background"/>
                                 <color key="tintColor" name="icon"/>
                                 <gestureRecognizers/>
@@ -372,28 +372,8 @@
                                     <outlet property="delegate" destination="nrd-Tn-dn2" id="NHf-d8-Mz9"/>
                                 </connections>
                             </tableView>
-                            <button clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vly-rm-xhe">
-                                <rect key="frame" x="311" y="713" width="48" height="49"/>
-                                <color key="backgroundColor" name="button"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="49" id="5zn-fd-HIi"/>
-                                    <constraint firstAttribute="width" constant="48" id="HE5-hU-suZ"/>
-                                </constraints>
-                                <color key="tintColor" name="background"/>
-                                <inset key="contentEdgeInsets" minX="0.0" minY="2" maxX="0.0" maxY="2"/>
-                                <inset key="imageEdgeInsets" minX="6" minY="6" maxX="6" maxY="6"/>
-                                <state key="normal" image="plus" catalog="system">
-                                    <color key="titleColor" name="buttonIcon"/>
-                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="42" scale="medium" weight="regular"/>
-                                </state>
-                                <connections>
-                                    <action selector="plusButtonTouchDown:" destination="nrd-Tn-dn2" eventType="touchDown" id="J5l-X4-NqK"/>
-                                    <action selector="plusButtonTouchUpInside:" destination="nrd-Tn-dn2" eventType="touchUpInside" id="MhP-fz-uKX"/>
-                                    <action selector="plusButtonTouchUpOutside:" destination="nrd-Tn-dn2" eventType="touchDragOutside" id="z6M-Yv-YiT"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageSizeForAccessibilityContentSizeCategory="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b2f-Wb-2va">
-                                <rect key="frame" x="317.66666666666669" y="771" width="41.333333333333314" height="41"/>
+                                <rect key="frame" x="317.66666666666669" y="683" width="41.333333333333314" height="41"/>
                                 <color key="backgroundColor" name="button"/>
                                 <color key="tintColor" name="background"/>
                                 <inset key="contentEdgeInsets" minX="0.0" minY="1" maxX="0.0" maxY="2"/>
@@ -412,11 +392,9 @@
                         <color key="backgroundColor" name="background"/>
                         <constraints>
                             <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="b2f-Wb-2va" secondAttribute="trailing" constant="16" id="AC2-Yp-we5"/>
-                            <constraint firstAttribute="bottom" secondItem="vly-rm-xhe" secondAttribute="bottom" constant="50" id="KUW-Sa-OJn"/>
                             <constraint firstAttribute="bottom" secondItem="b2f-Wb-2va" secondAttribute="bottom" id="L4J-yr-zgk"/>
                             <constraint firstAttribute="bottomMargin" secondItem="EZ7-7F-xXo" secondAttribute="bottom" constant="-34" id="Nec-0k-0Mw"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="top" secondItem="8sT-4Q-JfK" secondAttribute="top" constant="45" id="ZNU-lI-Xb7"/>
-                            <constraint firstItem="8sT-4Q-JfK" firstAttribute="trailing" secondItem="vly-rm-xhe" secondAttribute="trailing" constant="16" id="a5h-Ve-wPK"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="leading" secondItem="8sT-4Q-JfK" secondAttribute="leading" id="fnm-Pj-yKy"/>
                             <constraint firstItem="EZ7-7F-xXo" firstAttribute="centerX" secondItem="V0g-mJ-34J" secondAttribute="centerX" id="kUZ-uS-VnM"/>
                         </constraints>
@@ -427,7 +405,6 @@
                     <connections>
                         <outlet property="doneButton" destination="b2f-Wb-2va" id="i1l-ag-Tag"/>
                         <outlet property="doneButtonBC" destination="L4J-yr-zgk" id="9zr-Zy-mJ8"/>
-                        <outlet property="plusButton" destination="vly-rm-xhe" id="d8j-4b-LvZ"/>
                         <outlet property="tableView" destination="EZ7-7F-xXo" id="Oh8-2h-xGM"/>
                         <segue destination="SGi-zd-M47" kind="show" identifier="backToThoughtsVC" id="h1N-3G-VOJ"/>
                         <segue destination="NfF-hC-bU7" kind="presentation" identifier="addNewThought" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="Bw5-Cg-iRQ"/>
@@ -607,7 +584,7 @@
                             <constraint firstItem="kCX-ul-Jg5" firstAttribute="trailing" secondItem="jaV-89-SPy" secondAttribute="trailing" constant="16" id="XsL-Kf-1az"/>
                             <constraint firstItem="z4G-dk-gtk" firstAttribute="centerX" secondItem="930-w8-p85" secondAttribute="centerX" id="dfI-Sv-InT"/>
                             <constraint firstItem="kCX-ul-Jg5" firstAttribute="trailing" secondItem="qVd-Fm-154" secondAttribute="trailing" constant="16" id="g7y-gK-oW5"/>
-                            <constraint firstItem="qVd-Fm-154" firstAttribute="leading" secondItem="kCX-ul-Jg5" secondAttribute="leading" constant="16" id="gBc-gM-oiO"/>
+                            <constraint firstItem="qVd-Fm-154" firstAttribute="leading" secondItem="930-w8-p85" secondAttribute="leading" constant="16" id="gBc-gM-oiO"/>
                             <constraint firstItem="z4G-dk-gtk" firstAttribute="top" secondItem="qVd-Fm-154" secondAttribute="bottom" constant="16" id="hyG-o7-HDo"/>
                             <constraint firstItem="PgB-op-fZK" firstAttribute="top" secondItem="930-w8-p85" secondAttribute="top" constant="84" id="j7E-v3-bKO"/>
                             <constraint firstItem="jaV-89-SPy" firstAttribute="top" secondItem="930-w8-p85" secondAttribute="top" constant="84" id="w1t-n7-YAO"/>
@@ -633,8 +610,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Bw5-Cg-iRQ"/>
-        <segue reference="h1N-3G-VOJ"/>
+        <segue reference="WDj-KD-8Zi"/>
+        <segue reference="BLx-C9-Vm4"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="arrow.up" catalog="system" width="120" height="128"/>

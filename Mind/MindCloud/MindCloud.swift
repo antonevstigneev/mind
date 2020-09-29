@@ -9,8 +9,16 @@
 import Foundation
 import Alamofire
 
-let sessionManager = Session()
-let requestRetrier = NetworkRequestRetrier()
+
+
+let sharedManager: Session = {
+    let configuration = URLSessionConfiguration.default
+    configuration.waitsForConnectivity = true
+    
+    let manager = Session(configuration: configuration, startRequestsImmediately: true)
+    return manager
+}()
+
 
 
 class MindCloud {
@@ -19,56 +27,75 @@ class MindCloud {
         return UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
     }
     
-    
-    static let url = "http://3.130.38.239:8080"
+//    static let url = "http://3.130.38.239:8080" // aws
+    static let url = "http://192.168.1.47:8000" // localhost
     static let token = UserDefaults.standard.object(forKey: "authorizationToken") as! String
     static let headers: HTTPHeaders = [
         "Authorization": "Bearer \(token)",
         "Accept": "application/json",
     ]
     
+    typealias RequestCompletion = (ThoughtData?, Bool) -> ()
     
-    static func postThought(content: String, timestamp: Int64, completion: @escaping (ThoughtData?, Bool) -> Void) {
+
+    static func processThought(content: String, completion: @escaping RequestCompletion) {
+        
+        let parameters: [String: Any] = [
+            "content": content,
+        ]
+        
+        let request = sharedManager.request("\(url)/api/data",
+                                 method: .post,
+                                 parameters: parameters,
+                                 encoding: JSONEncoding.default,
+                                 headers: nil).validate()
+        
+        getThoughtDataResponse(from: request) { (responseData, success) in
+            completion(responseData, success)
+        }
+    }
+    
+    
+    static func postThought(content: String, timestamp: Int64, completion: @escaping RequestCompletion) {
         
         let parameters: [String: Any] = [
             "content": content,
             "timestamp": timestamp,
         ]
         
-        let request = AF.request("\(url)/api/notes",
+        let request = sharedManager.request("\(url)/api/notes",
                                  method: .post,
                                  parameters: parameters,
                                  encoding: JSONEncoding.default,
                                  headers: headers)
         
-        getThoughtDataResponse(from: request) {(responseData, success) in
-//           debugPrint(responseData)
+        getThoughtDataResponse(from: request) { (responseData, success) in
            completion(responseData, success)
         }
     }
 
 
-    static func updateThought(id: String, upd: [String: Any], completion: @escaping (ThoughtData?, Bool) -> Void) {
+    static func updateThought(id: String, upd: [String: Any], completion: @escaping RequestCompletion) {
         
         let parameters: [String: Any] = [
             "id": id,
             "upd": upd,
         ]
         
-        let request = AF.request("\(url)/api/notes",
+        let request = sharedManager.request("\(url)/api/notes",
                                  method: .post,
                                  parameters: parameters,
                                  encoding: JSONEncoding.default,
                                  headers: headers)
         
-        getThoughtDataResponse(from: request) {(responseData, success) in
-           debugPrint(responseData)
+        getThoughtDataResponse(from: request) { (responseData, success) in
+//           debugPrint(responseData)
            completion(responseData, success)
         }
     }
 
     
-    static func deleteThought(id: String, completion: @escaping (ThoughtData?, Bool) -> Void) {
+    static func deleteThought(id: String, completion: @escaping RequestCompletion) {
         
         let parameters: [String: Any] = [
             "id": id,
@@ -79,37 +106,18 @@ class MindCloud {
             "Accept": "application/json",
         ]
         
-        let request = AF.request("\(url)/api/notes",
+        let request = sharedManager.request("\(url)/api/notes",
                                  method: .post,
                                  parameters: parameters,
                                  encoding: JSONEncoding.default,
                                  headers: headers)
         
-        getThoughtDataResponse(from: request) {(responseData, success) in
+        getThoughtDataResponse(from: request) { (responseData, success) in
            completion(responseData, success)
         }
     }
     
-    
-    
-    static func processThought(content: String, completion: @escaping (ThoughtData?, Bool) -> Void) {
-        
-        let parameters: [String: Any] = [
-            "content": content,
-        ]
-        
-        let request = AF.request("\(url)/api/data",
-                                 method: .post,
-                                 parameters: parameters,
-                                 encoding: JSONEncoding.default,
-                                 headers: nil)
-        
-        getThoughtDataResponse(from: request) {(responseData, success) in
-           completion(responseData, success)
-        }
-    }
-    
-    
+
     static func createAccout(email: String, password: String, publicKey: String, encryptedPrivateKey: String, iv: String) {
         let parameters: [String: Any] = [
             "email": email,
@@ -148,14 +156,14 @@ class MindCloud {
     )}
     
     
-    static func getAuthorizationToken(email: String, password: String, completion: @escaping (String, Bool) -> Void) {
+    static func getAuthorizationToken(email: String, password: String, completion: @escaping (String, Bool) -> ()) {
         var token: String = ""
         let parameters: [String: Any] = [
             "email": email,
             "password": password,
         ]
         
-        AF.request("\(url)/api/token",
+        sharedManager.request("\(url)/api/token",
                    method: .post,
                    parameters: parameters,
                    encoding: JSONEncoding.default,
@@ -179,9 +187,8 @@ class MindCloud {
     }
     
     
-    static func getThoughtDataResponse(from request: DataRequest, completion: @escaping (ThoughtData?, Bool) -> Void) {
+    static func getThoughtDataResponse(from request: DataRequest, completion: @escaping RequestCompletion) {
         request.responseJSON { response in
-            
             switch response.result {
             case .success:
                 guard let data = response.data else { return }
