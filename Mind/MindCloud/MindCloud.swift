@@ -27,8 +27,12 @@ class MindCloud {
         return UserDefaults.standard.object(forKey: "isAuthorized") as! Bool
     }
     
+    class var isConnectedToInternet: Bool {
+        return NetworkReachabilityManager()?.isReachable ?? false
+    }
+    
 //    static let url = "http://3.130.38.239:8080" // aws
-    static let url = "http://192.168.1.47:8000" // localhost
+    static let url = "http://192.168.1.2:8000" // localhost
     static let token = UserDefaults.standard.object(forKey: "authorizationToken") as! String
     static let headers: HTTPHeaders = [
         "Authorization": "Bearer \(token)",

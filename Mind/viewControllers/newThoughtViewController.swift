@@ -94,8 +94,7 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
             object: nil)
         }
         
-        let thoughtCreation = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: thoughtCreation) {
+        DispatchQueue.global(qos: .userInitiated).async {
             
             if MindCloud.isUserAuthorized == false {
                 MindCloud.processThought(content: entryText) {

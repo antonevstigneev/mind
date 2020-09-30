@@ -10,8 +10,6 @@ import Foundation
 import Alamofire
 
 
-var connectivityTitle = "✅ Online"
-
 class NetworkState {
     static let shared = NetworkState()
     let reachabilityManager = NetworkReachabilityManager(host: "www.apple.com")
@@ -20,10 +18,8 @@ class NetworkState {
             switch status {
                             case .reachable:
                                 print("✅ Online")
-                                connectivityTitle = "✅ Online"
                             case .notReachable:
                                 print("⚠️ Offline")
-                                connectivityTitle = "⚠️ Offline"
                             case .unknown:
                                 print("It is unknown whether the network is reachable")
             }

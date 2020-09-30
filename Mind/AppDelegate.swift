@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
         if launchedBefore  {
-            print("Not first launch.")
+//            print("Not first launch.")
         } else {
             print("First launch, setting UserDefaults.")
             UserDefaults.standard.set(true, forKey: "launchedBefore")
@@ -60,7 +60,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Core Data stack
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "MindData")
+        let container = NSPersistentContainer(name: "Mind")
         
         container.loadPersistentStores { (storeDescription, error) in
           if let error = error {

@@ -81,6 +81,7 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.tableFooterView = UIView()
         tableView.allowsSelection = true
         tableView.isEditing = false
         
@@ -93,8 +94,14 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     
-    func updateThoughtData() {
-        let entryText = getselectedThoughtText()
+    @objc func updateThoughtData() {
+//        let entryText = getselectedThoughtText()
+        let entryText = selectedThought.content! // change!
+        
+        if MindCloud.isConnectedToInternet == false {
+            self.showAlert(alertText: "No Internet Connection",
+                           alertMessage: "Unable to proccess thought data, internet connection is needed.")
+        }
         
         DispatchQueue.main.async {
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
@@ -102,9 +109,8 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             NSNotification.Name(rawValue: "thoughtsChanged"),
             object: nil)
         }
-        
-        let thoughtUpdate = DispatchGroup()
-        DispatchQueue.global(qos: .userInitiated).async(group: thoughtUpdate) {
+
+        DispatchQueue.global(qos: .userInitiated).async {
             
             if MindCloud.isUserAuthorized == false {
                 MindCloud.processThought(content: entryText) {
@@ -116,6 +122,7 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
                             self.selectedThought.keywords = responseData?.keywords
                             self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
                             self.selectedThought.embedding = responseData?.embedding
+                            print(responseData as Any)
                             (UIApplication.shared.delegate as! AppDelegate).saveContext()
                         }
                     } else {
@@ -140,12 +147,6 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
                     }
                 }
             }
-        }
-        
-        thoughtUpdate.notify(queue: .main) {
-            NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "thoughtsLoaded"),
-                                            object: nil)
         }
     }
     
@@ -312,8 +313,8 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             cell.thoughtContentTextView.isEditable = true
             cell.thoughtContentTextView.isSelectable = true
             cell.thoughtContentTextView.isScrollEnabled = false
-            cell.thoughtContentTextView.translatesAutoresizingMaskIntoConstraints = true
-            cell.thoughtContentTextView.sizeToFit()
+//            cell.thoughtContentTextView.translatesAutoresizingMaskIntoConstraints = true
+//            cell.thoughtContentTextView.sizeToFit()
             cell.thoughtContentTextView.delegate = self
             
             return cell
@@ -549,15 +550,31 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         if similarThoughts == [] {
-            self.showSpinner()
-            tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
-        } else {
-            tableView.separatorStyle = UITableViewCell.SeparatorStyle.singleLine
+            showRetryRequest()
         }
         DispatchQueue.main.async() {
             self.tableView.reloadData()
         }
     }
+    
+    func showRetryRequest() {
+        // placeholder
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 250, height: 21))
+        label.center = CGPoint(x: self.view.frame.midX, y: self.view.frame.midY - 35)
+        label.textAlignment = .center
+        label.textColor = UIColor(named: "text")
+        label.text = "Thought proccessing failed."
+        self.view.addSubview(label)
+        
+        //retry button
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 21))
+        button.center = self.view.center
+        button.setTitleColor(UIColor(named: "link"), for: .normal)
+        button.setTitle("Retry", for: .normal)
+        button.addTarget(self, action: #selector(updateThoughtData), for: .touchUpInside)
+        self.view.addSubview(button)
+    }
+    
     
     
     // MARK: - Get similar thoughts
