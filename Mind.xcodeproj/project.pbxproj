@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		3A02B79F250F5BCE00900EB6 /* MindCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02B79E250F5BCE00900EB6 /* MindCloud.swift */; };
+		3A0658B22526161F00198757 /* AdjacencyMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */; };
+		3A0658B32526161F00198757 /* AbstractGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658AF2526161F00198757 /* AbstractGraph.swift */; };
+		3A0658B42526161F00198757 /* Edge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B02526161F00198757 /* Edge.swift */; };
+		3A0658B52526161F00198757 /* Vertex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B12526161F00198757 /* Vertex.swift */; };
+		3A0658B82526165E00198757 /* MindGraphTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B72526165E00198757 /* MindGraphTests.swift */; };
 		3A1053182510D8F5009C3E50 /* RequestRetrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1053172510D8F5009C3E50 /* RequestRetrier.swift */; };
 		3A10531A2510E625009C3E50 /* ThoughtData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1053192510E625009C3E50 /* ThoughtData.swift */; };
 		3A10531C2511106C009C3E50 /* NetworkState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A10531B2511106C009C3E50 /* NetworkState.swift */; };
@@ -37,6 +42,11 @@
 /* Begin PBXFileReference section */
 		19F7C3BAB5948E7F2A27D892 /* Pods-Mind.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mind.debug.xcconfig"; path = "Target Support Files/Pods-Mind/Pods-Mind.debug.xcconfig"; sourceTree = "<group>"; };
 		3A02B79E250F5BCE00900EB6 /* MindCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindCloud.swift; sourceTree = "<group>"; };
+		3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdjacencyMatrix.swift; sourceTree = "<group>"; };
+		3A0658AF2526161F00198757 /* AbstractGraph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbstractGraph.swift; sourceTree = "<group>"; };
+		3A0658B02526161F00198757 /* Edge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Edge.swift; sourceTree = "<group>"; };
+		3A0658B12526161F00198757 /* Vertex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vertex.swift; sourceTree = "<group>"; };
+		3A0658B72526165E00198757 /* MindGraphTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindGraphTests.swift; sourceTree = "<group>"; };
 		3A1053172510D8F5009C3E50 /* RequestRetrier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestRetrier.swift; sourceTree = "<group>"; };
 		3A1053192510E625009C3E50 /* ThoughtData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtData.swift; sourceTree = "<group>"; };
 		3A10531B2511106C009C3E50 /* NetworkState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkState.swift; sourceTree = "<group>"; };
@@ -106,6 +116,18 @@
 			path = MindCloud;
 			sourceTree = "<group>";
 		};
+		3A06586425260E2200198757 /* MIndGraph */ = {
+			isa = PBXGroup;
+			children = (
+				3A0658AF2526161F00198757 /* AbstractGraph.swift */,
+				3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */,
+				3A0658B02526161F00198757 /* Edge.swift */,
+				3A0658B12526161F00198757 /* Vertex.swift */,
+				3A0658B72526165E00198757 /* MindGraphTests.swift */,
+			);
+			path = MIndGraph;
+			sourceTree = "<group>";
+		};
 		3A3FA8EE2437C0CA0011F7EA = {
 			isa = PBXGroup;
 			children = (
@@ -129,6 +151,7 @@
 			children = (
 				3A627E1524993C870007DF22 /* Utils */,
 				3A02B79D250F5BA700900EB6 /* MindCloud */,
+				3A06586425260E2200198757 /* MIndGraph */,
 				3AC50FC2246B1FB8004403A0 /* ViewControllers */,
 				3A3FA9002437C0CA0011F7EA /* Main.storyboard */,
 				3AE48B52245A20B200952D36 /* MindDebug.entitlements */,
@@ -294,12 +317,15 @@
 			files = (
 				3ABE7BDD2513AD7600A467E2 /* ArraySlice.swift in Sources */,
 				3A2BE3D224FD5382006A10CA /* thoughtViewController.swift in Sources */,
+				3A0658B42526161F00198757 /* Edge.swift in Sources */,
+				3A0658B52526161F00198757 /* Vertex.swift in Sources */,
 				3A23C1552513911A00E8FCC5 /* Mind.xcdatamodeld in Sources */,
 				3AC332E2243B78F400FA0D40 /* thoughtsViewController.swift in Sources */,
 				3A6DB4F825234DDC0000CBFA /* ValueTransformer.swift in Sources */,
 				3A1053182510D8F5009C3E50 /* RequestRetrier.swift in Sources */,
 				3AA97E62250E2B4F00E4372E /* mindCloudViewController.swift in Sources */,
 				3A8A20A624A67CC2006EFE66 /* SpinnerIndicator.swift in Sources */,
+				3A0658B32526161F00198757 /* AbstractGraph.swift in Sources */,
 				3A02B79F250F5BCE00900EB6 /* MindCloud.swift in Sources */,
 				3A3FA8FB2437C0CA0011F7EA /* AppDelegate.swift in Sources */,
 				3A3FA8FD2437C0CA0011F7EA /* SceneDelegate.swift in Sources */,
@@ -307,9 +333,11 @@
 				3A10532025118ABA009C3E50 /* Authorization.swift in Sources */,
 				3A141B4E24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift in Sources */,
 				3A627E1724993C9A0007DF22 /* SimilarityDistance.swift in Sources */,
+				3A0658B22526161F00198757 /* AdjacencyMatrix.swift in Sources */,
 				3A10531C2511106C009C3E50 /* NetworkState.swift in Sources */,
 				3A10531E25114B0B009C3E50 /* SFSymbols.swift in Sources */,
 				3A7972DC2453434500884921 /* newThoughtViewController.swift in Sources */,
+				3A0658B82526165E00198757 /* MindGraphTests.swift in Sources */,
 				3AC043F12516253D0087566D /* ThoughtExtension.swift in Sources */,
 				3AB02CDC24BF45B50007A26F /* Animations.swift in Sources */,
 				3A1EF2DC250BB78B00496301 /* ThoughtTableViewCell.swift in Sources */,

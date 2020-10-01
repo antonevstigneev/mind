@@ -25,22 +25,13 @@ extension Thought {
     func toggleState(_ state: ThoughtState) {
         
         var options: [ThoughtState: Bool] = [
-            .favorited: false,
-            .locked: false,
-            .archived: false,
+            .favorited: self.favorited,
+            .locked: self.locked,
+            .archived: self.archived,
         ]
-    
         options[state]!.toggle()
-        
-        switch state {
-            case .favorited:
-                self.favorited.toggle()
-            case .locked:
-                self.locked.toggle()
-            case .archived:
-                self.archived.toggle()
-        }
-        
+        self.setValue(options[state]!, forKey: state.rawValue)
+
         // Update thought data
         NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "thoughtsChanged"), object: nil)

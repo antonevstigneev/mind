@@ -52,7 +52,7 @@ class MindCloud {
                                  method: .post,
                                  parameters: parameters,
                                  encoding: JSONEncoding.default,
-                                 headers: nil).validate()
+                                 headers: nil)
         
         getThoughtDataResponse(from: request) { (responseData, success) in
             completion(responseData, success)

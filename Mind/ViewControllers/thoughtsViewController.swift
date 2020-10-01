@@ -131,6 +131,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.tableFooterView = UIView()
         tableView.allowsSelection = true
         tableView.isEditing = false
         tableView.addSubview(refreshControl)
@@ -170,12 +171,9 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     override func viewWillAppear(_ animated: Bool) {
         fetchData()
         reloadSearch()
+        testAdjacencyMatrixGraphDescription()
         
-        if Connectivity.isConnectedToInternet {
-            print("✅ Internet is available.")
-        } else {
-            print("⚠️ Internet is not available")
-        }
+//        thoughts.forEach({print($0.embedding, $0.content)})
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -226,12 +224,12 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         let archive = UIAction(title: archivedLabel, image: SFSymbols.archive) { _ in
             self.archiveThought(self.thought, indexPath)
         }
-        let delete = UIAction(title: "Delete", image: SFSymbols.trash, attributes: .destructive) { _ in
+        let remove = UIAction(title: "Remove", image: SFSymbols.remove, attributes: .destructive) { _ in
             self.deleteThought(self.thought, indexPath)
         }
         
         if self.thought.archived {
-            return UIMenu(title: "", children: [favorite, lock, archive, delete])
+            return UIMenu(title: "", children: [favorite, lock, archive, remove])
         } else {
             return UIMenu(title: "", children: [favorite, lock, archive])
         }
@@ -286,7 +284,15 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
 //        cell.thoughtContentText.addHyperLinksToText(originalText: content, hyperLinks: thought.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0) // ! Thread 1: Fatal error: Unexpectedly found nil while unwrapping an Optional value
         cell.thoughtContentText.textColor = UIColor(named: "text")
         
-        if thought.favorited {
+        if thought.embedding == nil {
+            cell.retryButton.isHidden = false
+            cell.thoughtContentTextRC.constant = 35
+        } else {
+            cell.retryButton.isHidden = true
+            cell.thoughtContentTextRC.constant = 16
+        }
+        
+        if thought.favorited && thought.embedding != nil {
             cell.favoritedButton.isHidden = false
             cell.thoughtContentTextRC.constant = 35
             
@@ -1052,6 +1058,14 @@ extension UIViewController {
             self.present(alertController, animated: true, completion: nil)
         }
     }
+    
+    //Show a basic alert
+    func showAlert(alertText : String, alertMessage : String) {
+        let alert = UIAlertController(title: alertText, message: alertMessage, preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        
+        self.present(alert, animated: true, completion: nil)
+    }
 }
 
 
@@ -1063,7 +1077,6 @@ extension String {
         return size.width
     }
 }
-
 
 
 
