@@ -24,12 +24,13 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     // MARK: - Variables
     var thoughts: [Thought] = [] {
+        willSet {
+            DispatchQueue.main.async {
+                self.placeholderView.removeFromSuperview()
+            }
+        }
         didSet {
-            if thoughts.count > 0 {
-                DispatchQueue.main.async {
-                    self.placeholderView.removeFromSuperview()
-                }
-            } else {
+            if thoughts.count == 0 {
                 DispatchQueue.main.async {
                     self.addPlaceholderView()
                 }
@@ -1010,46 +1011,6 @@ extension thoughtsViewController {
 
 
 extension thoughtsViewController {
-
-    @objc func setupPlaceholder() {
-        
-        let iconOptions: [ThoughtsFilter: UIImage] = [
-            .favorite: UIImage(systemName: "star.fill")!,
-            .locked: UIImage(systemName: "lock.fill")!,
-            .archived: UIImage(systemName: "archivebox.fill")!,
-            .recent: UIImage(systemName: "clock")!,
-        ]
-        
-        let selectedIcon = iconOptions[selectedFilter]!
-        
-        let placeholderIcon = UIImageView()
-        placeholderIcon.frame = CGRect(x: 0, y: 0, width: selectedIcon.size.width * 3.5,
-                            height: selectedIcon.size.height * 3.5)
-        placeholderIcon.center = self.view.center
-        placeholderIcon.image = selectedIcon
-        placeholderIcon.tintColor = UIColor(named: "placeholder")
-        self.view.addSubview(placeholderIcon)
-        
-        let placeholderTitle = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.maxX, height: 21))
-        placeholderTitle.center = CGPoint(x: self.view.frame.midX, y: placeholderIcon.frame.maxY + 45)
-        placeholderTitle.textAlignment = .center
-        placeholderTitle.textColor = UIColor(named: "placeholder")
-        placeholderTitle.font = placeholderTitle.font.withSize(26)
-        placeholderTitle.text = "No \(selectedFilter.rawValue)"
-        self.view.addSubview(placeholderTitle)
-        
-        let placeholderMessage = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.maxX, height: 21))
-        placeholderMessage.center = CGPoint(x: self.view.frame.midX, y: placeholderTitle.frame.maxY + 25)
-        placeholderMessage.textAlignment = .center
-        placeholderMessage.textColor = UIColor(named: "placeholder")
-        placeholderMessage.font = placeholderMessage.font.withSize(16)
-        placeholderMessage.text = "Your \(selectedFilter.rawValue.lowercased()) thoughts will appear here."
-        self.view.addSubview(placeholderMessage)
-    }
-}
-
-
-extension thoughtsViewController {
     
     func addPlaceholderView() {
         placeholderView = UIView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
@@ -1060,7 +1021,7 @@ extension thoughtsViewController {
             .favorite: UIImage(systemName: "star.fill")!,
             .locked: UIImage(systemName: "lock.fill")!,
             .archived: UIImage(systemName: "archivebox.fill")!,
-            .recent: UIImage(systemName: "clock")!,
+            .recent: UIImage(systemName: "clock.fill")!,
         ]
         
         let selectedIcon = iconOptions[selectedFilter]!
