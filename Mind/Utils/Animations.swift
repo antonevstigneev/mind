@@ -53,3 +53,29 @@ public extension UITableView {
 }
 
 
+public extension UITableView {
+    func scrollToTheTop() {
+        if self.visibleCells.isEmpty == false {
+            self.scrollToRow(at: IndexPath(row: 0, section: 0),
+                                       at: .top, animated: false)
+        }
+    }
+}
+
+
+// MARK: - UIButton animation
+public extension UIView {
+    
+    func animate() {
+        UIView.animate(withDuration: 0.1, delay: 0.0, usingSpringWithDamping: 0.2,
+                       initialSpringVelocity: 0.1, options: [.allowUserInteraction, .curveEaseIn], animations: {
+            self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        }) { (_) in
+            UIView.animate(withDuration: 0.1, delay: 0.0, usingSpringWithDamping: 0.2,
+                           initialSpringVelocity: 0.1, options: [.allowUserInteraction, .curveEaseOut], animations: {
+                self.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+            }, completion: nil)
+        }
+    }
+}
+

@@ -17,18 +17,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        setupDefaultNavigationBarStyles()
-        
         let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
-        if launchedBefore  {
-//            print("Not first launch.")
-        } else {
-            print("First launch, setting UserDefaults.")
+        if launchedBefore == false {
             UserDefaults.standard.set(true, forKey: "launchedBefore")
             UserDefaults.standard.set(false, forKey: "isAuthorized")
         }
         
-        // add network reachability observer on app start
+        setupDefaultNavigationBarStyles()
+        
         NetworkState.shared.startNetworkReachabilityObserver()
         
         return true

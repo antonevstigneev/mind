@@ -14,6 +14,7 @@ import UIKit
 var context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
 
+// MARK: - Thought actions
 extension Thought {
     
     enum ThoughtState: String {
@@ -32,9 +33,6 @@ extension Thought {
         options[state]!.toggle()
         self.setValue(options[state]!, forKey: state.rawValue)
 
-        // Update thought data
-        NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "thoughtsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
         if MindCloud.isUserAuthorized {
             MindCloud.updateThought(id: self.id!, upd: [state.rawValue: options[state]!]) {
@@ -46,10 +44,8 @@ extension Thought {
         }
     }
     
-    func delete() {
+    func remove() {
         context.delete(self)
-        NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "thoughtsChanged"), object: nil)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
         if MindCloud.isUserAuthorized {
             MindCloud.deleteThought(id: self.id!) { (responseData, success) in
@@ -60,5 +56,4 @@ extension Thought {
         }
     }
 }
-
 

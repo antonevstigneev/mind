@@ -9,5 +9,6 @@ target 'Mind' do
   pod 'CryptoSwift', '~> 1.0'
   pod 'SwiftyRSA'
   pod 'Alamofire', '~> 5.2'
+  pod 'Reveal-SDK', :configurations => ['Debug']
 
 end

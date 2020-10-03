@@ -21,7 +21,8 @@ func testAdjacencyMatrixGraphDescription() {
     
     for i in 0..<verticesCount {
         for j in i+1..<verticesCount {
-            graph.addDirectedEdge(vertices[i], to: vertices[j], withWeight: Double.random(in: 0..<1))
+            graph.addDirectedEdge(vertices[i], to: vertices[j],
+                                  withWeight: Double.random(in: 0..<1))
         }
     }
     

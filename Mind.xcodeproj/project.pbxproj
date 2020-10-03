@@ -29,7 +29,6 @@
 		3A3FA9022437C0CA0011F7EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A3FA9002437C0CA0011F7EA /* Main.storyboard */; };
 		3A3FA9072437C0CA0011F7EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A3FA9062437C0CA0011F7EA /* Assets.xcassets */; };
 		3A627E1724993C9A0007DF22 /* SimilarityDistance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A627E1624993C9A0007DF22 /* SimilarityDistance.swift */; };
-		3A6DB4F825234DDC0000CBFA /* ValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A6DB4F725234DDC0000CBFA /* ValueTransformer.swift */; };
 		3A7972DC2453434500884921 /* newThoughtViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7972DB2453434500884921 /* newThoughtViewController.swift */; };
 		3A8A20A624A67CC2006EFE66 /* SpinnerIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */; };
 		3AA97E62250E2B4F00E4372E /* mindCloudViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA97E61250E2B4F00E4372E /* mindCloudViewController.swift */; };
@@ -64,7 +63,6 @@
 		3A3FA9062437C0CA0011F7EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A3FA90B2437C0CA0011F7EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3A627E1624993C9A0007DF22 /* SimilarityDistance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarityDistance.swift; sourceTree = "<group>"; };
-		3A6DB4F725234DDC0000CBFA /* ValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValueTransformer.swift; sourceTree = "<group>"; };
 		3A7972DB2453434500884921 /* newThoughtViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = newThoughtViewController.swift; sourceTree = "<group>"; };
 		3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerIndicator.swift; sourceTree = "<group>"; };
 		3AA97E61250E2B4F00E4372E /* mindCloudViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mindCloudViewController.swift; sourceTree = "<group>"; };
@@ -173,7 +171,6 @@
 				3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */,
 				3AB02CDB24BF45B50007A26F /* Animations.swift */,
 				3ABE7BDC2513AD7600A467E2 /* ArraySlice.swift */,
-				3A6DB4F725234DDC0000CBFA /* ValueTransformer.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -185,8 +182,8 @@
 				3AC332E1243B78F400FA0D40 /* thoughtsViewController.swift */,
 				3A2BE3D124FD5382006A10CA /* thoughtViewController.swift */,
 				3A7972DB2453434500884921 /* newThoughtViewController.swift */,
-				3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */,
 				3A141B4D24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift */,
+				3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */,
 				3AC043F02516253D0087566D /* ThoughtExtension.swift */,
 			);
 			path = ViewControllers;
@@ -321,7 +318,6 @@
 				3A0658B52526161F00198757 /* Vertex.swift in Sources */,
 				3A23C1552513911A00E8FCC5 /* Mind.xcdatamodeld in Sources */,
 				3AC332E2243B78F400FA0D40 /* thoughtsViewController.swift in Sources */,
-				3A6DB4F825234DDC0000CBFA /* ValueTransformer.swift in Sources */,
 				3A1053182510D8F5009C3E50 /* RequestRetrier.swift in Sources */,
 				3AA97E62250E2B4F00E4372E /* mindCloudViewController.swift in Sources */,
 				3A8A20A624A67CC2006EFE66 /* SpinnerIndicator.swift in Sources */,

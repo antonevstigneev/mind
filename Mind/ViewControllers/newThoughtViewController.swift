@@ -14,45 +14,36 @@ import Alamofire
 
 class newThoughtViewController: UIViewController, UITextViewDelegate {
     
+    
     // Reference to NSPersistent Container context
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     
     // Outlets
     @IBOutlet weak var textInputView: UITextView!
     @IBOutlet weak var sendButton: UIButton!
     
+    
     // Constraints
     @IBOutlet weak var textInputViewBC: NSLayoutConstraint!
     @IBOutlet weak var sendButtonBC: NSLayoutConstraint!
     
+    
     // Actions
-    @IBAction func sendButtonTouchDownInside(_ sender: Any) {
+    @IBAction func sendButtonTouchDownInside(_ sender: UIButton) {
+        sender.animate()
         saveNewThought()
         emptyDraftData()
     }
-    @IBAction func sendButtonTouchDown(_ sender: UIButton) {
-        sender.animateButtonDown()
-    }
-    @IBAction func sendButtonTouchUpOutside(_ sender: UIButton) {
-        sender.animateButtonUp()
-    }
     
-
+    
+    // MARK: - View initialization
     override func viewDidLoad() {
         super.viewDidLoad()
-        textInputView.becomeFirstResponder()
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
-    
+        setupNotifications()
+ 
         // textInput initial setup
+        textInputView.becomeFirstResponder()
         textInputView.text = UserDefaults.standard.value(forKey: "Draft") as? String
         textInputView.delegate = self
         textInputView.tintColor = UIColor(named: "text")
@@ -60,11 +51,7 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
         // sendButton initial setup
         sendButton.layer.cornerRadius = sendButton.frame.size.height / 2.0
         sendButton.clipsToBounds = true
-        if isTextInputNotEmpty(textView: textInputView) {
-            sendButton.show()
-        } else {
-            sendButton.hide()
-        }
+        sendButton.hide()
     }
     
     
@@ -202,6 +189,19 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
 }
 
 
-
+extension newThoughtViewController {
+    
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
+    }
+}
 
 

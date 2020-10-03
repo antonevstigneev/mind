@@ -23,31 +23,29 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     // MARK: - Variables
-    var thoughts: [Thought] = []
+    var thoughts: [Thought] = [] {
+        didSet {
+            if thoughts.count > 0 {
+                DispatchQueue.main.async {
+                    self.placeholderView.removeFromSuperview()
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.addPlaceholderView()
+                }
+            }
+        }
+    }
     var thought: Thought!
-    var keywordsCollection: [String] = []
-    var mostFrequentKeywords: [String] = []
-    var selectedKeyword: String = ""
-    var keywordsClusters: [[String]] = []
     var selectedFilter: ThoughtsFilter = .recent
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
     var selectedInterfaceStyle: UIUserInterfaceStyle = .unspecified
-    
-    
-    /// An authentication context stored at class scope so it's available for use during UI updates.
     var authContext = LAContext()
-
-    /// The available states of being logged in or not.
-    enum AuthenticationState {
-        case loggedin, loggedout
-    }
-
-    /// The current authentication state.
-    var state = AuthenticationState.loggedout {
-        // Update the UI on a change.
-        didSet {}
-    }
+    enum AuthenticationState { case loggedin, loggedout }
+    var state = AuthenticationState.loggedout { didSet {} }
+    var placeholderView = UIView()
+    
     
     // MARK: - Outlets
     @IBOutlet weak var mindLabel: UILabel!
@@ -58,15 +56,8 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     // MARK: - Actions
-    @IBAction func plusButtonTouchDownInside(_ sender: Any) {
-        plusButton.animateButtonUp()
-        performSegue(withIdentifier: "toNewThoughtViewController", sender: sender)
-    }
-    @IBAction func plusButtonTouchDown(_ sender: UIButton) {
-        plusButton.animateButtonDown()
-    }
-    @IBAction func plusButtonTouchUpOutside(_ sender: UIButton) {
-        plusButton.animateButtonUp()
+    @IBAction func plusButtonTouchDownInside(_ sender: UIButton) {
+        sender.animate()
     }
     @IBAction func moreButtonTouchUpInside(_ sender: Any) {
         showMoreButtonMenu()
@@ -74,10 +65,8 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func filterButtonTouchUpInside(_ sender: Any) {
         showFilterMenu()
     }
-    
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
-        fetchData()
-        tableView.reloadData()
+        fetchThoughtsData()
     }
     
     
@@ -86,35 +75,12 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         setupNotifications()
         setupViews()
-        setupLabelTap()
     }
     
-    func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(showThoughtsForSelectedKeyword),
-        name: NSNotification.Name(rawValue: "thoughtKeywordClicked"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(fetchData),
-        name: NSNotification.Name(rawValue: "thoughtsChanged"),
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
-    }
     
     func setupViews() {
         authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-        // Set the initial app state. This impacts the initial state of the UI as well.
-        state = .loggedout
+        self.state = .loggedout
         
         // navigationController initial setup
         self.navigationItem.searchController = searchController
@@ -143,24 +109,16 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
         refreshControl.alpha = 0
-    }
-    
-    func setupLabelTap() {
+        
+        // label
         let labelTap = UITapGestureRecognizer(target: self, action: #selector(self.mindTapped(_:)))
         self.mindLabel.isUserInteractionEnabled = true
         self.mindLabel.addGestureRecognizer(labelTap)
     }
+     
     
     @objc func mindTapped(_ sender: UITapGestureRecognizer) {
-        let indexPath = IndexPath(row: 0, section: 0)
-        if self.thoughts.isEmpty == false {
-            self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
-        }
-    }
-    
-    @objc func showThoughtsForSelectedKeyword() {
-        searchController.searchBar.text = "#\(selectedKeyword)"
-        reloadSearch()
+        self.tableView.scrollToTheTop()
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
@@ -169,11 +127,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        fetchData()
-        reloadSearch()
-        testAdjacencyMatrixGraphDescription()
-        
-//        thoughts.forEach({print($0.embedding, $0.content)})
+        fetchThoughtsData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -225,7 +179,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
             self.archiveThought(self.thought, indexPath)
         }
         let remove = UIAction(title: "Remove", image: SFSymbols.remove, attributes: .destructive) { _ in
-            self.deleteThought(self.thought, indexPath)
+            self.removeThought(self.thought, indexPath)
         }
         
         if self.thought.archived {
@@ -241,21 +195,21 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     public func lockThought(_ thought: Thought, _ indexPath: IndexPath) {
-        thought.toggleState(.locked)
         self.thoughts.remove(at: indexPath.row)
         self.tableView.deleteRows(at: [indexPath], with: .fade)
+        thought.toggleState(.locked)
     }
 
     public func archiveThought(_ thought: Thought, _ indexPath: IndexPath) {
-        thought.toggleState(.archived)
         self.thoughts.remove(at: indexPath.row)
         self.tableView.deleteRows(at: [indexPath], with: .fade)
+        thought.toggleState(.archived)
     }
 
-    public func deleteThought(_ thought: Thought, _ indexPath: IndexPath) {
-        let actionTitle = "Are you sure you want to delete this?"
-        postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
-            thought.delete()
+    public func removeThought(_ thought: Thought, _ indexPath: IndexPath) {
+        let actionTitle = "Are you sure you want to remove this thought?"
+        postActionSheet(title: actionTitle, message: "", confirmation: "Remove", success: { () -> Void in
+            thought.remove()
             self.thoughts.remove(at: indexPath.row)
             self.tableView.deleteRows(at: [indexPath], with: .fade)
             
@@ -280,8 +234,11 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         
         cell.thoughtContentText.delegate = self
         
-        cell.thoughtContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-//        cell.thoughtContentText.addHyperLinksToText(originalText: content, hyperLinks: thought.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0) // ! Thread 1: Fatal error: Unexpectedly found nil while unwrapping an Optional value
+        if thought.keywords != nil {
+            cell.thoughtContentText.highlightKeywords(originalText: content, keywords: thought.keywords!, fontSize: 16, lineSpacing: 3.0)
+        }
+        
+        cell.thoughtContentText.font = UIFont.systemFont(ofSize: 16)
         cell.thoughtContentText.textColor = UIColor(named: "text")
         
         if thought.embedding == nil {
@@ -335,11 +292,10 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         // check if the tap location has a certain attribute
          let attributeName = NSAttributedString.Key.link
          let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
-         if let clickedKeyword = attributeValue {
-             searchController.searchBar.text = "#\(clickedKeyword)"
-             reloadSearch()
+        
+         if let tappedKeyword = attributeValue {
+            showThoughtsForSelectedKeyword(tappedKeyword as! String)
          }
-
     }
     
     
@@ -353,21 +309,18 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     // MARK: - Fetch thoughts data
-    @objc func fetchData() {
+    @objc func fetchThoughtsData() {
         let request: NSFetchRequest = Thought.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         do {
             thoughts = try context.fetch(request)
             applyThoughtsFilter(selectedFilter)
- 
-            let thoughtsLoading = DispatchGroup()
-            DispatchQueue.main.async(group: thoughtsLoading) {
+            
+            DispatchQueue.main.async {
                 self.tableView.reloadData()
-            }
-            thoughtsLoading.notify(queue: .main) {
                 NotificationCenter.default.post(name:
-                    NSNotification.Name(rawValue: "thoughtsLoaded"),
+                    NSNotification.Name(rawValue: "thoughtsDataFetched"),
                                                 object: nil)
             }
         } catch {
@@ -375,24 +328,22 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    @objc func fetchDataForSelectedKeyword() {
+    @objc func showThoughtsForSelectedKeyword(_ keyword: String) {
+        
+        searchController.searchBar.text = "#\(keyword)"
+        
         let request: NSFetchRequest = Thought.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         request.sortDescriptors = [sortDescriptor]
         do {
             self.tableView.hide()
-            var thoughtsWithSelectedKeyword: [Thought] = []
             thoughts = try context.fetch(request)
-            for thought in thoughts {
-                if thought.keywords!.contains(selectedKeyword) {
-                    thoughtsWithSelectedKeyword.append(thought)
-                }
-            }
+            thoughts = thoughts.filter { $0.keywords!.contains(keyword) }
+
             DispatchQueue.main.async {
-                self.thoughts = thoughtsWithSelectedKeyword
                 self.applyThoughtsFilter(.recent)
                 self.tableView.reloadData()
-                self.scrollToTopTableView()
+                self.tableView.scrollToTheTop()
                 self.tableView.show()
             }
         } catch {
@@ -407,21 +358,16 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(thoughtsViewController.reloadSearch), object: nil)
             self.perform(#selector(thoughtsViewController.reloadSearch), with: nil, afterDelay: 1.0)
         } else {
-            fetchData()
+            fetchThoughtsData()
         }
     }
     
     @objc func reloadSearch() {
         guard let searchText = searchController.searchBar.text else { return }
         if !searchText.isEmpty {
-            if searchText.hasPrefix("#") {
-                selectedKeyword = String(searchController.searchBar.text!.dropFirst())
-                fetchDataForSelectedKeyword()
-            } else {
-                performSimilaritySearch(searchText)
-            }
+            performSimilaritySearch(searchText)
         } else {
-            fetchData()
+            fetchThoughtsData()
         }
         searchController.dismiss(animated: false)
     }
@@ -433,7 +379,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         tableView.hide()
         thoughts = []
         tableView.reloadData()
-        fetchData()
+        fetchThoughtsData()
         
         self.showSpinner()
         DispatchQueue.global(qos: .userInitiated).async {
@@ -475,7 +421,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
                 self.thoughts = similarThoughts.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
-                self.scrollToTopTableView()
+                self.tableView.scrollToTheTop()
                 self.removeSpinner()
             }
         }
@@ -598,14 +544,6 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         return thoughtsEmbeddings
     }
 
-    
-    func scrollToTopTableView() {
-        if self.thoughts.isEmpty == false {
-            self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
-        }
-    }
-    
-    
     func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Double])] {
         var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
         
@@ -665,7 +603,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
                     self.authenticateWithBiometrics()
                 } else {
                     self.state = .loggedout
-                    self.fetchData()
+                    self.fetchThoughtsData()
                 }
             }
             if title == selectedFilter.rawValue {
@@ -748,14 +686,14 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
                         DispatchQueue.main.async { [unowned self] in
                             self.state = .loggedin
                             self.tableView.show()
-                            self.fetchData()
+                            self.fetchThoughtsData()
                         }
 
                     } else {
                         print(error?.localizedDescription ?? "Failed to authenticate")
                         
                         self.selectedFilter = ThoughtsFilter.recent
-                        self.fetchData()
+                        self.fetchThoughtsData()
                         // Fall back to a asking for username and password.
                         // ...
                     }
@@ -798,7 +736,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         let cancelAction = UIAlertAction(title: "Cancel", style: .default) { (UIAlertAction) in
             print("Cancel was pressed")
             self.selectedFilter = ThoughtsFilter.recent
-            self.fetchData()
+            self.fetchThoughtsData()
         }
         alertController.addAction(cancelAction)
 
@@ -916,21 +854,6 @@ public extension UIImage {
 }
 
 
-extension UIView {
-    func animateButtonDown() {
-        UIView.animate(withDuration: 0.1, delay: 0.0, options: [.allowUserInteraction, .curveEaseIn], animations: {
-            self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-        }, completion: nil)
-    }
-    
-    func animateButtonUp() {
-        UIView.animate(withDuration: 0.1, delay: 0.0, options: [.allowUserInteraction, .curveEaseOut], animations: {
-            self.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
-        }, completion: nil)
-    }
-}
-
-
 extension UISearchBar {
     func setPlaceholderTextColorTo(color: UIColor) {
         let textFieldInsideSearchBar = self.value(forKey: "searchField") as? UITextField
@@ -988,50 +911,31 @@ extension thoughtsViewController {
 
 extension UITextView {
     
-    func addHyperLinksToText(originalText: String, hyperLinks: [String], fontSize: Int, fontWeight: UIFont.Weight, lineSpacing: CGFloat) {
+    func highlightKeywords(originalText: String, keywords: [String], fontSize: Int, lineSpacing: CGFloat, fontWeight: UIFont.Weight = .regular) {
         let style = NSMutableParagraphStyle()
         style.alignment = .left
         style.lineSpacing = lineSpacing
         
-        if hyperLinks.count > 0 {
-            let attributedOriginalText = NSMutableAttributedString(string: originalText)
-            for hyperLink in hyperLinks {
-                let linkRange = attributedOriginalText.mutableString.range(of: hyperLink)
-                let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
-                attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: hyperLink, range: linkRange)
-                attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
-                attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
-            }
-            self.linkTextAttributes = [
-                NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
-                NSAttributedString.Key.underlineStyle: 0,
-            ]
-            
-            self.attributedText = attributedOriginalText
-        } else {
-            let attributes: [NSAttributedString.Key : Any] = [
-                NSAttributedString.Key.paragraphStyle: style,
-                NSAttributedString.Key.font: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight)
-            ]
-            let attributedOriginalText = NSMutableAttributedString(string: originalText, attributes: attributes)
-            
-            self.attributedText = attributedOriginalText
+        let attributedOriginalText = NSMutableAttributedString(string: originalText)
+        for keyword in keywords {
+            let linkRange = attributedOriginalText.mutableString.range(of: keyword)
+            let fullRange = NSRange(location: 0, length: attributedOriginalText.length)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.link, value: keyword, range: linkRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.paragraphStyle, value: style, range: fullRange)
+            attributedOriginalText.addAttribute(NSAttributedString.Key.font, value: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight), range: fullRange)
         }
+        self.linkTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor(named: "link")!,
+            NSAttributedString.Key.underlineStyle: 0]
+        
+        self.attributedText = attributedOriginalText
     }
     
-    func clearTextStyles(originalText: String, fontSize: Int = 21, fontWeight: UIFont.Weight = .regular, lineSpacing: CGFloat) {
+    func addLineSpacing(originalText: String, lineSpacing: CGFloat) {
         let style = NSMutableParagraphStyle()
-        style.alignment = .left
         style.lineSpacing = lineSpacing
-        
-        let attributes: [NSAttributedString.Key : Any] = [
-            NSAttributedString.Key.paragraphStyle: style,
-            NSAttributedString.Key.font: UIFont.systemFont(ofSize: CGFloat(fontSize), weight: fontWeight)
-        ]
-        
-        let attributedOriginalText = NSMutableAttributedString(string: originalText, attributes: attributes)
-
-        self.attributedText = attributedOriginalText
+        let attributes = [NSAttributedString.Key.paragraphStyle : style]
+        self.attributedText = NSAttributedString(string: originalText, attributes:attributes)
     }
 }
 
@@ -1079,4 +983,111 @@ extension String {
 }
 
 
+extension thoughtsViewController {
+    
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(showThoughtsForSelectedKeyword),
+        name: NSNotification.Name(rawValue: "thoughtKeywordClicked"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(fetchThoughtsData),
+        name: NSNotification.Name(rawValue: "thoughtsChanged"),
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
+    }
+}
 
+
+extension thoughtsViewController {
+
+    @objc func setupPlaceholder() {
+        
+        let iconOptions: [ThoughtsFilter: UIImage] = [
+            .favorite: UIImage(systemName: "star.fill")!,
+            .locked: UIImage(systemName: "lock.fill")!,
+            .archived: UIImage(systemName: "archivebox.fill")!,
+            .recent: UIImage(systemName: "clock")!,
+        ]
+        
+        let selectedIcon = iconOptions[selectedFilter]!
+        
+        let placeholderIcon = UIImageView()
+        placeholderIcon.frame = CGRect(x: 0, y: 0, width: selectedIcon.size.width * 3.5,
+                            height: selectedIcon.size.height * 3.5)
+        placeholderIcon.center = self.view.center
+        placeholderIcon.image = selectedIcon
+        placeholderIcon.tintColor = UIColor(named: "placeholder")
+        self.view.addSubview(placeholderIcon)
+        
+        let placeholderTitle = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.maxX, height: 21))
+        placeholderTitle.center = CGPoint(x: self.view.frame.midX, y: placeholderIcon.frame.maxY + 45)
+        placeholderTitle.textAlignment = .center
+        placeholderTitle.textColor = UIColor(named: "placeholder")
+        placeholderTitle.font = placeholderTitle.font.withSize(26)
+        placeholderTitle.text = "No \(selectedFilter.rawValue)"
+        self.view.addSubview(placeholderTitle)
+        
+        let placeholderMessage = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.maxX, height: 21))
+        placeholderMessage.center = CGPoint(x: self.view.frame.midX, y: placeholderTitle.frame.maxY + 25)
+        placeholderMessage.textAlignment = .center
+        placeholderMessage.textColor = UIColor(named: "placeholder")
+        placeholderMessage.font = placeholderMessage.font.withSize(16)
+        placeholderMessage.text = "Your \(selectedFilter.rawValue.lowercased()) thoughts will appear here."
+        self.view.addSubview(placeholderMessage)
+    }
+}
+
+
+extension thoughtsViewController {
+    
+    func addPlaceholderView() {
+        placeholderView = UIView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
+        placeholderView.center = self.view.center
+        self.view.addSubview(placeholderView)
+        
+        let iconOptions: [ThoughtsFilter: UIImage] = [
+            .favorite: UIImage(systemName: "star.fill")!,
+            .locked: UIImage(systemName: "lock.fill")!,
+            .archived: UIImage(systemName: "archivebox.fill")!,
+            .recent: UIImage(systemName: "clock")!,
+        ]
+        
+        let selectedIcon = iconOptions[selectedFilter]!
+        let selectedIconWidth = selectedIcon.size.width * 3.5
+        let selectedIconHeight = selectedIcon.size.height * 3.5
+        
+        let placeholderIcon = UIImageView(frame: CGRect(x: 0, y: 0, width: selectedIconWidth, height: selectedIconHeight))
+        placeholderIcon.center = CGPoint(x: placeholderView.frame.size.width  / 2,
+                                         y: placeholderView.frame.size.height / 2)
+        placeholderIcon.image = selectedIcon
+        placeholderIcon.tintColor = UIColor(named: "placeholder")
+        self.placeholderView.addSubview(placeholderIcon)
+        
+        let placeholderTitle = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.frame.maxX, height: 21))
+        placeholderTitle.center = CGPoint(x: placeholderIcon.frame.midX, y: placeholderIcon.frame.maxY + 45)
+        placeholderTitle.textAlignment = .center
+        placeholderTitle.textColor = UIColor(named: "placeholder")
+        placeholderTitle.font = placeholderTitle.font.withSize(26)
+        placeholderTitle.text = "No \(selectedFilter.rawValue)"
+        self.placeholderView.addSubview(placeholderTitle)
+        
+        let placeholderMessage = UILabel(frame: CGRect(x: 0, y: 0, width: self.placeholderView.frame.maxX, height: 21))
+        placeholderMessage.center = CGPoint(x: placeholderIcon.frame.midX, y: placeholderTitle.frame.maxY + 25)
+        placeholderMessage.textAlignment = .center
+        placeholderMessage.textColor = UIColor(named: "placeholder")
+        placeholderMessage.font = placeholderMessage.font.withSize(16)
+        placeholderMessage.text = "Your \(selectedFilter.rawValue.lowercased()) thoughts will appear here."
+        self.placeholderView.addSubview(placeholderMessage)
+    }
+}

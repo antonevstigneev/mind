@@ -82,14 +82,21 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="60.333332061767578"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" text="Thought content" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943" customClass="ThoughtContentText" customModule="Mind" customModuleProvider="target">
+                                                <textView clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" editable="NO" usesAttributedText="YES" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rF4-xP-943" customClass="ThoughtContentText" customModule="Mind" customModuleProvider="target">
                                                     <rect key="frame" x="16" y="12" width="343" height="36.333333333333336"/>
                                                     <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <accessibility key="accessibilityConfiguration">
                                                         <accessibilityTraits key="traits" notEnabled="YES"/>
                                                     </accessibility>
-                                                    <color key="textColor" name="content2"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                    <attributedString key="attributedText">
+                                                        <fragment content="Thought content">
+                                                            <attributes>
+                                                                <color key="NSColor" name="content2"/>
+                                                                <font key="NSFont" metaFont="system" size="16"/>
+                                                                <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                            </attributes>
+                                                        </fragment>
+                                                    </attributedString>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                                 </textView>
@@ -150,9 +157,8 @@
                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="42" scale="medium" weight="regular"/>
                                 </state>
                                 <connections>
-                                    <action selector="plusButtonTouchDown:" destination="SGi-zd-M47" eventType="touchDown" id="hoT-Ly-A3E"/>
                                     <action selector="plusButtonTouchDownInside:" destination="SGi-zd-M47" eventType="touchUpInside" id="FQS-2x-qQb"/>
-                                    <action selector="plusButtonTouchUpOutside:" destination="SGi-zd-M47" eventType="touchUpOutside" id="tzf-q0-TMU"/>
+                                    <segue destination="NfF-hC-bU7" kind="presentation" identifier="toNewThoughtViewController" id="Q4X-cq-PZn"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -179,7 +185,6 @@
                         <outlet property="plusButton" destination="H1s-10-s5C" id="Egw-i5-9xV"/>
                         <outlet property="tableView" destination="kZQ-Zu-1em" id="YMd-D0-7by"/>
                         <outlet property="tableViewBC" destination="vtV-rb-gnd" id="Q0O-gp-z6l"/>
-                        <segue destination="NfF-hC-bU7" kind="presentation" identifier="toNewThoughtViewController" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="WDj-KD-8Zi"/>
                         <segue destination="nrd-Tn-dn2" kind="show" identifier="toThoughtViewController" id="1Zo-N0-bK6"/>
                         <segue destination="f5O-y0-lan" kind="presentation" identifier="toMindCloudVC" modalPresentationStyle="pageSheet" modalTransitionStyle="coverVertical" id="jJ6-dy-Gct"/>
                     </connections>
@@ -225,9 +230,7 @@
                                     <preferredSymbolConfiguration key="preferredSymbolConfiguration" configurationType="pointSize" pointSize="45" scale="small" weight="regular"/>
                                 </state>
                                 <connections>
-                                    <action selector="sendButtonTouchDown:" destination="NfF-hC-bU7" eventType="touchDown" id="bNd-6A-Lvv"/>
                                     <action selector="sendButtonTouchDownInside:" destination="NfF-hC-bU7" eventType="touchUpInside" id="X0W-3Y-uPb"/>
-                                    <action selector="sendButtonTouchUpOutside:" destination="NfF-hC-bU7" eventType="touchUpOutside" id="LQ5-Xx-t5E"/>
                                     <segue destination="1at-Xk-qg4" kind="unwind" identifier="unwindToHome" unwindAction="unwindToHomeWithSegue:" id="0UR-OK-KrW"/>
                                 </connections>
                             </button>
@@ -391,8 +394,6 @@
                                 </state>
                                 <connections>
                                     <action selector="doneButtonTouchDownInside:" destination="nrd-Tn-dn2" eventType="touchUpInside" id="nkt-l8-XHm"/>
-                                    <action selector="editButtonTouchDown:" destination="nrd-Tn-dn2" eventType="touchDown" id="LJS-tt-aWR"/>
-                                    <action selector="editButtonTouchUpOutside:" destination="nrd-Tn-dn2" eventType="touchUpOutside" id="H9z-dp-sSa"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -618,7 +619,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="WDj-KD-8Zi"/>
+        <segue reference="Bw5-Cg-iRQ"/>
         <segue reference="h1N-3G-VOJ"/>
     </inferredMetricsTieBreakers>
     <resources>

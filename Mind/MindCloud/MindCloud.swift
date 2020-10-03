@@ -32,7 +32,7 @@ class MindCloud {
     }
     
 //    static let url = "http://3.130.38.239:8080" // aws
-    static let url = "http://192.168.1.2:8000" // localhost
+    static let url = "http://192.168.1.2:8080" // localhost
     static let token = UserDefaults.standard.object(forKey: "authorizationToken") as! String
     static let headers: HTTPHeaders = [
         "Authorization": "Bearer \(token)",
@@ -55,6 +55,7 @@ class MindCloud {
                                  headers: nil)
         
         getThoughtDataResponse(from: request) { (responseData, success) in
+            debugPrint(responseData as Any)
             completion(responseData, success)
         }
     }
@@ -193,7 +194,9 @@ class MindCloud {
     
     static func getThoughtDataResponse(from request: DataRequest, completion: @escaping RequestCompletion) {
         request.responseJSON { response in
+            debugPrint(response)
             switch response.result {
+            
             case .success:
                 guard let data = response.data else { return }
                 do {

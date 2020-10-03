@@ -15,6 +15,7 @@ class NetworkState {
     let reachabilityManager = NetworkReachabilityManager(host: "www.apple.com")
     func startNetworkReachabilityObserver() {
         reachabilityManager?.startListening(onUpdatePerforming: { status in
+            print("🔐 Authorized: \(MindCloud.isUserAuthorized)")
             switch status {
                             case .reachable:
                                 print("✅ Online")

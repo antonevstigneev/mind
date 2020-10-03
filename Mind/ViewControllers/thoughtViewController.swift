@@ -39,17 +39,14 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     // MARK: - Actions
-    @IBAction func doneButtonTouchDownInside(_ sender: Any) {
+    @IBAction func doneButtonTouchDownInside(_ sender: UIButton) {
+        sender.animate()
+        
+        // ⚠️ this should be one function
         closeEditMode()
         updateThoughtData()
     }
-    @IBAction func editButtonTouchDown(_ sender: UIButton) {
-        doneButton.animateButtonDown()
-    }
-    @IBAction func editButtonTouchUpOutside(_ sender: UIButton) {
-        doneButton.animateButtonUp()
-    }
-    
+
     
     // MARK: - View initialization
     override func viewDidLoad() {
@@ -59,20 +56,6 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         fetchData()
         showSimilarThoughts()
     }
-    
-    
-    func setupNotifications() {
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardShowNotification:)),
-        name: UIResponder.keyboardDidShowNotification,
-        object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-        selector: #selector(handle(keyboardHideNotification:)),
-        name: UIResponder.keyboardWillHideNotification,
-        object: nil)
-    }
-    
     
     func setupViews() {
         showThoughtActionButtons()
@@ -195,6 +178,9 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
 //        }
 //    }
     
+    
+    
+    // ⚠️ (Duplicate) the same function in thoughtsViewController
     func createContextMenu(indexPath: IndexPath) -> UIMenu {
         let thought = self.similarThoughts[indexPath.row]
         var favoriteLabel: String!
@@ -278,9 +264,9 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
 
     @objc func deleteAction(_ sender: UIBarButtonItem) {
-        let actionTitle = "Are you sure you want to delete this?"
-        postActionSheet(title: actionTitle, message: "", confirmation: "Delete", success: { () -> Void in
-            self.selectedThought.delete()
+        let actionTitle = "Are you sure you want to remove this thought?"
+        postActionSheet(title: actionTitle, message: "", confirmation: "Remove", success: { () -> Void in
+            self.selectedThought.remove()
             self.navigationController?.popViewController(animated: true)
         }) { () -> Void in
             print("Cancelled")
@@ -306,15 +292,17 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             let cell = tableView.dequeueReusableCell(withIdentifier: "SelectedThoughtCell", for: indexPath) as! ThoughtTableViewCell
             
             let content = selectedThought.content!
-            cell.thoughtContentTextView.clearTextStyles(originalText: content, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-//            cell.thoughtContentTextView.addHyperLinksToText(originalText: selectedThought.content!, hyperLinks: selectedThought.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
+            
+            if selectedThought.keywords != nil {
+                cell.thoughtContentTextView.highlightKeywords(originalText: content, keywords: selectedThought.keywords!, fontSize: 21, lineSpacing: 4.8)
+            }
+            
+            cell.thoughtContentTextView.font = UIFont.systemFont(ofSize: 21)
             cell.thoughtContentTextView.textColor = UIColor(named: "title")
             
             cell.thoughtContentTextView.isEditable = true
             cell.thoughtContentTextView.isSelectable = true
             cell.thoughtContentTextView.isScrollEnabled = false
-//            cell.thoughtContentTextView.translatesAutoresizingMaskIntoConstraints = true
-//            cell.thoughtContentTextView.sizeToFit()
             cell.thoughtContentTextView.delegate = self
             
             return cell
@@ -324,9 +312,11 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
                     
             let thought = similarThoughts[indexPath.row]
             let content = thought.content!
-            
-            cell.thoughtContentText.clearTextStyles(originalText: content, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
-//            cell.thoughtContentText.addHyperLinksToText(originalText: content, hyperLinks: thought.keywords!, fontSize: 16, fontWeight: .regular, lineSpacing: 3.0)
+        
+            if selectedThought.keywords != nil {
+                cell.thoughtContentText.highlightKeywords(originalText: content, keywords: thought.keywords!, fontSize: 16, lineSpacing: 3.0)
+            }
+            cell.thoughtContentText.font = UIFont.systemFont(ofSize: 16)
             cell.thoughtContentText.textColor = UIColor(named: "text")
             
             if thought.favorited {
@@ -428,7 +418,11 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         setEditThoughtTextStyle(textView)
     }
     
+    func textViewDidEndEditing(_ textView: UITextView) {
+        setDefaultThoughtTextStyle(textView)
+    }
     
+    // ⚠️ (Duplicate) the same function in thoughtsViewController
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
         let myTextView = sender.view as! UITextView
         let layoutManager = myTextView.layoutManager
@@ -445,18 +439,19 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
         let attributeName = NSAttributedString.Key.link
         let attributeValue = myTextView.attributedText?.attribute(attributeName, at: characterIndex, effectiveRange: nil)
         
-        if let clickedKeyword = attributeValue {
-            self.selectedKeyword = "\(clickedKeyword)"
+        if let tappedKeyword = attributeValue {
+            self.selectedKeyword = "\(tappedKeyword)"
             performKeywordSearch()
         }
     }
     
     
+    // ⚠️ TODO: Not working, refactoring needed
     func performKeywordSearch() {
         guard let destinationVC = self.navigationController?.viewControllers[0] as? thoughtsViewController else {
             fatalError("Second VC in navigation stack is not an itemsViewController")
         }
-        destinationVC.selectedKeyword = self.selectedKeyword
+        destinationVC.showThoughtsForSelectedKeyword(self.selectedKeyword)
         
         if let navController = self.navigationController {
             for controller in navController.viewControllers {
@@ -480,18 +475,17 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     func setDefaultThoughtTextStyle(_ textView: UITextView) {
-//        textView.text = self.selectedThought.content!
-        textView.addHyperLinksToText(originalText: textView.text!, hyperLinks: self.selectedThought.keywords!, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        textView.textColor = UIColor(named: "title")
+        textView.highlightKeywords(originalText: textView.text!, keywords: self.selectedThought.keywords!, fontSize: 21, lineSpacing: 4.8)
         highlightHyperlinks(textView)
+        textView.font = UIFont.systemFont(ofSize: 21.0)
+        textView.textColor = UIColor(named: "title")
     }
     
     
     func setEditThoughtTextStyle(_ textView: UITextView) {
-//        textView.text = self.selectedThought.content!
-        textView.clearTextStyles(originalText: textView.text, fontSize: 21, fontWeight: .regular, lineSpacing: 4.8)
-        textView.textColor = UIColor(named: "title")
         unhighlightHyperlinks(textView)
+        textView.font = UIFont.systemFont(ofSize: 21.0)
+        textView.textColor = UIColor(named: "title")
     }
     
     
@@ -651,5 +645,21 @@ extension UIBarButtonItem {
         } else {
             self.image = UIImage(systemName: iconName, withConfiguration: iconConfig)
         }
+    }
+}
+
+
+extension thoughtViewController {
+    
+    func setupNotifications() {
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardShowNotification:)),
+        name: UIResponder.keyboardDidShowNotification,
+        object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handle(keyboardHideNotification:)),
+        name: UIResponder.keyboardWillHideNotification,
+        object: nil)
     }
 }

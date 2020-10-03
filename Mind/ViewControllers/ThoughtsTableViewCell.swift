@@ -28,3 +28,4 @@ class ThoughtContentText: UITextView {
         return attributedText.attribute(.link, at: startIndex, effectiveRange: nil) != nil
     }
 }
+
