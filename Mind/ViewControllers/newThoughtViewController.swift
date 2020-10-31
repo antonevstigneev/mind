@@ -9,7 +9,6 @@
 import UIKit
 import CoreData
 import NaturalLanguage
-import Alamofire
 
 
 class newThoughtViewController: UIViewController, UITextViewDelegate {
@@ -69,55 +68,30 @@ class newThoughtViewController: UIViewController, UITextViewDelegate {
         guard let entryText = textInputView?.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return
         }
-        
-        let newThought = Thought(context: self.context)
-        newThought.content = entryText
-        let timestamp = Date().current()
-        
-        DispatchQueue.main.async {
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        let thoughtCreation = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: thoughtCreation) {
+            let bert = BERT()
+            let keywords = getKeywords(from: entryText, count: 10)
+            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+            let embedding = bert.getTextEmbedding(text: entryText)
+
+            let newThought = Thought(context: self.context)
+            newThought.id = UUID()
+            newThought.content = entryText
+            newThought.timestamp = Date().current
+//            print(typeOf(Date().current))
+            newThought.keywords = keywords
+            newThought.keywordsEmbeddings = keywordsEmbeddings
+            newThought.embedding = embedding
+            
+            DispatchQueue.main.async {
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            }
+        }
+        thoughtCreation.notify(queue: .main) {
             NotificationCenter.default.post(name:
             NSNotification.Name(rawValue: "thoughtsChanged"),
             object: nil)
-        }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            
-            if MindCloud.isUserAuthorized == false {
-                MindCloud.processThought(content: entryText) {
-                    (responseData, success) in
-                    if (success) {
-                        print("✅ Server processed thought data successfully.")
-                        DispatchQueue.main.async {
-                            newThought.keywords = responseData?.keywords
-                            newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                            newThought.embedding = responseData?.embedding
-                            newThought.timestamp = Date().current()
-                            print(responseData as Any)
-                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                        }
-                    } else {
-                        print("⚠️ Error occurred while processing thought data")
-                    }
-                }
-            } else {
-                MindCloud.postThought(content: entryText, timestamp: timestamp) {
-                    (responseData, success) in
-                    if (success) {
-                        print("✅ 🔐 Authorized post thought successfully.")
-                        DispatchQueue.main.async {
-                            newThought.keywords = responseData?.keywords
-                            newThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                            newThought.embedding = responseData?.embedding
-                            newThought.timestamp = timestamp
-                            newThought.id = responseData?.id
-                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                        }
-                    } else {
-                        print("⚠️ Error occurred while processing thought data")
-                    }
-                }
-            }
         }
     }
     

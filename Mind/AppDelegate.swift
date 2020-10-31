@@ -17,15 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        let launchedBefore = UserDefaults.standard.bool(forKey: "launchedBefore")
-        if launchedBefore == false {
-            UserDefaults.standard.set(true, forKey: "launchedBefore")
-            UserDefaults.standard.set(false, forKey: "isAuthorized")
-        }
-        
         setupDefaultNavigationBarStyles()
-        
-        NetworkState.shared.startNetworkReachabilityObserver()
         
         return true
     }
@@ -55,20 +47,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
 
     // MARK: - Core Data stack
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "Mind")
+
+    lazy var persistentContainer: NSPersistentCloudKitContainer = {
+        let container = NSPersistentCloudKitContainer(name: "Mind")
         
-        container.loadPersistentStores { (storeDescription, error) in
-          if let error = error {
-            fatalError("Failed to load store: \(error)")
-          }
+        // Enable remote notifications
+        guard let description = container.persistentStoreDescriptions.first else {
+            fatalError("###\(#function): Failed to retrieve a persistent store description.")
         }
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        
+        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            }
+        })
+        
+        // This turns on a remote change notifications
+        let remoteChangeKey = "NSPersistentStoreRemoteChangeNotificationOptionKey"
+        description.setOption(true as NSNumber,
+                                   forKey: remoteChangeKey)
+        
+        container.viewContext.mergePolicy = NSMergeByPropertyStoreTrumpMergePolicy
+        container.viewContext.automaticallyMergesChangesFromParent = true
         
         return container
     }()
 
-    
     // MARK: - Core Data Saving support
+
     func saveContext () {
         let context = persistentContainer.viewContext
         if context.hasChanges {

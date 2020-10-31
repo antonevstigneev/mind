@@ -34,26 +34,11 @@ extension Thought {
         self.setValue(options[state]!, forKey: state.rawValue)
 
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        if MindCloud.isUserAuthorized {
-            MindCloud.updateThought(id: self.id!, upd: [state.rawValue: options[state]!]) {
-                (responseData, success) in
-                if (success) {
-                    print("✅ 🔐 Authorized thought update success.")
-                }
-            }
-        }
     }
     
     func remove() {
         context.delete(self)
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
-        if MindCloud.isUserAuthorized {
-            MindCloud.deleteThought(id: self.id!) { (responseData, success) in
-                if (success) {
-                    print("✅ 🔐 Authorized thought deletion success.")
-                }
-            }
-        }
     }
 }
 

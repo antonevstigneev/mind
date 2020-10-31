@@ -8,13 +8,18 @@
 
 import UIKit
 import CoreData
+import CloudKit
 import CoreML
 import Foundation
 import NaturalLanguage
 import LocalAuthentication
-import Alamofire
+
 
 class thoughtsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UIGestureRecognizerDelegate, UINavigationControllerDelegate, UISearchDisplayDelegate, UISearchBarDelegate, UISearchControllerDelegate {
+    
+    
+    // MARK: - Model
+        let bert = BERT()
     
     
     // MARK: - Data
@@ -41,7 +46,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     var selectedFilter: ThoughtsFilter = .recent
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
-    var selectedInterfaceStyle: UIUserInterfaceStyle = .unspecified
+    let iconConfig = UIImage.SymbolConfiguration(pointSize: 21, weight: .regular)
     var authContext = LAContext()
     enum AuthenticationState { case loggedin, loggedout }
     var state = AuthenticationState.loggedout { didSet {} }
@@ -49,11 +54,9 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     // MARK: - Outlets
-    @IBOutlet weak var mindLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var tableViewBC: NSLayoutConstraint!
-    @IBOutlet weak var headerView: UIView!
     
     
     // MARK: - Actions
@@ -76,20 +79,27 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         setupNotifications()
         setupViews()
+        
+        // biometric auth init setup for locked thoughts
+        authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        self.state = .loggedout
     }
     
     
     func setupViews() {
-        authContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-        self.state = .loggedout
         
         // navigationController initial setup
-        self.navigationItem.searchController = searchController
+        self.navigationItem.titleView = searchController.searchBar
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "line.horizontal.3.decrease.circle", withConfiguration: iconConfig),
+                                                                 style: .plain,
+                                                                 target: self,
+                                                                 action: #selector(showFilterMenu))
+        
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.definesPresentationContext = false
         searchController.delegate = self
         searchController.searchBar.delegate = self
-        searchController.searchBar.sizeToFit()
+        
         searchController.searchBar.setImage(SFSymbols.close, for: .clear, state: .normal)
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
         searchController.searchBar.showsCancelButton = false
@@ -110,16 +120,11 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         // pullDown to search initital setup
         refreshControl.addTarget(self, action: #selector(self.pullToSearch(_:)), for: .valueChanged)
         refreshControl.alpha = 0
-        
-        // label
-        let labelTap = UITapGestureRecognizer(target: self, action: #selector(self.mindTapped(_:)))
-        self.mindLabel.isUserInteractionEnabled = true
-        self.mindLabel.addGestureRecognizer(labelTap)
     }
      
     
     @objc func mindTapped(_ sender: UITapGestureRecognizer) {
-        self.tableView.scrollToTheTop()
+        self.tableView.scrollToTheTop(animated: true)
     }
     
     @objc func pullToSearch(_ sender: AnyObject) {
@@ -273,8 +278,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        searchController.searchBar.searchTextField.backgroundColor = UIColor(named: "button")!
-            .withAlphaComponent(-scrollView.contentOffset.y / 100)
+        // change search bar tint here <------------------
     }
     
     @objc func keywordTapHandler(_ sender: UITapGestureRecognizer) {
@@ -344,7 +348,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
             DispatchQueue.main.async {
                 self.applyThoughtsFilter(.recent)
                 self.tableView.reloadData()
-                self.tableView.scrollToTheTop()
+                self.tableView.scrollToTheTop(animated: false)
                 self.tableView.show()
             }
         } catch {
@@ -422,7 +426,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
                 self.thoughts = similarThoughts.slice(length: 10)
                 self.tableView.reloadData()
                 self.tableView.show()
-                self.tableView.scrollToTheTop()
+                self.tableView.scrollToTheTop(animated: false)
                 self.removeSpinner()
             }
         }
@@ -437,7 +441,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     // MARK: - Keywords suggestions
     func getKeywordSuggestions(for text: String) -> [String] {
-        var keywordsSimilarityScores: [(keyword: String, score: Double)] = []
+        var keywordsSimilarityScores: [(keyword: String, score: Float)] = []
         let keywordsEmbeddings = getAllKeywordsEmbeddings()
 //        let forKeywordEmbedding = self.bert.getTextEmbedding(text: text)
         let forKeywordEmbedding = keywordsEmbeddings[0].value // <--------------------------------------------- change
@@ -454,8 +458,8 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Double])] {
-        var keywordsEmbeddings: [(keyword: String, value: [Double])] = []
+    func getAllKeywordsEmbeddings() -> [(keyword: String, value: [Float])] {
+        var keywordsEmbeddings: [(keyword: String, value: [Float])] = []
         for thought in thoughts {
             for keyword in thought.keywords! {
                 if !keywordsEmbeddings.map({$0.0}).contains(keyword) {
@@ -507,14 +511,14 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func getThoughtsSimilarityScores() {
         var thoughtsPairs: [[Thought]] = []
-        var thoughtsPairsScores: [Double] = []
-        var thoughtsTotalScores: [(thoughtContent: String, score: Double)] = []
+        var thoughtsPairsScores: [Float] = []
+        var thoughtsTotalScores: [(thoughtContent: String, score: Float)] = []
         
         let thoughtsEmbeddings = getThoughtsEmbeddings()
         
         for thought in thoughts {
             let currentThoughtEmbedding = thought.embedding!
-            var thoughtTotalScore: Double = 0
+            var thoughtTotalScore: Float = 0
             for index in 0..<thoughts.count {
                 let otherThoughtEmbedding = thoughtsEmbeddings[index]
                 if thought != thoughts[index] {
@@ -537,16 +541,16 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    func getThoughtsEmbeddings() -> [[Double]] {
-        var thoughtsEmbeddings: [[Double]] = []
+    func getThoughtsEmbeddings() -> [[Float]] {
+        var thoughtsEmbeddings: [[Float]] = []
         for thought in thoughts {
             thoughtsEmbeddings.append(thought.embedding!)
         }
         return thoughtsEmbeddings
     }
 
-    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Double])] {
-        var keywordsWithEmbeddings: [(keyword: String, embedding: [Double])] = []
+    func getKeywordsEmbeddings() -> [(keyword: String, embedding: [Float])] {
+        var keywordsWithEmbeddings: [(keyword: String, embedding: [Float])] = []
         
         for thought in self.thoughts {
             for (index, keyword) in thought.keywords!.enumerated() {
@@ -561,8 +565,8 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    func getThoughtsEmbeddingsTest() -> [(thought: String, embedding: [Double])] {
-        var thoughtsEmbeddings: [(thought: String, embedding: [Double])] = []
+    func getThoughtsEmbeddingsTest() -> [(thought: String, embedding: [Float])] {
+        var thoughtsEmbeddings: [(thought: String, embedding: [Float])] = []
         
         for thought in self.thoughts {
             thoughtsEmbeddings.append((thought: thought.content!, embedding: thought.embedding!))
@@ -594,7 +598,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         })
     }
     
-    func showFilterMenu() {
+    @objc func showFilterMenu() {
         let titles = ["Recent", "Favorite", "Random", "Locked", "Archived"]
         let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         for title in titles {
@@ -618,7 +622,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    func showMoreButtonMenu() {
+    @objc func showMoreButtonMenu() {
         DispatchQueue.main.async {
             let alertController = UIAlertController(title: nil,
                                                     message: nil,
@@ -806,10 +810,8 @@ extension Array where Element: Hashable {
 }
 
 extension Date {
-    func current() -> Int64 {
-        let currentDate = Date()
-        let timeInterval = currentDate.timeIntervalSince1970
-        return Int64(timeInterval)
+    var current: Double {
+        return Double((self.timeIntervalSince1970 * 1000.0).rounded())
     }
 }
 
@@ -851,19 +853,6 @@ public extension UIImage {
         UIGraphicsEndImageContext();
         
         return image;
-    }
-}
-
-
-extension UISearchBar {
-    func setPlaceholderTextColorTo(color: UIColor) {
-        let textFieldInsideSearchBar = self.value(forKey: "searchField") as? UITextField
-        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(named: "text")!]
-        let textFieldInsideSearchBarLabel = textFieldInsideSearchBar!.value(forKey: "placeholderLabel") as? UILabel
-        textFieldInsideSearchBarLabel?.textColor = color
-        
-        // Make the magnifying glass the same color
-        (textFieldInsideSearchBar!.leftView as? UIImageView)?.tintColor = color
     }
 }
 
@@ -1022,6 +1011,7 @@ extension thoughtsViewController {
             .locked: UIImage(systemName: "lock.fill")!,
             .archived: UIImage(systemName: "archivebox.fill")!,
             .recent: UIImage(systemName: "clock.fill")!,
+            .random: UIImage(systemName: "shuffle")!,
         ]
         
         let selectedIcon = iconOptions[selectedFilter]!

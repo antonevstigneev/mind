@@ -54,10 +54,10 @@ public extension UITableView {
 
 
 public extension UITableView {
-    func scrollToTheTop() {
+    func scrollToTheTop(animated: Bool) {
         if self.visibleCells.isEmpty == false {
             self.scrollToRow(at: IndexPath(row: 0, section: 0),
-                                       at: .top, animated: false)
+                                       at: .top, animated: animated)
         }
     }
 }

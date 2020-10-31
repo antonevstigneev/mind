@@ -6,9 +6,5 @@ target 'Mind' do
   use_frameworks!
 
   # Pods for Mind
-  pod 'CryptoSwift', '~> 1.0'
-  pod 'SwiftyRSA'
-  pod 'Alamofire', '~> 5.2'
-  pod 'Reveal-SDK', :configurations => ['Debug']
 
 end

@@ -8,8 +8,9 @@
 
 import UIKit
 import CoreData
+import CloudKit
+import NaturalLanguage
 import Foundation
-import Alamofire
 
 class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UITextViewDelegate {
     
@@ -78,61 +79,30 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     @objc func updateThoughtData() {
-//        let entryText = getselectedThoughtText()
-        let entryText = selectedThought.content! // change!
-        
-        if MindCloud.isConnectedToInternet == false {
-            self.showAlert(alertText: "No Internet Connection",
-                           alertMessage: "Unable to proccess thought data, internet connection is needed.")
-        }
-        
-        DispatchQueue.main.async {
-            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-            NotificationCenter.default.post(name:
-            NSNotification.Name(rawValue: "thoughtsChanged"),
-            object: nil)
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async {
+            let entryText = selectedThought.content!
             
-            if MindCloud.isUserAuthorized == false {
-                MindCloud.processThought(content: entryText) {
-                    (responseData, success) in
-                    if (success) {
-                        print("✅ Server processed thought data successfully.")
-                        DispatchQueue.main.async {
-                            self.selectedThought.content = entryText
-                            self.selectedThought.keywords = responseData?.keywords
-                            self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                            self.selectedThought.embedding = responseData?.embedding
-                            print(responseData as Any)
-                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                        }
-                    } else {
-                        print("⚠️ Error occurred while processing thought data")
-                    }
-                }
-            } else {
-                MindCloud.updateThought(id: self.selectedThought.id!, upd: ["content": entryText]) {
-                    (responseData, success) in
-                    if (success) {
-                        print("✅ 🔐 Authorized patch thought successfully.")
-                        DispatchQueue.main.async {
-                            self.selectedThought.keywords = responseData?.keywords
-                            self.selectedThought.keywordsEmbeddings = responseData?.keywordsEmbeddings
-                            self.selectedThought.embedding = responseData?.embedding
-    //                        self.selectedThought.timestamp = responseData?.timestamp! as! Int64
-                            self.selectedThought.id = responseData?.id
-                            (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                        }
-                    } else {
-                        print("⚠️ Error occurred while processing thought data")
-                    }
+            let thoughtEditing = DispatchGroup()
+            DispatchQueue.global(qos: .userInitiated).async(group: thoughtEditing) {
+                let bert = BERT()
+                let keywords = getKeywords(from: entryText, count: 10)
+                let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+                let embedding = bert.getTextEmbedding(text: entryText)
+                
+                self.selectedThought.content = entryText
+                self.selectedThought.keywords = keywords
+                self.selectedThought.keywordsEmbeddings = keywordsEmbeddings
+                self.selectedThought.embedding = embedding
+            
+                DispatchQueue.main.async {
+                    (UIApplication.shared.delegate as! AppDelegate).saveContext()
                 }
             }
+            thoughtEditing.notify(queue: .main) {
+                NotificationCenter.default.post(name:
+                NSNotification.Name(rawValue: "thoughtsChanged"),
+                object: nil)
+            }
         }
-    }
-    
     
     
     func getselectedThoughtText() -> String {
@@ -574,7 +544,7 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     // MARK: - Get similar thoughts
     func getSimilarThoughts(thought: Thought, length: Int) -> [Thought] {
 
-        var similarThoughts: [(thought: Thought, score: Double)] = []
+        var similarThoughts: [(thought: Thought, score: Float)] = []
         let selectedThoughtEmbedding = self.selectedThought.embedding!
         
         for thought in self.thoughts {

@@ -3,27 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3A02B79F250F5BCE00900EB6 /* MindCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A02B79E250F5BCE00900EB6 /* MindCloud.swift */; };
-		3A0658B22526161F00198757 /* AdjacencyMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */; };
-		3A0658B32526161F00198757 /* AbstractGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658AF2526161F00198757 /* AbstractGraph.swift */; };
-		3A0658B42526161F00198757 /* Edge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B02526161F00198757 /* Edge.swift */; };
-		3A0658B52526161F00198757 /* Vertex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B12526161F00198757 /* Vertex.swift */; };
-		3A0658B82526165E00198757 /* MindGraphTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0658B72526165E00198757 /* MindGraphTests.swift */; };
-		3A1053182510D8F5009C3E50 /* RequestRetrier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1053172510D8F5009C3E50 /* RequestRetrier.swift */; };
-		3A10531A2510E625009C3E50 /* ThoughtData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1053192510E625009C3E50 /* ThoughtData.swift */; };
-		3A10531C2511106C009C3E50 /* NetworkState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A10531B2511106C009C3E50 /* NetworkState.swift */; };
 		3A10531E25114B0B009C3E50 /* SFSymbols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A10531D25114B0B009C3E50 /* SFSymbols.swift */; };
-		3A10532025118ABA009C3E50 /* Authorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A10531F25118ABA009C3E50 /* Authorization.swift */; };
 		3A141B4E24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A141B4D24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift */; };
 		3A1EF2DC250BB78B00496301 /* ThoughtTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */; };
 		3A207E8024C368A20008E248 /* Pods_Mind.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */; };
 		3A23C1552513911A00E8FCC5 /* Mind.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3A23C1532513911A00E8FCC5 /* Mind.xcdatamodeld */; };
 		3A2BE3D224FD5382006A10CA /* thoughtViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2BE3D124FD5382006A10CA /* thoughtViewController.swift */; };
-		3A2FDA1D25083CE900B92AF2 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A2FDA1C25083CE900B92AF2 /* StoreKit.framework */; };
 		3A3FA8FB2437C0CA0011F7EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3FA8FA2437C0CA0011F7EA /* AppDelegate.swift */; };
 		3A3FA8FD2437C0CA0011F7EA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3FA8FC2437C0CA0011F7EA /* SceneDelegate.swift */; };
 		3A3FA9022437C0CA0011F7EA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A3FA9002437C0CA0011F7EA /* Main.storyboard */; };
@@ -31,31 +20,31 @@
 		3A627E1724993C9A0007DF22 /* SimilarityDistance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A627E1624993C9A0007DF22 /* SimilarityDistance.swift */; };
 		3A7972DC2453434500884921 /* newThoughtViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7972DB2453434500884921 /* newThoughtViewController.swift */; };
 		3A8A20A624A67CC2006EFE66 /* SpinnerIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */; };
-		3AA97E62250E2B4F00E4372E /* mindCloudViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA97E61250E2B4F00E4372E /* mindCloudViewController.swift */; };
+		3AA21DD2254D298300E99556 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE48B53245A20BB00952D36 /* CloudKit.framework */; };
 		3AB02CDC24BF45B50007A26F /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AB02CDB24BF45B50007A26F /* Animations.swift */; };
-		3ABE7BDD2513AD7600A467E2 /* ArraySlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ABE7BDC2513AD7600A467E2 /* ArraySlice.swift */; };
 		3AC043F12516253D0087566D /* ThoughtExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC043F02516253D0087566D /* ThoughtExtension.swift */; };
 		3AC332E2243B78F400FA0D40 /* thoughtsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC332E1243B78F400FA0D40 /* thoughtsViewController.swift */; };
+		3AE7D253253F34B7002E1559 /* getKeywords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D24D253F34B7002E1559 /* getKeywords.swift */; };
+		3AE7D254253F34B7002E1559 /* Stopwords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D24E253F34B7002E1559 /* Stopwords.swift */; };
+		3AE7D255253F34B7002E1559 /* ArraySlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D24F253F34B7002E1559 /* ArraySlice.swift */; };
+		3AE7D256253F34B7002E1559 /* Keyword.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D250253F34B7002E1559 /* Keyword.swift */; };
+		3AE7D257253F34B7002E1559 /* Normalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D251253F34B7002E1559 /* Normalization.swift */; };
+		3AE7D258253F34B7002E1559 /* TextRank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D252253F34B7002E1559 /* TextRank.swift */; };
+		3AE7D25F253F353F002E1559 /* BERT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D25D253F353F002E1559 /* BERT.swift */; };
+		3AE7D260253F353F002E1559 /* BERTInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D25E253F353F002E1559 /* BERTInput.swift */; };
+		3AE7D263253F3545002E1559 /* vocab.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3AE7D262253F3545002E1559 /* vocab.txt */; };
+		3AE7D267253F354C002E1559 /* TokenizedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D265253F354C002E1559 /* TokenizedString.swift */; };
+		3AE7D268253F354C002E1559 /* BERTVocabulary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D266253F354C002E1559 /* BERTVocabulary.swift */; };
+		3AE7D26C253F35AC002E1559 /* distilbert-base-nli.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3AE7D26B253F35AC002E1559 /* distilbert-base-nli.mlmodel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		19F7C3BAB5948E7F2A27D892 /* Pods-Mind.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mind.debug.xcconfig"; path = "Target Support Files/Pods-Mind/Pods-Mind.debug.xcconfig"; sourceTree = "<group>"; };
-		3A02B79E250F5BCE00900EB6 /* MindCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindCloud.swift; sourceTree = "<group>"; };
-		3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdjacencyMatrix.swift; sourceTree = "<group>"; };
-		3A0658AF2526161F00198757 /* AbstractGraph.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbstractGraph.swift; sourceTree = "<group>"; };
-		3A0658B02526161F00198757 /* Edge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Edge.swift; sourceTree = "<group>"; };
-		3A0658B12526161F00198757 /* Vertex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vertex.swift; sourceTree = "<group>"; };
-		3A0658B72526165E00198757 /* MindGraphTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindGraphTests.swift; sourceTree = "<group>"; };
-		3A1053172510D8F5009C3E50 /* RequestRetrier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestRetrier.swift; sourceTree = "<group>"; };
-		3A1053192510E625009C3E50 /* ThoughtData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtData.swift; sourceTree = "<group>"; };
-		3A10531B2511106C009C3E50 /* NetworkState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkState.swift; sourceTree = "<group>"; };
 		3A10531D25114B0B009C3E50 /* SFSymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SFSymbols.swift; sourceTree = "<group>"; };
-		3A10531F25118ABA009C3E50 /* Authorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization.swift; sourceTree = "<group>"; };
 		3A141B4D24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThoughtsTableViewCell.swift; sourceTree = "<group>"; };
 		3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtTableViewCell.swift; sourceTree = "<group>"; };
 		3A23C1542513911A00E8FCC5 /* MindData.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MindData.xcdatamodel; sourceTree = "<group>"; };
 		3A2BE3D124FD5382006A10CA /* thoughtViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = thoughtViewController.swift; sourceTree = "<group>"; };
-		3A2FDA1C25083CE900B92AF2 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		3A3FA8F72437C0CA0011F7EA /* Mind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A3FA8FA2437C0CA0011F7EA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3A3FA8FC2437C0CA0011F7EA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -65,15 +54,25 @@
 		3A627E1624993C9A0007DF22 /* SimilarityDistance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarityDistance.swift; sourceTree = "<group>"; };
 		3A7972DB2453434500884921 /* newThoughtViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = newThoughtViewController.swift; sourceTree = "<group>"; };
 		3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerIndicator.swift; sourceTree = "<group>"; };
-		3AA97E61250E2B4F00E4372E /* mindCloudViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mindCloudViewController.swift; sourceTree = "<group>"; };
 		3AA97E63250E659A00E4372E /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		3AB02CDB24BF45B50007A26F /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
-		3ABE7BDC2513AD7600A467E2 /* ArraySlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArraySlice.swift; sourceTree = "<group>"; };
 		3AC043F02516253D0087566D /* ThoughtExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtExtension.swift; sourceTree = "<group>"; };
 		3AC332E1243B78F400FA0D40 /* thoughtsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = thoughtsViewController.swift; sourceTree = "<group>"; };
 		3AE48B4F2457975000952D36 /* Mind.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Mind.entitlements; sourceTree = "<group>"; };
 		3AE48B52245A20B200952D36 /* MindDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MindDebug.entitlements; sourceTree = "<group>"; };
 		3AE48B53245A20BB00952D36 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		3AE7D24D253F34B7002E1559 /* getKeywords.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = getKeywords.swift; sourceTree = "<group>"; };
+		3AE7D24E253F34B7002E1559 /* Stopwords.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stopwords.swift; sourceTree = "<group>"; };
+		3AE7D24F253F34B7002E1559 /* ArraySlice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArraySlice.swift; sourceTree = "<group>"; };
+		3AE7D250253F34B7002E1559 /* Keyword.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keyword.swift; sourceTree = "<group>"; };
+		3AE7D251253F34B7002E1559 /* Normalization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Normalization.swift; sourceTree = "<group>"; };
+		3AE7D252253F34B7002E1559 /* TextRank.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextRank.swift; sourceTree = "<group>"; };
+		3AE7D25D253F353F002E1559 /* BERT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BERT.swift; sourceTree = "<group>"; };
+		3AE7D25E253F353F002E1559 /* BERTInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BERTInput.swift; sourceTree = "<group>"; };
+		3AE7D262253F3545002E1559 /* vocab.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vocab.txt; sourceTree = "<group>"; };
+		3AE7D265253F354C002E1559 /* TokenizedString.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenizedString.swift; sourceTree = "<group>"; };
+		3AE7D266253F354C002E1559 /* BERTVocabulary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BERTVocabulary.swift; sourceTree = "<group>"; };
+		3AE7D26B253F35AC002E1559 /* distilbert-base-nli.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "distilbert-base-nli.mlmodel"; sourceTree = "<group>"; };
 		A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Mind.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1129D5A0186592E400A4DE7 /* Pods-Mind.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mind.release.xcconfig"; path = "Target Support Files/Pods-Mind/Pods-Mind.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,8 +82,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A2FDA1D25083CE900B92AF2 /* StoreKit.framework in Frameworks */,
 				3A207E8024C368A20008E248 /* Pods_Mind.framework in Frameworks */,
+				3AA21DD2254D298300E99556 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,35 +94,10 @@
 			isa = PBXGroup;
 			children = (
 				3AA97E63250E659A00E4372E /* AuthenticationServices.framework */,
-				3A2FDA1C25083CE900B92AF2 /* StoreKit.framework */,
 				3AE48B53245A20BB00952D36 /* CloudKit.framework */,
 				A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		3A02B79D250F5BA700900EB6 /* MindCloud */ = {
-			isa = PBXGroup;
-			children = (
-				3A10531B2511106C009C3E50 /* NetworkState.swift */,
-				3A02B79E250F5BCE00900EB6 /* MindCloud.swift */,
-				3A1053172510D8F5009C3E50 /* RequestRetrier.swift */,
-				3A1053192510E625009C3E50 /* ThoughtData.swift */,
-				3A10531F25118ABA009C3E50 /* Authorization.swift */,
-			);
-			path = MindCloud;
-			sourceTree = "<group>";
-		};
-		3A06586425260E2200198757 /* MIndGraph */ = {
-			isa = PBXGroup;
-			children = (
-				3A0658AF2526161F00198757 /* AbstractGraph.swift */,
-				3A0658AE2526161F00198757 /* AdjacencyMatrix.swift */,
-				3A0658B02526161F00198757 /* Edge.swift */,
-				3A0658B12526161F00198757 /* Vertex.swift */,
-				3A0658B72526165E00198757 /* MindGraphTests.swift */,
-			);
-			path = MIndGraph;
 			sourceTree = "<group>";
 		};
 		3A3FA8EE2437C0CA0011F7EA = {
@@ -148,8 +122,8 @@
 			isa = PBXGroup;
 			children = (
 				3A627E1524993C870007DF22 /* Utils */,
-				3A02B79D250F5BA700900EB6 /* MindCloud */,
-				3A06586425260E2200198757 /* MIndGraph */,
+				3AE7D25A253F34CA002E1559 /* Model */,
+				3AE7D24C253F348A002E1559 /* Keywords */,
 				3AC50FC2246B1FB8004403A0 /* ViewControllers */,
 				3A3FA9002437C0CA0011F7EA /* Main.storyboard */,
 				3AE48B52245A20B200952D36 /* MindDebug.entitlements */,
@@ -170,7 +144,6 @@
 				3A627E1624993C9A0007DF22 /* SimilarityDistance.swift */,
 				3A8A20A524A67CC2006EFE66 /* SpinnerIndicator.swift */,
 				3AB02CDB24BF45B50007A26F /* Animations.swift */,
-				3ABE7BDC2513AD7600A467E2 /* ArraySlice.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -178,7 +151,6 @@
 		3AC50FC2246B1FB8004403A0 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				3AA97E61250E2B4F00E4372E /* mindCloudViewController.swift */,
 				3AC332E1243B78F400FA0D40 /* thoughtsViewController.swift */,
 				3A2BE3D124FD5382006A10CA /* thoughtViewController.swift */,
 				3A7972DB2453434500884921 /* newThoughtViewController.swift */,
@@ -187,6 +159,48 @@
 				3AC043F02516253D0087566D /* ThoughtExtension.swift */,
 			);
 			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		3AE7D24C253F348A002E1559 /* Keywords */ = {
+			isa = PBXGroup;
+			children = (
+				3AE7D24F253F34B7002E1559 /* ArraySlice.swift */,
+				3AE7D24D253F34B7002E1559 /* getKeywords.swift */,
+				3AE7D250253F34B7002E1559 /* Keyword.swift */,
+				3AE7D251253F34B7002E1559 /* Normalization.swift */,
+				3AE7D24E253F34B7002E1559 /* Stopwords.swift */,
+				3AE7D252253F34B7002E1559 /* TextRank.swift */,
+			);
+			path = Keywords;
+			sourceTree = "<group>";
+		};
+		3AE7D25A253F34CA002E1559 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				3AE7D26B253F35AC002E1559 /* distilbert-base-nli.mlmodel */,
+				3AE7D25D253F353F002E1559 /* BERT.swift */,
+				3AE7D25E253F353F002E1559 /* BERTInput.swift */,
+				3AE7D25C253F3522002E1559 /* Resources */,
+				3AE7D25B253F351A002E1559 /* Tokenizer */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		3AE7D25B253F351A002E1559 /* Tokenizer */ = {
+			isa = PBXGroup;
+			children = (
+				3AE7D266253F354C002E1559 /* BERTVocabulary.swift */,
+				3AE7D265253F354C002E1559 /* TokenizedString.swift */,
+			);
+			path = Tokenizer;
+			sourceTree = "<group>";
+		};
+		3AE7D25C253F3522002E1559 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3AE7D262253F3545002E1559 /* vocab.txt */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		5A57DC904B98E2329641A367 /* Pods */ = {
@@ -209,7 +223,6 @@
 				3A3FA8F32437C0CA0011F7EA /* Sources */,
 				3A3FA8F42437C0CA0011F7EA /* Frameworks */,
 				3A3FA8F52437C0CA0011F7EA /* Resources */,
-				C7F9ECCA6668EF3F4F4C3917 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -258,6 +271,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AE7D263253F3545002E1559 /* vocab.txt in Resources */,
 				3A3FA9072437C0CA0011F7EA /* Assets.xcassets in Resources */,
 				3A3FA9022437C0CA0011F7EA /* Main.storyboard in Resources */,
 			);
@@ -288,23 +302,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C7F9ECCA6668EF3F4F4C3917 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Mind/Pods-Mind-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Mind/Pods-Mind-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Mind/Pods-Mind-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -312,31 +309,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3ABE7BDD2513AD7600A467E2 /* ArraySlice.swift in Sources */,
+				3AE7D26C253F35AC002E1559 /* distilbert-base-nli.mlmodel in Sources */,
 				3A2BE3D224FD5382006A10CA /* thoughtViewController.swift in Sources */,
-				3A0658B42526161F00198757 /* Edge.swift in Sources */,
-				3A0658B52526161F00198757 /* Vertex.swift in Sources */,
 				3A23C1552513911A00E8FCC5 /* Mind.xcdatamodeld in Sources */,
 				3AC332E2243B78F400FA0D40 /* thoughtsViewController.swift in Sources */,
-				3A1053182510D8F5009C3E50 /* RequestRetrier.swift in Sources */,
-				3AA97E62250E2B4F00E4372E /* mindCloudViewController.swift in Sources */,
+				3AE7D267253F354C002E1559 /* TokenizedString.swift in Sources */,
+				3AE7D253253F34B7002E1559 /* getKeywords.swift in Sources */,
+				3AE7D268253F354C002E1559 /* BERTVocabulary.swift in Sources */,
+				3AE7D254253F34B7002E1559 /* Stopwords.swift in Sources */,
+				3AE7D255253F34B7002E1559 /* ArraySlice.swift in Sources */,
+				3AE7D25F253F353F002E1559 /* BERT.swift in Sources */,
 				3A8A20A624A67CC2006EFE66 /* SpinnerIndicator.swift in Sources */,
-				3A0658B32526161F00198757 /* AbstractGraph.swift in Sources */,
-				3A02B79F250F5BCE00900EB6 /* MindCloud.swift in Sources */,
+				3AE7D257253F34B7002E1559 /* Normalization.swift in Sources */,
 				3A3FA8FB2437C0CA0011F7EA /* AppDelegate.swift in Sources */,
 				3A3FA8FD2437C0CA0011F7EA /* SceneDelegate.swift in Sources */,
-				3A10531A2510E625009C3E50 /* ThoughtData.swift in Sources */,
-				3A10532025118ABA009C3E50 /* Authorization.swift in Sources */,
 				3A141B4E24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift in Sources */,
+				3AE7D260253F353F002E1559 /* BERTInput.swift in Sources */,
 				3A627E1724993C9A0007DF22 /* SimilarityDistance.swift in Sources */,
-				3A0658B22526161F00198757 /* AdjacencyMatrix.swift in Sources */,
-				3A10531C2511106C009C3E50 /* NetworkState.swift in Sources */,
+				3AE7D258253F34B7002E1559 /* TextRank.swift in Sources */,
 				3A10531E25114B0B009C3E50 /* SFSymbols.swift in Sources */,
 				3A7972DC2453434500884921 /* newThoughtViewController.swift in Sources */,
-				3A0658B82526165E00198757 /* MindGraphTests.swift in Sources */,
 				3AC043F12516253D0087566D /* ThoughtExtension.swift in Sources */,
 				3AB02CDC24BF45B50007A26F /* Animations.swift in Sources */,
 				3A1EF2DC250BB78B00496301 /* ThoughtTableViewCell.swift in Sources */,
+				3AE7D256253F34B7002E1559 /* Keyword.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -477,7 +473,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mind/MindDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = NNR45DX7YX;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				INFOPLIST_FILE = Mind/Info.plist;
@@ -488,9 +484,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.getmindapp.Mind;
 				PRODUCT_NAME = Mind;
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -501,7 +497,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mind/Mind.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = NNR45DX7YX;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = NO;
 				INFOPLIST_FILE = Mind/Info.plist;
@@ -512,9 +508,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.getmindapp.Mind;
 				PRODUCT_NAME = Mind;
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

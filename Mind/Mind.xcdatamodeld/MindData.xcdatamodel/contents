@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17192" systemVersion="19G2021" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17192" systemVersion="19H2" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Thought" representedClassName="Thought" syncable="YES" codeGenerationType="class">
         <attribute name="archived" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="content" optional="YES" attributeType="String"/>
-        <attribute name="embedding" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Double]"/>
+        <attribute name="embedding" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[Float]"/>
         <attribute name="favorited" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="keywords" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
-        <attribute name="keywordsEmbeddings" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[[Double]]"/>
+        <attribute name="keywordsEmbeddings" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[[Float]]"/>
         <attribute name="locked" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <elements>
         <element name="Thought" positionX="-63" positionY="-18" width="128" height="178"/>
