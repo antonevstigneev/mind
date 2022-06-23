@@ -10,7 +10,6 @@
 		3A10531E25114B0B009C3E50 /* SFSymbols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A10531D25114B0B009C3E50 /* SFSymbols.swift */; };
 		3A141B4E24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A141B4D24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift */; };
 		3A1EF2DC250BB78B00496301 /* ThoughtTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */; };
-		3A207E8024C368A20008E248 /* Pods_Mind.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */; };
 		3A23C1552513911A00E8FCC5 /* Mind.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3A23C1532513911A00E8FCC5 /* Mind.xcdatamodeld */; };
 		3A2BE3D224FD5382006A10CA /* thoughtViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2BE3D124FD5382006A10CA /* thoughtViewController.swift */; };
 		3A3FA8FB2437C0CA0011F7EA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3FA8FA2437C0CA0011F7EA /* AppDelegate.swift */; };
@@ -39,7 +38,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		19F7C3BAB5948E7F2A27D892 /* Pods-Mind.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mind.debug.xcconfig"; path = "Target Support Files/Pods-Mind/Pods-Mind.debug.xcconfig"; sourceTree = "<group>"; };
 		3A10531D25114B0B009C3E50 /* SFSymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SFSymbols.swift; sourceTree = "<group>"; };
 		3A141B4D24F7BA2E00A0FB47 /* ThoughtsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThoughtsTableViewCell.swift; sourceTree = "<group>"; };
 		3A1EF2DB250BB78B00496301 /* ThoughtTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThoughtTableViewCell.swift; sourceTree = "<group>"; };
@@ -73,8 +71,6 @@
 		3AE7D265253F354C002E1559 /* TokenizedString.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenizedString.swift; sourceTree = "<group>"; };
 		3AE7D266253F354C002E1559 /* BERTVocabulary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BERTVocabulary.swift; sourceTree = "<group>"; };
 		3AE7D26B253F35AC002E1559 /* distilbert-base-nli.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "distilbert-base-nli.mlmodel"; sourceTree = "<group>"; };
-		A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Mind.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C1129D5A0186592E400A4DE7 /* Pods-Mind.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mind.release.xcconfig"; path = "Target Support Files/Pods-Mind/Pods-Mind.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,7 +78,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A207E8024C368A20008E248 /* Pods_Mind.framework in Frameworks */,
 				3AA21DD2254D298300E99556 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -95,7 +90,6 @@
 			children = (
 				3AA97E63250E659A00E4372E /* AuthenticationServices.framework */,
 				3AE48B53245A20BB00952D36 /* CloudKit.framework */,
-				A0B8BB6A28AFC9AAA4D8809C /* Pods_Mind.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -105,7 +99,6 @@
 			children = (
 				3A3FA8F92437C0CA0011F7EA /* Mind */,
 				3A3FA8F82437C0CA0011F7EA /* Products */,
-				5A57DC904B98E2329641A367 /* Pods */,
 				167D3F45D79395E52EC4F9F9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -203,15 +196,6 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		5A57DC904B98E2329641A367 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				19F7C3BAB5948E7F2A27D892 /* Pods-Mind.debug.xcconfig */,
-				C1129D5A0186592E400A4DE7 /* Pods-Mind.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -219,7 +203,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3A3FA90E2437C0CA0011F7EA /* Build configuration list for PBXNativeTarget "Mind" */;
 			buildPhases = (
-				675DBB42A9063D8A6F708C57 /* [CP] Check Pods Manifest.lock */,
 				3A3FA8F32437C0CA0011F7EA /* Sources */,
 				3A3FA8F42437C0CA0011F7EA /* Frameworks */,
 				3A3FA8F52437C0CA0011F7EA /* Resources */,
@@ -278,31 +261,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		675DBB42A9063D8A6F708C57 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Mind-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3A3FA8F32437C0CA0011F7EA /* Sources */ = {
@@ -468,7 +426,6 @@
 		};
 		3A3FA90F2437C0CA0011F7EA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 19F7C3BAB5948E7F2A27D892 /* Pods-Mind.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mind/MindDebug.entitlements;
@@ -492,7 +449,6 @@
 		};
 		3A3FA9102437C0CA0011F7EA /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C1129D5A0186592E400A4DE7 /* Pods-Mind.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Mind/Mind.entitlements;

@@ -79,30 +79,30 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     
     @objc func updateThoughtData() {
-            let entryText = selectedThought.content!
+        let entryText = getselectedThoughtText()
+        
+        let thoughtEditing = DispatchGroup()
+        DispatchQueue.global(qos: .userInitiated).async(group: thoughtEditing) {
+            let bert = BERT()
+            let keywords = getKeywords(from: entryText, count: 10)
+            let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
+            let embedding = bert.getTextEmbedding(text: entryText)
             
-            let thoughtEditing = DispatchGroup()
-            DispatchQueue.global(qos: .userInitiated).async(group: thoughtEditing) {
-                let bert = BERT()
-                let keywords = getKeywords(from: entryText, count: 10)
-                let keywordsEmbeddings = bert.getKeywordsEmbeddings(keywords: keywords)
-                let embedding = bert.getTextEmbedding(text: entryText)
-                
-                self.selectedThought.content = entryText
-                self.selectedThought.keywords = keywords
-                self.selectedThought.keywordsEmbeddings = keywordsEmbeddings
-                self.selectedThought.embedding = embedding
-            
-                DispatchQueue.main.async {
-                    (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                }
-            }
-            thoughtEditing.notify(queue: .main) {
-                NotificationCenter.default.post(name:
-                NSNotification.Name(rawValue: "thoughtsChanged"),
-                object: nil)
+            self.selectedThought.content = entryText
+            self.selectedThought.keywords = keywords
+            self.selectedThought.keywordsEmbeddings = keywordsEmbeddings
+            self.selectedThought.embedding = embedding
+        
+            DispatchQueue.main.async {
+                (UIApplication.shared.delegate as! AppDelegate).saveContext()
             }
         }
+        thoughtEditing.notify(queue: .main) {
+            NotificationCenter.default.post(name:
+            NSNotification.Name(rawValue: "thoughtsChanged"),
+            object: nil)
+        }
+    }
     
     
     func getselectedThoughtText() -> String {
@@ -288,15 +288,6 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
             cell.thoughtContentText.font = UIFont.systemFont(ofSize: 16)
             cell.thoughtContentText.textColor = UIColor(named: "text")
-            
-            if thought.favorited {
-                cell.favoritedButton.isHidden = false
-                cell.thoughtContentTextRC.constant = 35
-                
-            } else {
-                cell.favoritedButton.isHidden = true
-                cell.thoughtContentTextRC.constant = 16
-            }
             
             let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
             tap.delegate = self
@@ -514,31 +505,22 @@ class thoughtViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         if similarThoughts == [] {
-            showRetryRequest()
+            addPlaceholder()
         }
         DispatchQueue.main.async() {
             self.tableView.reloadData()
         }
     }
     
-    func showRetryRequest() {
+    func addPlaceholder() {
         // placeholder
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 250, height: 21))
         label.center = CGPoint(x: self.view.frame.midX, y: self.view.frame.midY - 35)
         label.textAlignment = .center
         label.textColor = UIColor(named: "text")
-        label.text = "Thought proccessing failed."
+        label.text = "No similar thoughts found."
         self.view.addSubview(label)
-        
-        //retry button
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 21))
-        button.center = self.view.center
-        button.setTitleColor(UIColor(named: "link"), for: .normal)
-        button.setTitle("Retry", for: .normal)
-        button.addTarget(self, action: #selector(updateThoughtData), for: .touchUpInside)
-        self.view.addSubview(button)
     }
-    
     
     
     // MARK: - Get similar thoughts

@@ -12,9 +12,6 @@ import UIKit
 class ThoughtsTableViewCell: UITableViewCell, UITextViewDelegate {
     
     @IBOutlet weak var thoughtContentText: UITextView!
-    @IBOutlet weak var thoughtContentTextRC: NSLayoutConstraint!
-    @IBOutlet weak var favoritedButton: UIButton!
-    @IBOutlet weak var retryButton: UIButton!
 }
 
 class ThoughtContentText: UITextView {

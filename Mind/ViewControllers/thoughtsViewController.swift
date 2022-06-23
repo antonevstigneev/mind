@@ -19,7 +19,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     
     
     // MARK: - Model
-        let bert = BERT()
+    let bert = BERT()
     
     
     // MARK: - Data
@@ -46,7 +46,7 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     var selectedFilter: ThoughtsFilter = .recent
     var refreshControl = UIRefreshControl()
     let searchController = UISearchController(searchResultsController: nil)
-    let iconConfig = UIImage.SymbolConfiguration(pointSize: 21, weight: .regular)
+    let iconConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
     var authContext = LAContext()
     enum AuthenticationState { case loggedin, loggedout }
     var state = AuthenticationState.loggedout { didSet {} }
@@ -62,12 +62,6 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     // MARK: - Actions
     @IBAction func plusButtonTouchDownInside(_ sender: UIButton) {
         sender.animate()
-    }
-    @IBAction func moreButtonTouchUpInside(_ sender: Any) {
-        showMoreButtonMenu()
-    }
-    @IBAction func filterButtonTouchUpInside(_ sender: Any) {
-        showFilterMenu()
     }
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
         fetchThoughtsData()
@@ -246,23 +240,6 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
         
         cell.thoughtContentText.font = UIFont.systemFont(ofSize: 16)
         cell.thoughtContentText.textColor = UIColor(named: "text")
-        
-        if thought.embedding == nil {
-            cell.retryButton.isHidden = false
-            cell.thoughtContentTextRC.constant = 35
-        } else {
-            cell.retryButton.isHidden = true
-            cell.thoughtContentTextRC.constant = 16
-        }
-        
-        if thought.favorited && thought.embedding != nil {
-            cell.favoritedButton.isHidden = false
-            cell.thoughtContentTextRC.constant = 35
-            
-        } else {
-            cell.favoritedButton.isHidden = true
-            cell.thoughtContentTextRC.constant = 16
-        }
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(keywordTapHandler(_:)))
         tap.delegate = self
@@ -622,59 +599,12 @@ class thoughtsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     
-    @objc func showMoreButtonMenu() {
-        DispatchQueue.main.async {
-            let alertController = UIAlertController(title: nil,
-                                                    message: nil,
-                                                    preferredStyle: .actionSheet)
-            
-            let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel)
-            
-            let aboutAction: UIAlertAction = UIAlertAction(title: "About", style: .default)
-            { _ in
-                //                self.performSegue(withIdentifier: "", sender: (Any).self)
-            }
-            aboutAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            aboutAction.setValue(SFSymbols.info, forKey: "image")
-            
-            let supportAction: UIAlertAction = UIAlertAction(title: "Support", style: .default)
-            { _ in
-                let mailURL = URL(string: "mailto:contact@getmindapp.com")!
-                UIApplication.shared.open(mailURL, options: [:], completionHandler: nil)
-            }
-            supportAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            supportAction.setValue(SFSymbols.text, forKey: "image")
-            
-            let mindCloudAction: UIAlertAction = UIAlertAction(title: "Mind Cloud", style: .default)
-            { _ in
-                self.performSegue(withIdentifier: "toMindCloudVC", sender: (Any).self)
-            }
-            mindCloudAction.setValue(CATextLayerAlignmentMode.left, forKey: "titleTextAlignment")
-            mindCloudAction.setValue(SFSymbols.cloud, forKey: "image")
-            
-            alertController.addAction(cancelAction)
-            alertController.addAction(mindCloudAction)
-            alertController.addAction(supportAction)
-            alertController.addAction(aboutAction)
-            
-            alertController.view.tintColor = UIColor(named: "button")
-            self.present(alertController, animated: true, completion: nil)
-        }
-    }
-    
     func authenticateWithBiometrics() {
         if self.state == .loggedin {
-
-            // Log out immediately.
             self.state = .loggedout
 
         } else {
 
-            // Get a fresh context for each login. If you use the same context on multiple attempts
-            //  (by commenting out the next line), then a previously successful authentication
-            //  causes the next policy evaluation to succeed without testing biometry again.
-            //  That's usually not what you want.
-            
             self.authContext = LAContext()
             self.authContext.localizedCancelTitle = ""
             
@@ -853,38 +783,6 @@ public extension UIImage {
         UIGraphicsEndImageContext();
         
         return image;
-    }
-}
-
-
-extension UIView {
-    #if targetEnvironment(macCatalyst)
-    @objc(_focusRingType)
-    var focusRingType: UInt {
-        return 1
-    }
-    #endif
-}
-
-
-extension Array where Element == Float {
-    public var asArrayOfDoubles: [Double] {
-        return self.map { return Double($0) }
-    }
-}
-
-
-extension Array where Element:Equatable {
-    func removeDuplicates() -> [Element] {
-        var result = [Element]()
-        
-        for value in self {
-            if result.contains(value) == false {
-                result.append(value)
-            }
-        }
-        
-        return result
     }
 }
 
